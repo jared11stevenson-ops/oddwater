@@ -64,7 +64,8 @@ func _build() -> void:
 		var b := Button.new()
 		b.text = it["label"]
 		b.position = Vector2(it["x"], it["y"])
-		b.custom_minimum_size = Vector2(220, 96)   # large touch target
+		b.custom_minimum_size = Vector2(240, 96)   # large touch target
+		b.add_theme_font_size_override("font_size", 26)
 		b.focus_mode = Control.FOCUS_ALL
 		b.pressed.connect(interact.bind(id))
 		b.name = id

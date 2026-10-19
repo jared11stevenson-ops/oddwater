@@ -41,13 +41,13 @@ func _ready() -> void:
 	var cx := (float(b["x0"]) + float(b["x1"])) / 2.0
 	var cz := (float(b["y0"]) + float(b["y1"])) / 2.0
 	# land, streets, lake (world z = layout y)
-	box(Vector3(660, 2, 380), Vector3(cx, -1, cz), toon(Color("71915a"), 0.0))
-	box(Vector3(900, 0.5, 220), Vector3(cx, -0.2, -240), toon(Color("2f8f9d"), 0.0))
-	box(Vector3(900, 0.5, 120), Vector3(cx, -0.1, -260), toon(Color("14455a"), 0.0))
+	box(Vector3(float(b["x1"]) - float(b["x0"]), 2, float(b["y1"]) - float(b["y0"])), Vector3(cx, -1, cz), toon(Color("71915a"), 0.0))
+	box(Vector3(1300, 0.5, 260), Vector3(cx, -0.2, -260), toon(Color("2f8f9d"), 0.0))
+	box(Vector3(1300, 0.5, 140), Vector3(cx, -0.1, -290), toon(Color("14455a"), 0.0))
 	for st in t.spec["streets"]:
-		box(Vector3(660, 0.3, 12), Vector3(cx, 0.1, st["y"]), toon(Color("cfc3a6"), 0.0))
+		box(Vector3(960, 0.3, 12), Vector3(cx, 0.1, st["y"]), toon(Color("cfc3a6"), 0.0))
 	for x in t.spec["cross_x"]:
-		box(Vector3(12, 0.3, 380), Vector3(x, 0.12, cz), toon(Color("cfc3a6"), 0.0))
+		box(Vector3(12, 0.3, 620), Vector3(x, 0.12, cz), toon(Color("cfc3a6"), 0.0))
 	var k := 0
 	for l in t.lots:
 		var def: Array = KIND[l["kind"]]
@@ -69,8 +69,8 @@ func _ready() -> void:
 			box(Vector3(5, 20, 5), Vector3(l["x"], 10, l["y"]), toon(Color("e8d9b0")))
 		k += 1
 	var cam := Camera3D.new(); cam.fov = 34.0
-	cam.position = Vector3(cx + 120, 520, cz + 640); add_child(cam)
-	cam.look_at(Vector3(cx, 0, cz - 60))
+	cam.position = Vector3(cx + 200, 760, cz + 900); add_child(cam)
+	cam.look_at(Vector3(cx, 0, cz - 90))
 	var layer := CanvasLayer.new(); add_child(layer)
 	var rect := ColorRect.new(); rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var pm2 := ShaderMaterial.new(); pm2.shader = POST; rect.material = pm2; layer.add_child(rect)

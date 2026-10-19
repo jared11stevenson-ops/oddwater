@@ -3,53 +3,53 @@
   {
    "id": "shore_drive",
    "y": -110,
-   "x0": -330,
-   "x1": 330
+   "x0": -480,
+   "x1": 480
   },
   {
    "id": "mercy_street",
-   "y": -30,
-   "x0": -330,
-   "x1": 330
+   "y": 10,
+   "x0": -480,
+   "x1": 480
   },
   {
    "id": "hill_road",
-   "y": 50,
-   "x0": -330,
-   "x1": 330
+   "y": 130,
+   "x0": -480,
+   "x1": 480
   },
   {
    "id": "orchard_lane",
-   "y": 130,
-   "x0": -330,
-   "x1": 330
+   "y": 250,
+   "x0": -480,
+   "x1": 480
   },
   {
    "id": "back_lane",
-   "y": 210,
-   "x0": -330,
-   "x1": 330
+   "y": 370,
+   "x0": -480,
+   "x1": 480
   }
  ],
  "cross_x": [
-  -240,
-  -120,
+  -360,
+  -180,
   0,
-  120,
-  240
+  180,
+  360
  ],
  "lot": {
-  "width": 22,
-  "pitch": 26,
-  "depth": 28,
+  "width": 24,
+  "pitch": 44,
+  "depth": 32,
   "road_half": 6,
   "cross_half": 9
  },
  "bounds": {
-  "x0": -330,
-  "x1": 330,
+  "x0": -480,
+  "x1": 480,
   "y0": -130,
-  "y1": 250
+  "y1": 490
  },
  "target_lots": 128,
  "reference_south_park": {
@@ -67,7 +67,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": -270,
+   "x": -392,
    "span": 2
   },
   {
@@ -76,7 +76,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": -190,
+   "x": -276,
    "span": 1
   },
   {
@@ -85,7 +85,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": -130,
+   "x": -188,
    "span": 1
   },
   {
@@ -94,7 +94,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": -70,
+   "x": -102,
    "span": 1
   },
   {
@@ -103,7 +103,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": -10,
+   "x": -14,
    "span": 1
   },
   {
@@ -112,7 +112,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": 60,
+   "x": 87,
    "span": 1
   },
   {
@@ -121,7 +121,7 @@
    "kind": "landmark",
    "street": "shore_drive",
    "side": 1,
-   "x": 300,
+   "x": 435,
    "span": 1
   },
   {
@@ -139,7 +139,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": -1,
-   "x": -90,
+   "x": -130,
    "span": 1
   },
   {
@@ -148,7 +148,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": -1,
-   "x": 100,
+   "x": 145,
    "span": 2
   },
   {
@@ -157,7 +157,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": -110,
+   "x": -160,
    "span": 1
   },
   {
@@ -166,7 +166,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": -45,
+   "x": -65,
    "span": 1
   },
   {
@@ -175,7 +175,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": 20,
+   "x": 29,
    "span": 1
   },
   {
@@ -184,7 +184,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": 85,
+   "x": 123,
    "span": 1
   },
   {
@@ -193,7 +193,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": 170,
+   "x": 246,
    "span": 1
   },
   {
@@ -202,7 +202,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": -175,
+   "x": -254,
    "span": 1
   },
   {
@@ -211,7 +211,7 @@
    "kind": "landmark",
    "street": "mercy_street",
    "side": 1,
-   "x": 240,
+   "x": 348,
    "span": 1
   },
   {
@@ -220,7 +220,7 @@
    "kind": "landmark",
    "street": "hill_road",
    "side": -1,
-   "x": -70,
+   "x": -102,
    "span": 2
   },
   {
@@ -229,7 +229,7 @@
    "kind": "landmark",
    "street": "hill_road",
    "side": -1,
-   "x": 20,
+   "x": 29,
    "span": 1
   },
   {
@@ -238,7 +238,7 @@
    "kind": "landmark",
    "street": "hill_road",
    "side": -1,
-   "x": 150,
+   "x": 218,
    "span": 2
   },
   {
@@ -247,7 +247,7 @@
    "kind": "landmark",
    "street": "hill_road",
    "side": 1,
-   "x": -20,
+   "x": -29,
    "span": 1
   },
   {
@@ -256,7 +256,7 @@
    "kind": "landmark",
    "street": "hill_road",
    "side": 1,
-   "x": 200,
+   "x": 290,
    "span": 1
   },
   {
@@ -265,7 +265,7 @@
    "kind": "landmark",
    "street": "hill_road",
    "side": 1,
-   "x": 270,
+   "x": 392,
    "span": 2
   },
   {
@@ -283,7 +283,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": -1,
-   "x": -110,
+   "x": -160,
    "span": 1,
    "owner": "mags"
   },
@@ -293,7 +293,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": -1,
-   "x": -50,
+   "x": -72,
    "span": 1,
    "owner": "jo"
   },
@@ -303,7 +303,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": -1,
-   "x": 40,
+   "x": 58,
    "span": 1,
    "owner": "tobi"
   },
@@ -313,7 +313,7 @@
    "kind": "home",
    "street": "hill_road",
    "side": 1,
-   "x": 80,
+   "x": 116,
    "span": 1,
    "owner": "delphine"
   },
@@ -323,7 +323,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": 1,
-   "x": 110,
+   "x": 160,
    "span": 1,
    "owner": "vern"
   },
@@ -333,7 +333,7 @@
    "kind": "home",
    "street": "shore_drive",
    "side": 1,
-   "x": -230,
+   "x": -334,
    "span": 1,
    "owner": "gus"
   },
@@ -343,7 +343,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": 1,
-   "x": -60,
+   "x": -87,
    "span": 1,
    "owner": "priya"
   },
@@ -353,7 +353,7 @@
    "kind": "home",
    "street": "mercy_street",
    "side": 1,
-   "x": 200,
+   "x": 290,
    "span": 1,
    "owner": "marcus"
   },
@@ -363,7 +363,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": 1,
-   "x": 170,
+   "x": 246,
    "span": 1,
    "owner": "billie"
   },
@@ -373,7 +373,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": -1,
-   "x": -150,
+   "x": -218,
    "span": 1,
    "owner": "inez"
   },
@@ -383,7 +383,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": -1,
-   "x": 100,
+   "x": 145,
    "span": 1,
    "owner": "dottie"
   },
@@ -393,7 +393,7 @@
    "kind": "home",
    "street": "shore_drive",
    "side": 1,
-   "x": 300,
+   "x": 435,
    "span": 1,
    "owner": "oren"
   },
@@ -403,7 +403,7 @@
    "kind": "home",
    "street": "hill_road",
    "side": -1,
-   "x": 200,
+   "x": 290,
    "span": 1,
    "owner": "ellis"
   },
@@ -413,7 +413,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": 1,
-   "x": -20,
+   "x": -29,
    "span": 1,
    "owner": "nell"
   },
@@ -423,7 +423,7 @@
    "kind": "home",
    "street": "mercy_street",
    "side": 1,
-   "x": 60,
+   "x": 87,
    "span": 1,
    "owner": "bea"
   },
@@ -433,7 +433,7 @@
    "kind": "home",
    "street": "mercy_street",
    "side": 1,
-   "x": -60,
+   "x": -87,
    "span": 1,
    "owner": "silas"
   },
@@ -443,7 +443,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": -1,
-   "x": 40,
+   "x": 58,
    "span": 1,
    "owner": "cal"
   },
@@ -453,7 +453,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": 1,
-   "x": -130,
+   "x": -188,
    "span": 1,
    "owner": "lux"
   },
@@ -463,7 +463,7 @@
    "kind": "home",
    "street": "hill_road",
    "side": 1,
-   "x": -200,
+   "x": -290,
    "span": 1,
    "owner": "harlan"
   },
@@ -473,7 +473,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": 1,
-   "x": 150,
+   "x": 218,
    "span": 1,
    "owner": "hank"
   },
@@ -483,7 +483,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": 1,
-   "x": -180,
+   "x": -261,
    "span": 1,
    "owner": "dolores"
   },
@@ -493,7 +493,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": -1,
-   "x": 180,
+   "x": 261,
    "span": 1,
    "owner": "fitz"
   },
@@ -503,7 +503,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": 1,
-   "x": 60,
+   "x": 87,
    "span": 1,
    "owner": "roy"
   },
@@ -513,7 +513,7 @@
    "kind": "home",
    "street": "back_lane",
    "side": -1,
-   "x": -60,
+   "x": -87,
    "span": 1,
    "owner": "connie"
   },
@@ -523,7 +523,7 @@
    "kind": "home",
    "street": "orchard_lane",
    "side": -1,
-   "x": -190,
+   "x": -276,
    "span": 1,
    "owner": "ottoline"
   }

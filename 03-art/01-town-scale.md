@@ -8,11 +8,11 @@ I don't have official dimensions for that town. The baseline is therefore an **e
 ## What is built
 | Measure | Baseline (estimate) | Little Mercy v0 | Ratio |
 |---|---|---|---|
-| Land area | 120,000 m² | **250,800 m²** (660 × 380) | 2.09× |
+| Land area | 120,000 m² | **595,200 m²** (960 × 620; spread out, v0.2) | 4.96× |
 | Built lots | 60 | **128** (+ 52 gardens/greens) | 2.13× |
 | Named landmarks | n/a | 24 landmarks + 25 homes for named characters | |
-| Walk, Quay → Chapel | n/a | 78 s at 6 m/s | |
-| Walk, Marina → Lakeview Rest | n/a | 122 s | |
+| Walk, Quay → Chapel | n/a | 119 s at 6 m/s | |
+| Walk, Marina → Lakeview Rest | n/a | 181 s | |
 
 Layout is generated from `data/town_spec.json` by `scripts/core/town_layout.gd` (deterministic, no randomness): five E-W streets, five cross streets, lots on both sides, the lake to the north. Every landmark in the lore has a place, every one of the 13 Lives has a home lot, and the Overlay mirror (Low Mercy under the lake) is a reversible function.
 
@@ -29,3 +29,5 @@ Render: `res://scenes/town_overview.tscn`. Reference frame: `reference/town_layo
 1. Terrain: a ridge that falls to a curved shoreline; streets that follow the contour; the Blue Line painted on the lower buildings.
 2. Districts with their own silhouettes: Lakefront, Main Street, Chapel Hill, Orchard Lane, the Dam Road.
 3. Hand-built Pell Dentistry and Mags's home so Day 1 plays in real space.
+
+**v0.2 (spread out):** street spacing 80→120 m, lot pitch 26→44 m, cross streets every 180 m, same 128 lots. Land area is now ~5x the estimated baseline while building count stays ~2x, so the town is airy rather than dense. A 3-minute end-to-end walk means fast travel (bike / the *Mercy Ann*) is needed by design.

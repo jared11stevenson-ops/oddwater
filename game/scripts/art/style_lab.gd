@@ -103,8 +103,8 @@ func person(at: Vector3, skin: Color, hair: Color, shirt: Color, pants: Color, w
 	mesh(g, dot, inkm, Vector3(-0.07, 1.34, 0.17))
 	mesh(g, dot, inkm, Vector3(0.07, 1.34, 0.17))
 	var brow := BoxMesh.new(); brow.size = Vector3(0.09, 0.012, 0.01)
-	mesh(g, brow, inkm, Vector3(-0.07, 1.4, 0.18), Vector3(0, 0, 8))
-	mesh(g, brow, inkm, Vector3(0.07, 1.4, 0.18), Vector3(0, 0, -8))
+	mesh(g, brow, inkm, Vector3(-0.07, 1.4, 0.18), Vector3(0, 0, -4))
+	mesh(g, brow, inkm, Vector3(0.07, 1.4, 0.18), Vector3(0, 0, 4))
 
 
 func _world() -> void:
