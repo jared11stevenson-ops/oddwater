@@ -1,0 +1,531 @@
+{
+ "streets": [
+  {
+   "id": "shore_drive",
+   "y": -110,
+   "x0": -330,
+   "x1": 330
+  },
+  {
+   "id": "mercy_street",
+   "y": -30,
+   "x0": -330,
+   "x1": 330
+  },
+  {
+   "id": "hill_road",
+   "y": 50,
+   "x0": -330,
+   "x1": 330
+  },
+  {
+   "id": "orchard_lane",
+   "y": 130,
+   "x0": -330,
+   "x1": 330
+  },
+  {
+   "id": "back_lane",
+   "y": 210,
+   "x0": -330,
+   "x1": 330
+  }
+ ],
+ "cross_x": [
+  -240,
+  -120,
+  0,
+  120,
+  240
+ ],
+ "lot": {
+  "width": 22,
+  "pitch": 26,
+  "depth": 28,
+  "road_half": 6,
+  "cross_half": 9
+ },
+ "bounds": {
+  "x0": -330,
+  "x1": 330,
+  "y0": -130,
+  "y1": 250
+ },
+ "target_lots": 128,
+ "reference_south_park": {
+  "source": "ESTIMATE, not official: needs confirming",
+  "width_m": 400,
+  "depth_m": 300,
+  "lots": 60,
+  "multiplier": 2.0
+ },
+ "walk_speed_mps": 6.0,
+ "landmarks": [
+  {
+   "id": "marina",
+   "name": "Marina",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": -270,
+   "span": 2
+  },
+  {
+   "id": "launch_quay",
+   "name": "Launch Quay (Mercy Ann)",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": -190,
+   "span": 1
+  },
+  {
+   "id": "bait_shop",
+   "name": "Brask & Marsh Bait",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": -130,
+   "span": 1
+  },
+  {
+   "id": "low_water",
+   "name": "The Low Water",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": -70,
+   "span": 1
+  },
+  {
+   "id": "pink_heron",
+   "name": "The Pink Heron",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": -10,
+   "span": 1
+  },
+  {
+   "id": "wmrc",
+   "name": "WMRC 88.1",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": 60,
+   "span": 1
+  },
+  {
+   "id": "dam_house",
+   "name": "Dam House",
+   "kind": "landmark",
+   "street": "shore_drive",
+   "side": 1,
+   "x": 300,
+   "span": 1
+  },
+  {
+   "id": "town_hall",
+   "name": "Town Hall + Clock",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": -1,
+   "x": 0,
+   "span": 2
+  },
+  {
+   "id": "library",
+   "name": "Mercy Free Library",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": -1,
+   "x": -90,
+   "span": 1
+  },
+  {
+   "id": "playhouse",
+   "name": "The Playhouse",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": -1,
+   "x": 100,
+   "span": 2
+  },
+  {
+   "id": "pell_dentistry",
+   "name": "Pell Dentistry",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": -110,
+   "span": 1
+  },
+  {
+   "id": "clock_shop",
+   "name": "Weatherby & Son Clocks",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": -45,
+   "span": 1
+  },
+  {
+   "id": "rising_loaf",
+   "name": "The Rising Loaf",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": 20,
+   "span": 1
+  },
+  {
+   "id": "hardware",
+   "name": "Moss Hardware",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": 85,
+   "span": 1
+  },
+  {
+   "id": "funeral_home",
+   "name": "Dellacroix Remembrances",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": 170,
+   "span": 1
+  },
+  {
+   "id": "post_office",
+   "name": "Post Office",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": -175,
+   "span": 1
+  },
+  {
+   "id": "paws_reflect",
+   "name": "Paws & Reflect",
+   "kind": "landmark",
+   "street": "mercy_street",
+   "side": 1,
+   "x": 240,
+   "span": 1
+  },
+  {
+   "id": "school",
+   "name": "Mercy Elementary",
+   "kind": "landmark",
+   "street": "hill_road",
+   "side": -1,
+   "x": -70,
+   "span": 2
+  },
+  {
+   "id": "clinic",
+   "name": "Clinic",
+   "kind": "landmark",
+   "street": "hill_road",
+   "side": -1,
+   "x": 20,
+   "span": 1
+  },
+  {
+   "id": "chapel",
+   "name": "Chapel on the Rise",
+   "kind": "landmark",
+   "street": "hill_road",
+   "side": -1,
+   "x": 150,
+   "span": 2
+  },
+  {
+   "id": "sheriff",
+   "name": "Sheriff's Office",
+   "kind": "landmark",
+   "street": "hill_road",
+   "side": 1,
+   "x": -20,
+   "span": 1
+  },
+  {
+   "id": "grange_hall",
+   "name": "Grange Hall",
+   "kind": "landmark",
+   "street": "hill_road",
+   "side": 1,
+   "x": 200,
+   "span": 1
+  },
+  {
+   "id": "lakeview_rest",
+   "name": "Lakeview Rest",
+   "kind": "landmark",
+   "street": "hill_road",
+   "side": 1,
+   "x": 270,
+   "span": 2
+  },
+  {
+   "id": "pageant_green",
+   "name": "Pageant Green",
+   "kind": "park",
+   "street": "orchard_lane",
+   "side": -1,
+   "x": 0,
+   "span": 3
+  },
+  {
+   "id": "mags_home",
+   "name": "Mags Pell",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": -1,
+   "x": -110,
+   "span": 1,
+   "owner": "mags"
+  },
+  {
+   "id": "jo_home",
+   "name": "Jo Brask",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": -1,
+   "x": -50,
+   "span": 1,
+   "owner": "jo"
+  },
+  {
+   "id": "tobi_home",
+   "name": "Marsh-Okafor house",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": -1,
+   "x": 40,
+   "span": 1,
+   "owner": "tobi"
+  },
+  {
+   "id": "delphine_home",
+   "name": "Pruitt house",
+   "kind": "home",
+   "street": "hill_road",
+   "side": 1,
+   "x": 80,
+   "span": 1,
+   "owner": "delphine"
+  },
+  {
+   "id": "vern_home",
+   "name": "Vern Castellano",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": 1,
+   "x": 110,
+   "span": 1,
+   "owner": "vern"
+  },
+  {
+   "id": "gus_home",
+   "name": "Gus Tamm",
+   "kind": "home",
+   "street": "shore_drive",
+   "side": 1,
+   "x": -230,
+   "span": 1,
+   "owner": "gus"
+  },
+  {
+   "id": "priya_home",
+   "name": "Priya Nandakumar",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": 1,
+   "x": -60,
+   "span": 1,
+   "owner": "priya"
+  },
+  {
+   "id": "marcus_home",
+   "name": "Marcus Dellacroix",
+   "kind": "home",
+   "street": "mercy_street",
+   "side": 1,
+   "x": 200,
+   "span": 1,
+   "owner": "marcus"
+  },
+  {
+   "id": "billie_home",
+   "name": "Billie Achterberg",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": 1,
+   "x": 170,
+   "span": 1,
+   "owner": "billie"
+  },
+  {
+   "id": "inez_home",
+   "name": "Inez Calloway",
+   "kind": "home",
+   "street": "back_lane",
+   "side": -1,
+   "x": -150,
+   "span": 1,
+   "owner": "inez"
+  },
+  {
+   "id": "dottie_home",
+   "name": "Dottie Fenn",
+   "kind": "home",
+   "street": "back_lane",
+   "side": -1,
+   "x": 100,
+   "span": 1,
+   "owner": "dottie"
+  },
+  {
+   "id": "oren_home",
+   "name": "Oren Haldane",
+   "kind": "home",
+   "street": "shore_drive",
+   "side": 1,
+   "x": 300,
+   "span": 1,
+   "owner": "oren"
+  },
+  {
+   "id": "ellis_home",
+   "name": "Chapel Manse",
+   "kind": "home",
+   "street": "hill_road",
+   "side": -1,
+   "x": 200,
+   "span": 1,
+   "owner": "ellis"
+  },
+  {
+   "id": "nell_home",
+   "name": "Nell Ware-Prewitt",
+   "kind": "home",
+   "street": "back_lane",
+   "side": 1,
+   "x": -20,
+   "span": 1,
+   "owner": "nell"
+  },
+  {
+   "id": "bea_home",
+   "name": "Bea Lindgren",
+   "kind": "home",
+   "street": "mercy_street",
+   "side": 1,
+   "x": 60,
+   "span": 1,
+   "owner": "bea"
+  },
+  {
+   "id": "silas_home",
+   "name": "Silas Weatherby",
+   "kind": "home",
+   "street": "mercy_street",
+   "side": 1,
+   "x": -60,
+   "span": 1,
+   "owner": "silas"
+  },
+  {
+   "id": "cal_home",
+   "name": "Cal Reyes",
+   "kind": "home",
+   "street": "back_lane",
+   "side": -1,
+   "x": 40,
+   "span": 1,
+   "owner": "cal"
+  },
+  {
+   "id": "lux_home",
+   "name": "Lux Brask",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": 1,
+   "x": -130,
+   "span": 1,
+   "owner": "lux"
+  },
+  {
+   "id": "harlan_home",
+   "name": "Harlan Pruitt",
+   "kind": "home",
+   "street": "hill_road",
+   "side": 1,
+   "x": -200,
+   "span": 1,
+   "owner": "harlan"
+  },
+  {
+   "id": "hank_home",
+   "name": "Hank Moss",
+   "kind": "home",
+   "street": "back_lane",
+   "side": 1,
+   "x": 150,
+   "span": 1,
+   "owner": "hank"
+  },
+  {
+   "id": "dolores_home",
+   "name": "Dolores Vance",
+   "kind": "home",
+   "street": "back_lane",
+   "side": 1,
+   "x": -180,
+   "span": 1,
+   "owner": "dolores"
+  },
+  {
+   "id": "fitz_home",
+   "name": "Fitz Merriman",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": -1,
+   "x": 180,
+   "span": 1,
+   "owner": "fitz"
+  },
+  {
+   "id": "roy_home",
+   "name": "Roy Marsh",
+   "kind": "home",
+   "street": "back_lane",
+   "side": 1,
+   "x": 60,
+   "span": 1,
+   "owner": "roy"
+  },
+  {
+   "id": "connie_home",
+   "name": "Connie Abara",
+   "kind": "home",
+   "street": "back_lane",
+   "side": -1,
+   "x": -60,
+   "span": 1,
+   "owner": "connie"
+  },
+  {
+   "id": "ottoline_home",
+   "name": "Ottoline Fisk",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": -1,
+   "x": -190,
+   "span": 1,
+   "owner": "ottoline"
+  }
+ ]
+}
