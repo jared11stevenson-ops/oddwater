@@ -1,0 +1,104 @@
+{
+ "life": "jo",
+ "title": "Wednesday, 11:20 p.m.",
+ "intro": "The Grange Hall basement. HARROW's practice room. A pipe drips somewhere out of sight.",
+ "items": [
+  {
+   "id": "guitar_case",
+   "label": "Lux's guitar case",
+   "kind": "prop",
+   "x": 200,
+   "y": 420,
+   "text": "Inside the lid, folded small: 'Go, you idiot.' Crossed out. 'Stay.' Crossed out. Then nothing, a tiny ink dot where a pen stopped.",
+   "note": [
+    "warmth",
+    10
+   ],
+   "evidence": "LF-023"
+  },
+  {
+   "id": "recorder",
+   "label": "The tape recorder",
+   "kind": "role",
+   "x": 560,
+   "y": 300,
+   "text": "A four-track from 1989. The REC light is on. You didn't switch it on. The reels are turning, slowly, on nothing.",
+   "note": [
+    "curiosity",
+    15
+   ]
+  },
+  {
+   "id": "pipes",
+   "label": "The wet pipes",
+   "kind": "role",
+   "x": 960,
+   "y": 420,
+   "text": "The pipes are sweating. The drip lands in the same spot every four seconds, then every three, then, as you watch, in time with your pulse.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "photo",
+   "label": "Fife & Drum photograph, 1960",
+   "kind": "decoy",
+   "x": 1360,
+   "y": 280,
+   "text": "Twelve boys in drum jackets. The one in the back row, grinning, is holding a bell-rope. His name is on the back: G. Brask. He has your nose.",
+   "note": [
+    "warmth",
+    10
+   ]
+  },
+  {
+   "id": "amp",
+   "label": "Amp stack",
+   "kind": "decoy",
+   "x": 300,
+   "y": 700,
+   "text": "Eleven. The knob goes to eleven. It's fine.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "pancakes",
+   "label": "Cold pancakes in foil",
+   "kind": "decoy",
+   "x": 760,
+   "y": 760,
+   "text": "A stack for the band. The top one has a smiley drawn in syrup. Lux's handwriting, Lux's syrup, Lux's grief.",
+   "note": [
+    "warmth",
+    5
+   ]
+  },
+  {
+   "id": "mic",
+   "label": "Mic stand",
+   "kind": "decoy",
+   "x": 1160,
+   "y": 760,
+   "text": "Bent, at a heroic angle. It has seen things.",
+   "note": [
+    "warmth",
+    2
+   ]
+  },
+  {
+   "id": "window",
+   "label": "High basement window",
+   "kind": "role",
+   "x": 1500,
+   "y": 640,
+   "text": "A rectangle of black sky. You can't see the lake from here, but you can hear it. You wave anyway.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  }
+ ]
+}

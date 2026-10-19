@@ -20,6 +20,7 @@ var suspicion: RefCounted
 var remnants: RefCounted
 var town_mood := 60
 var ending := ""
+var honesty_pull := 0   # a child's fibs build up; at 100 the truth blurts out (resets each day)
 
 
 func _init() -> void:
@@ -48,6 +49,7 @@ func hush_strength() -> float:
 
 func _enter_day() -> void:
 	notes = Notes.new()
+	honesty_pull = 0
 	var tool_id: String = current_life()["proof_tool"]
 	for l in lives:
 		board.set_tool(l["proof_tool"], false)

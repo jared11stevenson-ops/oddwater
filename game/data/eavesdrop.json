@@ -1,0 +1,65 @@
+{
+ "tobi_day": {
+  "title": "Small Paths",
+  "budget": 4,
+  "spots": [
+   {
+    "id": "kitchen",
+    "label": "Under the kitchen table",
+    "text": "Mum and Dad, voices low. Mum: 'That's the fourth this year. Heart failure. Again.' Dad: 'They were old.' 'Not that old. Not Mr. Okoro.' A pause. 'The lungs, Dan. I can't write down what's in the lungs.'",
+    "evidence": "LF-066",
+    "notes": {
+     "curiosity": 10
+    }
+   },
+   {
+    "id": "vent",
+    "label": "The school office air vent",
+    "text": "The principal: 'We need a lamp-bearer by Tuesday.' Ms. Calloway: 'You'll have one.' 'The Calloway unit isn't in the guidance.' 'Neither is the mural.' Then, quietly: 'Sixty-three layers of paint.'",
+    "evidence": "LF-072",
+    "notes": {
+     "curiosity": 15
+    }
+   },
+   {
+    "id": "hall",
+    "label": "Town Hall window ledge",
+    "text": "Delphine, to Hank, through a door: 'Nothing to report, Hank.' 'Good.' 'No. I mean it. I used to mean it. I have something to report.' Hank: 'Del. Don't.' The old clock, behind you, takes its minute.",
+    "evidence": "LF-032",
+    "notes": {
+     "curiosity": 10
+    }
+   },
+   {
+    "id": "clock",
+    "label": "The clock shop door",
+    "text": "Silas, to a clock: 'Thaddeus, you would hate this. They put a child in a clean smock and ask him to carry a lamp to a place we both know.' He stops. 'I know you're there, young man. Come in and be bored.'",
+    "notes": {
+     "nerve": 10,
+     "candor": 5
+    },
+    "suspicion": {
+     "silas": 15
+    }
+   },
+   {
+    "id": "dock",
+    "label": "The end of the dock",
+    "text": "You wave. The ripples wave back, in step. A voice, from nowhere you can point to: 'Hi, Tobi. Don't carry it. It's not fair. It only works because we're holding on.' You ask who 'we' is. 'All of us.' You ask how many. 'Lots. Too many. I counted.'",
+    "notes": {
+     "warmth": 15,
+     "candor": 10
+    }
+   },
+   {
+    "id": "porch",
+    "label": "Roy's hedge",
+    "text": "Roy on the swing, murmuring: 'Come in out of the wet, Amos. Come in, son.' The words are very quiet and very old.",
+    "requires": "vent",
+    "notes": {
+     "warmth": 10
+    }
+   }
+  ]
+ }
+}

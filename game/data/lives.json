@@ -14,7 +14,8 @@
   "habits": [
    "hums while working",
    "calls people friend"
-  ]
+  ],
+  "decision_time": "9:47 p.m."
  },
  {
   "day": 2,
@@ -31,7 +32,8 @@
   "habits": [
    "says sorry to furniture",
    "makes pancakes at 3pm"
-  ]
+  ],
+  "decision_time": "11:58 p.m."
  },
  {
   "day": 3,
@@ -48,7 +50,8 @@
   "habits": [
    "double-knots shoes",
    "corrects adults"
-  ]
+  ],
+  "decision_time": "supper, 6:30 p.m."
  },
  {
   "day": 4,
@@ -65,7 +68,8 @@
   "habits": [
    "opens with nothing to report",
    "remembers every child's name"
-  ]
+  ],
+  "decision_time": "Thursday night, 10:15 p.m."
  },
  {
   "day": 5,
@@ -82,7 +86,8 @@
   "habits": [
    "bow ties",
    "records alphabetised"
-  ]
+  ],
+  "decision_time": "10:02 p.m."
  },
  {
   "day": 6,
@@ -99,7 +104,8 @@
   "habits": [
    "names the waves",
    "calls passengers ballast"
-  ]
+  ],
+  "decision_time": "11:30 p.m."
  },
  {
   "day": 7,
@@ -116,7 +122,8 @@
   "habits": [
    "speaks in footnotes",
    "taped glasses"
-  ]
+  ],
+  "decision_time": "12:03 a.m."
  },
  {
   "day": 8,
@@ -133,7 +140,8 @@
   "habits": [
    "impeccable dress",
    "dry humour"
-  ]
+  ],
+  "decision_time": "9:15 p.m."
  },
  {
   "day": 9,
@@ -150,7 +158,8 @@
   "habits": [
    "never sits",
    "fast sarcasm"
-  ]
+  ],
+  "decision_time": "closing, 10:40 p.m."
  },
  {
   "day": 10,
@@ -167,7 +176,8 @@
   "habits": [
    "sings at transitions",
    "use your words"
-  ]
+  ],
+  "decision_time": "8:20 p.m."
  },
  {
   "day": 11,
@@ -184,7 +194,8 @@
   "habits": [
    "lavender scent",
    "treats in pockets"
-  ]
+  ],
+  "decision_time": "7:05 p.m."
  },
  {
   "day": 12,
@@ -201,7 +212,8 @@
   "habits": [
    "reads numbers aloud",
    "checks gauges"
-  ]
+  ],
+  "decision_time": "11:11 p.m."
  },
  {
   "day": 13,
@@ -218,7 +230,8 @@
   "habits": [
    "bakes bad bread",
    "one-beat pause"
-  ]
+  ],
+  "decision_time": "10:30 p.m."
  },
  {
   "day": 14,
@@ -232,6 +245,7 @@
   "bleed": "",
   "proof_tool": "prop_room",
   "resonance": "Wren Aldous, 9",
-  "habits": []
+  "habits": [],
+  "decision_time": "never"
  }
 ]

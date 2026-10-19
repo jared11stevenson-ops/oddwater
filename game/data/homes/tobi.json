@@ -1,0 +1,152 @@
+{
+ "life": "tobi",
+ "title": "Thursday, 6:45 a.m.",
+ "intro": "Everything is the wrong height. Also, you have homework.",
+ "items": [
+  {
+   "id": "ribbon",
+   "label": "Red ribbon on the doorknob",
+   "kind": "role",
+   "x": 120,
+   "y": 380,
+   "text": "A red ribbon on the doorknob. You look at it for a while. 'FACT,' you think. 'Somebody comes in my room.'",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "mirror",
+   "label": "Mirror",
+   "kind": "mirror",
+   "x": 1560,
+   "y": 300,
+   "text": "A very short person with extraordinary hair. Your fingertips are pruned. 'From the bath,' you decide, firmly.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "hours",
+   "label": "Sir Hours (tortoise)",
+   "kind": "pet",
+   "x": 760,
+   "y": 760,
+   "text": "Sir Hours turns at tortoise speed to face the window. Then, very slowly, he lifts one front foot and waves at the lake.",
+   "note": [
+    "warmth",
+    10
+   ]
+  },
+  {
+   "id": "facts",
+   "label": "Index cards: FACTS ABOUT GROWN-UPS",
+   "kind": "prop",
+   "x": 300,
+   "y": 560,
+   "text": "A rubber-banded stack. FACT 12: grown-ups say 'it's fine' when it isn't. FACT 31: Auntie Nell never gets wet when it rains. Underlined three times.",
+   "note": [
+    "curiosity",
+    15
+   ],
+   "evidence": "LF-075"
+  },
+  {
+   "id": "lamp",
+   "label": "The practice lamp",
+   "kind": "role",
+   "x": 520,
+   "y": 330,
+   "text": "The lantern-bearer's lamp, a small brass one with a cracked pane, in the closet. Today at four there is lamp practice. Your stomach does something complicated.",
+   "note": [
+    "candor",
+    5
+   ]
+  },
+  {
+   "id": "wren",
+   "label": "Drawing: Wren and me",
+   "kind": "role",
+   "x": 1000,
+   "y": 300,
+   "text": "Two figures holding hands. One is you. The other is blue, drawn in wet-looking crayon, and labelled W. The lake is behind them. It is drawn very big.",
+   "note": [
+    "warmth",
+    10
+   ]
+  },
+  {
+   "id": "window",
+   "label": "The window",
+   "kind": "role",
+   "x": 1400,
+   "y": 700,
+   "text": "You can see the lake from here. You wave. The ripples come back in step. You don't tell anyone anymore. You told once.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "teeth",
+   "label": "Tin of baby teeth",
+   "kind": "decoy",
+   "x": 1180,
+   "y": 520,
+   "text": "Eleven teeth. One of them has a note: 'Dr. Pell: paid in stickers.'",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "bag",
+   "label": "School bag",
+   "kind": "decoy",
+   "x": 1700,
+   "y": 620,
+   "text": "A form: LAMP-BEARER, PLEASE RETURN SIGNED. A sticker of a very angry dinosaur has been placed over the word SIGNED.",
+   "note": [
+    "candor",
+    5
+   ]
+  },
+  {
+   "id": "periscope",
+   "label": "Paper-towel periscope",
+   "kind": "decoy",
+   "x": 380,
+   "y": 820,
+   "text": "Engineered for seeing over the sofa. Possibly for seeing over grown-ups.",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "dino",
+   "label": "Dinosaur Facts, Vol. 3",
+   "kind": "decoy",
+   "x": 760,
+   "y": 950,
+   "text": "The Stegosaurus had a brain the size of a lime. You think about that for longer than is healthy.",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "bed",
+   "label": "Unmade bed",
+   "kind": "decoy",
+   "x": 1560,
+   "y": 860,
+   "text": "Pillow fort, two torches, one lonely sock. A sense of unfinished business.",
+   "note": [
+    "warmth",
+    2
+   ]
+  }
+ ]
+}

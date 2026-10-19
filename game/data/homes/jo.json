@@ -1,0 +1,155 @@
+{
+ "life": "jo",
+ "title": "Wednesday, 6:34 a.m.",
+ "intro": "A room above the bait shop. Everything is slightly too small, including you.",
+ "items": [
+  {
+   "id": "ribbon",
+   "label": "Red ribbon on the doorknob",
+   "kind": "role",
+   "x": 120,
+   "y": 380,
+   "text": "The same red ribbon, the same neat bow. This is the second time somebody has dressed a set for you. You do not know that yet. You just feel looked after, and it is suspicious.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "mirror",
+   "label": "Mirror",
+   "kind": "mirror",
+   "x": 1560,
+   "y": 300,
+   "text": "A gentle giant of a face, with a beard that has opinions. Fingertips pruned. You flex your hands: they are the size of dinner plates.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "lemmy",
+   "label": "Lemmy (cockatiel)",
+   "kind": "pet",
+   "x": 760,
+   "y": 720,
+   "text": "Lemmy goes absolutely silent. Then he drums his beak on the cage bar in a long, steady roll, and whistles four notes you somehow already know.",
+   "note": [
+    "warmth",
+    10
+   ]
+  },
+  {
+   "id": "tape_box",
+   "label": "Cymbal case, tape box",
+   "kind": "prop",
+   "x": 300,
+   "y": 560,
+   "text": "Under the cymbals: a cassette marked REPLY in marker, and a 1961 snare chart in a boy's pencil, titled 'Mercy Roll'. A second sheet numbers every stroke, 1 to 212.",
+   "note": [
+    "curiosity",
+    15
+   ],
+   "evidence": "LF-047"
+  },
+  {
+   "id": "contract",
+   "label": "Desk: Salt Cathedral contract",
+   "kind": "prop",
+   "x": 520,
+   "y": 330,
+   "text": "A touring slot in Cleveland, signed last night at 11:58 p.m. Underneath, a folded note: 'Tell Lux.' Not yet crossed out.",
+   "note": [
+    "curiosity",
+    10
+   ],
+   "evidence": "LF-024"
+  },
+  {
+   "id": "phone",
+   "label": "Phone",
+   "kind": "prop",
+   "x": 1400,
+   "y": 700,
+   "text": "A voicemail from Daniel Marsh: 'Don't make me find a new fish guy.' He is laughing in it, and then he isn't.",
+   "note": [
+    "warmth",
+    5
+   ],
+   "evidence": "LF-014"
+  },
+  {
+   "id": "shoebox",
+   "label": "Shoebox of crayon drawings",
+   "kind": "prop",
+   "x": 1000,
+   "y": 300,
+   "text": "Tobi's drawings, kept like treasure: JO IS A DRAGON. Next to the dragon, a smaller figure, blue, drawn with a line that looks wet.",
+   "note": [
+    "warmth",
+    10
+   ],
+   "evidence": "LF-025"
+  },
+  {
+   "id": "kit",
+   "label": "Drum kit",
+   "kind": "role",
+   "x": 1180,
+   "y": 520,
+   "text": "A beaten-up kit with a damp patch under the floor tom that has never once dried. You tap the snare. It rings like a church bell down a long corridor.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "pan",
+   "label": "Pancake pan",
+   "kind": "decoy",
+   "x": 1700,
+   "y": 620,
+   "text": "The band pancake pan. 3 p.m. every Sunday. It is the single most important object in the room.",
+   "note": [
+    "warmth",
+    5
+   ]
+  },
+  {
+   "id": "setlist",
+   "label": "Setlist",
+   "kind": "decoy",
+   "x": 380,
+   "y": 820,
+   "text": "Tonight at The Low Water: Salt Water Hymn, Burn the Boats, a ballad called Please Stop Saying Goodbye (nobody in town knows why it sells).",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "poster",
+   "label": "HARROW poster",
+   "kind": "decoy",
+   "x": 760,
+   "y": 950,
+   "text": "Four people looking sullen in front of the lake. One of them is smiling slightly. That one is you.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "sock",
+   "label": "Single sock on the lamp",
+   "kind": "decoy",
+   "x": 1560,
+   "y": 860,
+   "text": "A sock. On a lamp. There's no story here. You respect it.",
+   "note": [
+    "warmth",
+    2
+   ]
+  }
+ ]
+}

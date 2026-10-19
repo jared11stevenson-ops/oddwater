@@ -1,0 +1,282 @@
+{
+ "daniel": {
+  "npc": "daniel",
+  "who": "Daniel Marsh",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Daniel",
+    "text": "Jo. Early. Fish guy's late, which at this point I think is a metaphor.",
+    "aside": "He is polishing the same brass cleat he polished yesterday. And the day before.",
+    "choices": [
+     {
+      "text": "\"I've got news, Dan. I signed with Salt Cathedral.\"",
+      "next": "n1",
+      "notes": {
+       "candor": 15,
+       "nerve": 10
+      },
+      "in_character": false
+     },
+     {
+      "text": "\"Nothing! Just tired.\"",
+      "next": "n2",
+      "notes": {
+       "fidelity": 8
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Daniel",
+    "text": "...Right. Good. That's... sure. That's really good.",
+    "aside": "He keeps polishing. The cleat has never been so clean.",
+    "choices": [
+     {
+      "text": "\"Dan. You could sign something too.\"",
+      "next": "n3",
+      "notes": {
+       "nerve": 15,
+       "warmth": 5
+      },
+      "suspicion": {
+       "daniel": 5
+      }
+     },
+     {
+      "text": "\"I'll work out my notice. I promise.\"",
+      "next": "n4",
+      "notes": {
+       "warmth": 10
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Daniel",
+    "text": "Mm. You're a terrible liar, Jo. It's one of the nicest things about you.",
+    "choices": [
+     {
+      "text": "(Smile. Take the net.)",
+      "next": "n4",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Daniel",
+    "text": "I've had a contract in my desk for six years. Unsigned. It's the best thing I've ever not done.",
+    "choices": [
+     {
+      "text": "(Say nothing. Hold the ladder for him.)",
+      "next": "n4",
+      "notes": {
+       "warmth": 10
+      }
+     }
+    ],
+    "evidence": "LF-014"
+   },
+   "n4": {
+    "speaker": "",
+    "text": "Daniel looks at the lake for a moment, then waves at it, like he does every morning, like he's checking someone is still there.",
+    "end": true
+   }
+  }
+ },
+ "lux": {
+  "npc": "lux",
+  "who": "Lux Brask",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Lux",
+    "text": "You look like you were hit by a very quiet truck.",
+    "aside": "She's tuning a string that is already in tune.",
+    "choices": [
+     {
+      "text": "\"I signed with Salt Cathedral.\"",
+      "next": "n1",
+      "notes": {
+       "candor": 15,
+       "nerve": 10
+      },
+      "in_character": false
+     },
+     {
+      "text": "\"Pancakes?\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 8,
+       "fidelity": 6
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Lux",
+    "text": "Go, you idiot.",
+    "aside": "Her hand tightens on the neck. It is the most honest thing she has done all week.",
+    "choices": [
+     {
+      "text": "\"Come with me.\"",
+      "next": "n3",
+      "notes": {
+       "warmth": 15
+      }
+     },
+     {
+      "text": "\"Do you want me to stay?\"",
+      "next": "n4",
+      "notes": {
+       "nerve": 15,
+       "candor": 10
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Lux",
+    "text": "You can't make pancakes at noon and pretend it's normal. ...Go on, then.",
+    "choices": [
+     {
+      "text": "(Make them.)",
+      "next": "n5",
+      "notes": {
+       "warmth": 8
+      }
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Lux",
+    "text": "Someone has to keep the pancakes warm for the people you leave.",
+    "choices": [
+     {
+      "text": "(Hug her. Eventually she hugs back.)",
+      "next": "n5",
+      "notes": {
+       "warmth": 10
+      }
+     }
+    ]
+   },
+   "n4": {
+    "speaker": "Lux",
+    "text": "Don't. Don't ask me that. I counted the tape, Jo. Don't make me say the number.",
+    "aside": "She is looking at the wet patch on the floor, not at you.",
+    "choices": [
+     {
+      "text": "\"What number?\"",
+      "next": "n5",
+      "notes": {
+       "curiosity": 15,
+       "candor": 5
+      },
+      "suspicion": {
+       "lux": 10
+      }
+     },
+     {
+      "text": "(Let it go.)",
+      "next": "n5",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n5": {
+    "speaker": "",
+    "text": "Lux plays a chord that doesn't resolve. It hangs in the basement like breath on a cold day.",
+    "end": true
+   }
+  }
+ },
+ "fitz": {
+  "npc": "fitz",
+  "who": "Fitz Merriman",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Fitz",
+    "text": "Did I ever tell you about the winter the lake froze solid, and a man walked across to the far shore and came back wearing a different hat?",
+    "choices": [
+     {
+      "text": "\"You've told me. It was a bus.\"",
+      "next": "n1",
+      "notes": {
+       "fidelity": 8,
+       "warmth": 5
+      },
+      "in_character": true
+     },
+     {
+      "text": "\"Fitz, did you ever hear a bell at four in the morning?\"",
+      "next": "n2",
+      "notes": {
+       "curiosity": 15,
+       "nerve": 10
+      },
+      "suspicion": {
+       "fitz": 20
+      },
+      "in_character": false
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Fitz",
+    "text": "That's a true story. Well. It happened to somebody.",
+    "choices": [
+     {
+      "text": "(Order a ginger beer.)",
+      "next": "end",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Fitz",
+    "text": "...Ambrose.",
+    "aside": "He is drying the same glass. The glass is dry. He hums four notes without noticing.",
+    "choices": [
+     {
+      "text": "\"Who's Ambrose?\"",
+      "next": "n3",
+      "notes": {
+       "curiosity": 10,
+       "candor": 10
+      },
+      "suspicion": {
+       "fitz": 15
+      }
+     }
+    ],
+    "evidence": "LF-073",
+    "tell": "hum"
+   },
+   "n3": {
+    "speaker": "Fitz",
+    "text": "Nobody. A man I'm... telling a story about. Different bar. Forget it. Another?",
+    "choices": [
+     {
+      "text": "(Nod. Remember.)",
+      "next": "end"
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "The Low Water fills up. You are the drummer, and for ninety minutes the lake is just a rumour behind the amps.",
+    "end": true
+   }
+  }
+ }
+}

@@ -40,6 +40,8 @@ func choices() -> Array:
 func _apply(effects: Dictionary) -> void:
 	for k in effects.get("notes", {}):
 		state.notes.add(k, int(effects["notes"][k]))
+	if effects.has("lie"):
+		state.honesty_pull += int(effects["lie"])
 	for npc in effects.get("suspicion", {}):
 		state.suspicion.raise(npc, int(effects["suspicion"][npc]))
 	if effects.has("evidence"):
@@ -57,6 +59,10 @@ func choose(i: int) -> Dictionary:
 		return current()
 	_apply(cs[i])
 	node_id = cs[i]["next"]
+	# The Honesty Pull: a child can only carry so many fibs. Past the limit the truth falls out.
+	if convo.has("blurt") and state.honesty_pull >= 100 and node_id != convo["blurt"] and not current().get("end", false):
+		node_id = convo["blurt"]
+		state.honesty_pull = 40
 	var n := current()
 	# node-level effects fire on arrival
 	_apply({"suspicion": n.get("suspicion", {})})

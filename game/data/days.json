@@ -1,0 +1,87 @@
+{
+ "1": {
+  "life": "mags",
+  "home": "homes/mags.json",
+  "night": "homes/practice_night.json",
+  "perform": [
+   {
+    "type": "convo",
+    "file": "day01.json",
+    "id": "silas",
+    "after": {
+     "if_evidence": "LF-056",
+     "vignette": "dental",
+     "case": "silas"
+    }
+   },
+   {
+    "type": "convo",
+    "file": "day01.json",
+    "id": "bea"
+   },
+   {
+    "type": "convo",
+    "file": "day01.json",
+    "id": "cal"
+   }
+  ]
+ },
+ "2": {
+  "life": "jo",
+  "home": "homes/jo.json",
+  "night": "homes/grange_night.json",
+  "night_event": {
+   "type": "reply",
+   "if_evidence": "LF-047"
+  },
+  "perform": [
+   {
+    "type": "convo",
+    "file": "day02.json",
+    "id": "daniel"
+   },
+   {
+    "type": "convo",
+    "file": "day02.json",
+    "id": "lux"
+   },
+   {
+    "type": "vignette",
+    "kind": "rhythm",
+    "song": "gig_set_one"
+   },
+   {
+    "type": "convo",
+    "file": "day02.json",
+    "id": "fitz"
+   }
+  ]
+ },
+ "3": {
+  "life": "tobi",
+  "home": "homes/tobi.json",
+  "night": "homes/playhouse_night.json",
+  "perform": [
+   {
+    "type": "convo",
+    "file": "day03.json",
+    "id": "adaeze"
+   },
+   {
+    "type": "vignette",
+    "kind": "small_paths",
+    "map": "tobi_day"
+   },
+   {
+    "type": "convo",
+    "file": "day03.json",
+    "id": "inez"
+   },
+   {
+    "type": "convo",
+    "file": "day03.json",
+    "id": "roy"
+   }
+  ]
+ }
+}

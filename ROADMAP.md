@@ -30,8 +30,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - [ ] NPC schedules and idle lives (data-driven)
 
 ## M3 — Act I content (Days 2–5)
-- [ ] Day 2 Jo: rhythm vignette + Reply Tape (S20), home, conversations
-- [ ] Day 3 Tobi: small-paths camera, Honesty Pull, eavesdrop, home, conversations
+- [x] Day 2 Jo: home, 3 conversations (Daniel, Lux, Fitz), two-lane rhythm gig, the Reply (S20) in the Grange basement at night
+- [~] Day 3 Tobi: home, 3 conversations (Adaeze, Ms. Calloway, Roy), Honesty Pull, Small Paths eavesdrop, Playhouse night (Prompt Book, S29). Still to do: child-height camera and walkable paths (it's menu-based now)
 - [ ] Day 4 Delphine: speech vignette, vault (S16 / S17), conversations
 - [ ] Day 5 Vern: radio vignette, the Reel, Hymn #212 (Act I climax)
 - [ ] Encore days: Remnants run their old tools (Overlap)
@@ -79,3 +79,4 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 (Each autonomous run appends one line: date, what shipped, test counts.)
 - 2026-10-19: Dental overlay Proof Tool + shared UI theme; Day 1 plays waking -> dialogue -> overlay -> Seal S25 -> dusk. Suites: core 101, dialogue 48, dental 23, town 9653, smoke OK.
 - 2026-10-19: Night, Case Board, Seal tests, the Slack; Day 1 loop playable end to end (S23, S25). Suites: core 101, dialogue 48, dental 23, board 13, town 9653, smoke OK.
+- 2026-10-19: Data-driven days (days.json); Days 2 and 3 playable; rhythm game, eavesdrop, Honesty Pull; robot-player smoke test plays Days 1-3 through the real UI. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 187, town 9653, smoke OK. Note: S30 (Day 1 was staged) is provable from Day 3 by tying the appointment book to the Prompt Book. Decide whether to gate it later.

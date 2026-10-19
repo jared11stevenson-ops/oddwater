@@ -1,15 +1,127 @@
 {
- "LF-009": {"title": "Welcome loaf note", "text": "\"Hope you stay.\" Signed B.", "layer": "L1"},
- "LF-011": {"title": "Fridge magnet", "text": "POP. 913. A town that never updates its sign.", "layer": "L1"},
- "LF-015": {"title": "Cal's notebook", "text": "\"M. Pell. Dentist. Friend. Do not let her go.\"", "layer": "L2"},
- "LF-018": {"title": "Priya's voicemail", "text": "\"Don't go before Thursday. Please. I think I found the pattern.\"", "layer": "L2"},
- "LF-019": {"title": "The Match List", "text": "Eleven names, each ticked. Mags had been matching her patients to a dead man's charts.", "layer": "L2"},
- "LF-020": {"title": "Mags's diary", "text": "\"Teeth don't lie.\"", "layer": "L2"},
- "LF-021": {"title": "One-way ticket", "text": "The 6:40 launch. Not for today. For tomorrow.", "layer": "L2"},
- "LF-043": {"title": "Casimir's ledger", "text": "9 Sept 1961. \"A. Marsh, 9. Extraction, lower left. Paid in eggs.\" The last entry.", "layer": "L3"},
- "LF-055": {"title": "Chart: T. Rook, 1958", "text": "A gold crown and two fillings, each stamped CP.", "layer": "L4"},
- "LF-056": {"title": "Overlay: Silas = Rook", "text": "The X-ray of Silas's mouth carries Rook's work, mark for mark.", "layer": "L4"},
- "LF-070": {"title": "Delphine's note", "text": "\"Come at one. Bring the records.\"", "layer": "L4"},
- "LF-071": {"title": "Appointment book", "text": "Eight patients, written in a hand that is almost Mags's.", "layer": "L4"},
- "LF-074": {"title": "A second hand", "text": "Someone has been correcting Cal's notebook in the margins.", "layer": "L4"}
+ "LF-009": {
+  "title": "Welcome loaf note",
+  "text": "\"Hope you stay.\" Signed B.",
+  "layer": "L1"
+ },
+ "LF-011": {
+  "title": "Fridge magnet",
+  "text": "POP. 913. A town that never updates its sign.",
+  "layer": "L1"
+ },
+ "LF-015": {
+  "title": "Cal's notebook",
+  "text": "\"M. Pell. Dentist. Friend. Do not let her go.\"",
+  "layer": "L2"
+ },
+ "LF-018": {
+  "title": "Priya's voicemail",
+  "text": "\"Don't go before Thursday. Please. I think I found the pattern.\"",
+  "layer": "L2"
+ },
+ "LF-019": {
+  "title": "The Match List",
+  "text": "Eleven names, each ticked. Mags had been matching her patients to a dead man's charts.",
+  "layer": "L2"
+ },
+ "LF-020": {
+  "title": "Mags's diary",
+  "text": "\"Teeth don't lie.\"",
+  "layer": "L2"
+ },
+ "LF-021": {
+  "title": "One-way ticket",
+  "text": "The 6:40 launch. Not for today. For tomorrow.",
+  "layer": "L2"
+ },
+ "LF-043": {
+  "title": "Casimir's ledger",
+  "text": "9 Sept 1961. \"A. Marsh, 9. Extraction, lower left. Paid in eggs.\" The last entry.",
+  "layer": "L3"
+ },
+ "LF-055": {
+  "title": "Chart: T. Rook, 1958",
+  "text": "A gold crown and two fillings, each stamped CP.",
+  "layer": "L4"
+ },
+ "LF-056": {
+  "title": "Overlay: Silas = Rook",
+  "text": "The X-ray of Silas's mouth carries Rook's work, mark for mark.",
+  "layer": "L4"
+ },
+ "LF-070": {
+  "title": "Delphine's note",
+  "text": "\"Come at one. Bring the records.\"",
+  "layer": "L4"
+ },
+ "LF-071": {
+  "title": "Appointment book",
+  "text": "Eight patients, written in a hand that is almost Mags's.",
+  "layer": "L4"
+ },
+ "LF-074": {
+  "title": "A second hand",
+  "text": "Someone has been correcting Cal's notebook in the margins.",
+  "layer": "L4"
+ },
+ "LF-014": {
+  "title": "Daniel's voicemail",
+  "text": "\"Don't make me find a new fish guy.\" He doesn't mean it. He sounds like a man who can't say what he means.",
+  "layer": "L1"
+ },
+ "LF-023": {
+  "title": "Lux's unsent note",
+  "text": "\"Go, you idiot.\" Crossed out. Then: \"Stay.\" Crossed out. Then nothing.",
+  "layer": "L2"
+ },
+ "LF-024": {
+  "title": "Salt Cathedral contract",
+  "text": "A touring slot. Signed at 11:58 p.m. Jo had not told anyone.",
+  "layer": "L2"
+ },
+ "LF-025": {
+  "title": "\"JO IS A DRAGON\"",
+  "text": "A crayon drawing by Tobi. Beside the dragon, a smaller figure, a girl, blue, drawn with a wet-looking line.",
+  "layer": "L2"
+ },
+ "LF-047": {
+  "title": "Gid's drum chart: Mercy Roll",
+  "text": "A 1961 snare chart in a boy's pencil. A long roll, then a pause, then the same roll. The tape box has a second sheet: someone has numbered the strokes. 212.",
+  "layer": "L3"
+ },
+ "LF-052": {
+  "title": "Amos's Santa letter",
+  "text": "\"Dear Santa, I do not want anything. I want to stay in Mercy.\" Age 9. 1960.",
+  "layer": "L3"
+ },
+ "LF-057": {
+  "title": "The Prompt Book, p.1",
+  "text": "A prompt book from the Playhouse. 1962. Margins full of tiny pencil notes: CAST CHANGE. U/S. 'Seat them all.' The handwriting is a child's, then a woman's, then the same woman's, older.",
+  "layer": "L4"
+ },
+ "LF-075": {
+  "title": "Tobi's Fact 31",
+  "text": "\"FACT 31: Auntie Nell never gets wet when it rains.\"",
+  "layer": "L5"
+ },
+ "LF-066": {
+  "title": "\"Heart failure. Again.\"",
+  "text": "Adaeze, reading a death certificate aloud in a flat voice. The fourth this year.",
+  "layer": "L4"
+ },
+ "LF-072": {
+  "title": "The Lady with Wet Hands",
+  "text": "A fourth-grader's drawing, one of eight years' worth. The same figure every time, rising out of the lake.",
+  "layer": "L4"
+ },
+ "LF-032": {
+  "title": "Council minutes",
+  "text": "\"Nothing to report.\" The same two words, atop sixty-three years of minutes.",
+  "layer": "L2"
+ },
+ "LF-073": {
+  "title": "Fitz's slip",
+  "text": "\"Ambrose... no. That's... who's Ambrose?\" He said it to the glass he was drying.",
+  "layer": "L4"
+ }
 }

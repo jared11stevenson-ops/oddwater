@@ -1,0 +1,399 @@
+{
+ "adaeze": {
+  "npc": "adaeze",
+  "who": "Adaeze Okafor",
+  "start": "n0",
+  "blurt": "blurt",
+  "nodes": {
+   "n0": {
+    "speaker": "Mum",
+    "text": "Tobias. Toast. Ninety seconds. And we are talking about last night.",
+    "aside": "She's got her nurse face on. It is a face for people who are bleeding quietly.",
+    "choices": [
+     {
+      "text": "\"I already ate.\"",
+      "next": "n1",
+      "notes": {
+       "fidelity": 5
+      },
+      "lie": 60
+     },
+     {
+      "text": "\"I don't want to carry the lamp, because Wren says it keeps them in.\"",
+      "next": "n2",
+      "notes": {
+       "candor": 20,
+       "nerve": 15
+      },
+      "suspicion": {
+       "adaeze": 15
+      },
+      "in_character": false,
+      "lie": 35
+     },
+     {
+      "text": "\"Can I have toast now?\"",
+      "next": "n3",
+      "notes": {
+       "warmth": 5
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Mum",
+    "text": "You haven't eaten. I can see the cereal box. It's still full.",
+    "choices": [
+     {
+      "text": "\"I ate the cereal that's in my head.\"",
+      "next": "n3",
+      "notes": {
+       "warmth": 5
+      },
+      "lie": 40
+     },
+     {
+      "text": "\"...Okay. I didn't eat.\"",
+      "next": "n3",
+      "notes": {
+       "candor": 8,
+       "fidelity": 3
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Mum",
+    "text": "...Who is Wren?",
+    "aside": "The toast pops. Neither of you moves.",
+    "choices": [
+     {
+      "text": "\"My friend. She's in the lake.\"",
+      "next": "n4",
+      "notes": {
+       "candor": 15
+      },
+      "suspicion": {
+       "adaeze": 25
+      },
+      "in_character": false,
+      "lie": 30
+     },
+     {
+      "text": "\"A girl at school.\"",
+      "next": "n3",
+      "notes": {
+       "fidelity": 5
+      },
+      "lie": 50
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Mum",
+    "text": "Eat. We'll talk later. You are not in trouble. You're never in trouble. You're just... you.",
+    "choices": [
+     {
+      "text": "(Eat. Notice she isn't smiling.)",
+      "next": "end",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n4": {
+    "speaker": "Mum",
+    "text": "Okay. Okay. That's... Okay, sweetheart. Eat your toast.",
+    "aside": "She says 'okay' four times. That is a record.",
+    "choices": [
+     {
+      "text": "(Eat. Notice her hand on the kettle: shaking.)",
+      "next": "end"
+     }
+    ],
+    "evidence": "LF-066"
+   },
+   "blurt": {
+    "speaker": "Tobi",
+    "text": "(You can't hold it in any more.) THE LAMP IS WHAT KEEPS THEM IN AND WREN SAYS IT'S NOT FAIR AND EVERYBODY KNOWS IT AND NOBODY SAYS IT.",
+    "aside": "The kitchen goes very still. The kettle clicks off by itself.",
+    "choices": [
+     {
+      "text": "(Cover your mouth.)",
+      "next": "end",
+      "notes": {
+       "candor": 30,
+       "nerve": 15
+      },
+      "suspicion": {
+       "adaeze": 30
+      }
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "You grab your bag. At the door you wave at the lake. Mum waves too. Her face does the thing grown-ups' faces do when they pretend they're fine.",
+    "end": true
+   }
+  }
+ },
+ "inez": {
+  "npc": "inez",
+  "who": "Ms. Calloway",
+  "start": "n0",
+  "blurt": "blurt",
+  "nodes": {
+   "n0": {
+    "speaker": "Ms. Calloway",
+    "text": "Tobi, can you tell the class one fact about Little Mercy? Anything you like.",
+    "aside": "Thirty faces. All of them yours, a little. You've never been this visible.",
+    "choices": [
+     {
+      "text": "\"Fact: we say 'same time tomorrow' because the people in the valley said it to us every night.\"",
+      "next": "n1",
+      "notes": {
+       "candor": 20,
+       "curiosity": 10
+      },
+      "suspicion": {
+       "inez": 0
+      },
+      "in_character": false,
+      "lie": 25
+     },
+     {
+      "text": "\"Fact: clocks never change because changing is bad.\"",
+      "next": "n2",
+      "notes": {
+       "fidelity": 8
+      },
+      "in_character": true
+     },
+     {
+      "text": "\"Fact: the Stegosaurus had a brain the size of a lime.\"",
+      "next": "n3",
+      "notes": {
+       "warmth": 8
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Ms. Calloway",
+    "text": "...Who told you that?",
+    "aside": "The room has gone quiet in the way rooms do when the true thing is said at the wrong volume.",
+    "choices": [
+     {
+      "text": "\"Everybody knows. I mean. Nobody says.\"",
+      "next": "n4",
+      "notes": {
+       "candor": 10
+      },
+      "suspicion": {
+       "inez": 10
+      },
+      "in_character": false,
+      "lie": 30
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Ms. Calloway",
+    "text": "That's the town's answer. Thank you, Tobi. Is it yours?",
+    "choices": [
+     {
+      "text": "\"...No.\"",
+      "next": "n4",
+      "notes": {
+       "candor": 10
+      },
+      "in_character": false,
+      "lie": 20
+     },
+     {
+      "text": "\"Yes.\"",
+      "next": "n3",
+      "notes": {
+       "fidelity": 5
+      },
+      "lie": 45
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Ms. Calloway",
+    "text": "A lime. Wonderful. Class, a lime.",
+    "choices": [
+     {
+      "text": "(Sit down. Feel your face go hot.)",
+      "next": "end",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n4": {
+    "speaker": "Ms. Calloway",
+    "text": "Come and see me at lunch. Bring your lunch. You're not in trouble. You are, I think, the first person in this room in a very long time to be right.",
+    "choices": [
+     {
+      "text": "(Nod. Count the ceiling tiles.)",
+      "next": "end",
+      "notes": {
+       "warmth": 8,
+       "curiosity": 10
+      }
+     }
+    ],
+    "evidence": "LF-072"
+   },
+   "blurt": {
+    "speaker": "Tobi",
+    "text": "(It comes out all at once.) 'CAUSE THEY'RE UNDER THERE, MS. CALLOWAY. THEY'RE ALL UNDER THERE. MY FRIEND WREN IS UNDER THERE.",
+    "aside": "Ms. Calloway puts down her chalk, very slowly. The whole room breathes in at once.",
+    "choices": [
+     {
+      "text": "(Sit down. The class is not breathing.)",
+      "next": "end",
+      "notes": {
+       "candor": 30,
+       "nerve": 20
+      },
+      "suspicion": {
+       "inez": 30
+      }
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "The bell goes. Nobody says goodbye. Everyone waves at the window on the way out, the whole class at once, like a flock of very small, very polite birds.",
+    "end": true
+   }
+  }
+ },
+ "roy": {
+  "npc": "roy",
+  "who": "Roy Marsh",
+  "start": "n0",
+  "blurt": "blurt",
+  "nodes": {
+   "n0": {
+    "speaker": "Roy",
+    "text": "Hello, young man. You look like someone I knew.",
+    "aside": "He is on the porch swing with a Bible in his lap. He is not reading it. It's open at the middle, where the pages have been folded small around something.",
+    "choices": [
+     {
+      "text": "\"Who, Grandad?\"",
+      "next": "n1",
+      "notes": {
+       "curiosity": 15
+      },
+      "suspicion": {
+       "roy": 5
+      }
+     },
+     {
+      "text": "\"Are you sad, Grandad?\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 15,
+       "candor": 5
+      }
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Roy",
+    "text": "...A. A boy. Amos. He liked tortoises. You'd have... He'd have... Never mind. Go and play.",
+    "choices": [
+     {
+      "text": "\"Is that his?\" (point at the Bible)",
+      "next": "n3",
+      "notes": {
+       "curiosity": 15,
+       "nerve": 10
+      },
+      "suspicion": {
+       "roy": 15
+      }
+     },
+     {
+      "text": "\"Can I see Sir Hours with you tomorrow?\"",
+      "next": "n4",
+      "notes": {
+       "warmth": 10
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Roy",
+    "text": "Come here.",
+    "aside": "He smells of coal-tar soap and, underneath it, faintly of lake.",
+    "choices": [
+     {
+      "text": "(Climb up. Let him hold you very tightly.)",
+      "next": "n4",
+      "notes": {
+       "warmth": 20
+      }
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Roy",
+    "text": "Your father mustn't know. Promise.",
+    "aside": "He unfolds a letter in a child's careful block capitals and, without being asked, puts it in your hand.",
+    "choices": [
+     {
+      "text": "\"Cross my heart.\"",
+      "next": "n4",
+      "notes": {
+       "candor": 10,
+       "warmth": 5
+      }
+     }
+    ],
+    "evidence": "LF-052"
+   },
+   "n4": {
+    "speaker": "Roy",
+    "text": "You've got his chin. You know that? He had a great chin. We all said so.",
+    "choices": [
+     {
+      "text": "(Say nothing. Hold the letter.)",
+      "next": "end"
+     }
+    ]
+   },
+   "blurt": {
+    "speaker": "Tobi",
+    "text": "(You blurt it.) YOU CALLED ME AMOS. YOU'VE CALLED ME AMOS SINCE I WAS FIVE.",
+    "aside": "The swing stops. The lake, behind the hedge, makes a sound like someone setting down a cup.",
+    "choices": [
+     {
+      "text": "(Stare at your shoes.)",
+      "next": "end",
+      "notes": {
+       "candor": 30
+      },
+      "suspicion": {
+       "roy": 30
+      }
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "You wave at the lake from the gate. Behind you, on the porch, Roy waves too. Not at the lake. At you. For a very long time.",
+    "end": true
+   }
+  }
+ }
+}

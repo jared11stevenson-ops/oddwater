@@ -1,0 +1,104 @@
+{
+ "life": "tobi",
+ "title": "Thursday, 10:40 p.m.",
+ "intro": "The Playhouse after the show that never changes. The ghost light is on.",
+ "items": [
+  {
+   "id": "prompt",
+   "label": "The Prompt Book",
+   "kind": "prop",
+   "x": 200,
+   "y": 420,
+   "text": "A thick book on the prompt desk. Page one, 1962. Margins crammed with pencil: CAST CHANGE. U/S. 'Seat them all.' The writing begins as a child's and grows up down the page.",
+   "note": [
+    "curiosity",
+    20
+   ],
+   "evidence": "LF-057"
+  },
+  {
+   "id": "seat",
+   "label": "Row W, Seat 9",
+   "kind": "role",
+   "x": 560,
+   "y": 300,
+   "text": "One seat, reserved. A programme lies on it, with a name pencilled on the front, rubbed so many times it has gone soft. You can't read it.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "keys",
+   "label": "Prop cabinet: a thousand keys",
+   "kind": "role",
+   "x": 960,
+   "y": 420,
+   "text": "A pegboard of house keys, every one with a red ribbon tag. Every home in Little Mercy, tagged and hung.",
+   "note": [
+    "curiosity",
+    15
+   ]
+  },
+  {
+   "id": "ghost",
+   "label": "The ghost light",
+   "kind": "decoy",
+   "x": 1360,
+   "y": 280,
+   "text": "A single bare bulb on a stand, left burning so the theatre is never dark. 'So whoever's in here never has to be alone.'",
+   "note": [
+    "warmth",
+    5
+   ]
+  },
+  {
+   "id": "lamp",
+   "label": "The pageant lamp",
+   "kind": "role",
+   "x": 300,
+   "y": 700,
+   "text": "The big lamp, the real one, in a glass case. The glass has a crack. It matches the one in your closet.",
+   "note": [
+    "candor",
+    5
+   ]
+  },
+  {
+   "id": "costumes",
+   "label": "Costume rail",
+   "kind": "decoy",
+   "x": 760,
+   "y": 760,
+   "text": "Aprons, hats, one very ancient lamp-bearer's smock, your size. Someone has ironed it recently.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "poster",
+   "label": "1962 poster: THE RAISING",
+   "kind": "decoy",
+   "x": 1160,
+   "y": 760,
+   "text": "Same show, same cast list, every year. Only the nine-year-old is different.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "stage",
+   "label": "The stage",
+   "kind": "decoy",
+   "x": 1500,
+   "y": 640,
+   "text": "Boards worn pale in a path from the Chapel door to the lake backdrop. Sixty-two years of the same walk.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  }
+ ]
+}

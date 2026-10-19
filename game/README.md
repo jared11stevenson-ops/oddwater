@@ -14,13 +14,15 @@ Engine: **Godot 4.7 stable** (GDScript), Mobile renderer. Single-player, offline
 - `scripts/ui/` — presentation: title, Wake & Snoop
 - `tests/` — headless suites
 
-## Status (pass 2)
-Done: core loop state machine, Seal/Ability economy, Remnant + Overlap, endings ladder, save/load; Wake & Snoop; **Perform** (data-driven dialogue with Notes/suspicion/evidence effects, Day 1 conversations: Silas, Bea, Cal); style shaders wired live to game state (`hush`, `truth`); UI sits above the print pass so text is never smeared; 2x+ town layout (spread out: 128 lots over ~595,000 m2).
-Dental X-ray overlay Proof Tool (sets Seal S25), steady-hand core logic, shared ink/paper UI theme.
-Night phase (Pell Dentistry after hours), Case Board (pin / tie / test Seals), the 4:12 Slack, Day 1 -> Day 2: **the Day 1 loop is playable end to end.**
-Tests: `run_tests` 101, `dialogue_tests` 48, `dental_tests` 23, `board_tests` 13, `town_tests` 9,653, `smoke` plays Day 1 from waking to dusk through the real UI.
-Next: Day 2 (Jo): home, rhythm vignette, Reply Tape; a spatial Case Board; walkable world and terrain.
-Known: dialogue screen is functional but plain (no portraits or comic framing yet).
+## Status (pass 3)
+**Days 1, 2 and 3 are playable end to end**, each driven by `data/days.json`: Wake & Snoop -> Perform (conversations, vignettes) -> Step Off (Remnant) -> Night (search + event) -> Case Board -> the 4:12 Slack -> next day.
+- Day 1 Mags: dental X-ray overlay (S25), ledger (S23)
+- Day 2 Jo: two-lane rhythm gig; the Reply at the Grange basement (S20)
+- Day 3 Tobi: Honesty Pull in dialogue; Small Paths eavesdropping; Playhouse Prompt Book (S29)
+- A **robot player** (`tests/bot.gd`) plays Days 1-3 through the real UI in `tests/smoke.gd`.
+Tests: `run_tests` 101, `dialogue_tests` 48, `dental_tests` 23, `board_tests` 13, `rhythm_tests` 11, `day23_tests` 187, `town_tests` 9,653, `smoke`.
+Next: Day 4 Delphine (speech vignette, vault: S16 / S17), Day 5 Vern (radio, Hymn #212: the Act I climax), spatial Case Board, walkable world.
+Known: screens are functional menus with a shared ink/paper theme; no portraits, audio or walkable world yet; Slack is a text placeholder; nothing profiled on a device.
 
 ## Platform notes (honest)
 - **Shipping target: mobile (iOS/Android). There is no Switch port.** Switch is only the quality and performance standard we hold ourselves to (Switch-class budgets: ~30 fps locked equivalent, tight memory).
