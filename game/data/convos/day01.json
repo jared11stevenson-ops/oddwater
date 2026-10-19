@@ -1,57 +1,242 @@
 {
  "silas": {
-  "npc": "silas", "who": "Silas Weatherby", "start": "n0",
+  "npc": "silas",
+  "who": "Silas Weatherby",
+  "start": "n0",
   "nodes": {
-   "n0": {"speaker": "Silas", "text": "Morning, Doctor. Nine sharp. Same time tomorrow, I expect?",
-          "aside": "He is looking at your hands, not your face.",
-          "choices": [
-            {"text": "\"Open wide, Mr. Weatherby.\"", "in_character": true, "notes": {"fidelity": 8}, "next": "n1"},
-            {"text": "\"Good morning! Sorry, do I know you?\"", "in_character": false, "notes": {"candor": 10, "nerve": 5, "fidelity": -10}, "suspicion": {"silas": 25}, "next": "n1"}]},
-   "n1": {"speaker": "", "text": "A gold crown on his lower left molar. Old work. Beautiful work. Nobody makes them like this any more.",
-          "choices": [
-            {"text": "\"That's lovely. Who did it?\"", "notes": {"curiosity": 10}, "evidence": "LF-055", "next": "n2"},
-            {"text": "\"Nothing wrong with it. You're all done.\"", "notes": {"curiosity": -5}, "next": "end_quiet"}]},
-   "n2": {"speaker": "Silas", "text": "That's Casimir's crown, you know.",
-          "aside": "A beat. His eyes do something. \"Your grandfather's. Of course. That's what I meant.\"",
-          "suspicion": {"silas": 10},
-          "choices": [
-            {"text": "\"The old chart says that crown was placed for a T. Rook.\"", "notes": {"nerve": 15, "candor": 10}, "suspicion": {"silas": 30}, "evidence": "LF-056", "next": "n3_rook"},
-            {"text": "\"Everyone says it's the best crown in town.\"", "in_character": true, "notes": {"warmth": 10, "fidelity": 5}, "next": "n3_warm"}]},
-   "n3_rook": {"speaker": "Silas", "text": "Rook kept good clocks. Terrible teeth. Nothing to do with me, Doctor.",
-          "aside": "He hums four notes under his breath, and doesn't notice. Inside your head, a small, dry voice: \"Write that down.\"",
-          "tell": "hum", "choices": [{"text": "(Say nothing. Pick up the mirror.)", "next": "end_quiet"}]},
-   "n3_warm": {"speaker": "Silas", "text": "That's kind. Most days I forget it's there. Most days I forget a lot of things, and they're always the same things.",
-          "choices": [{"text": "(Smile. Pass him the mint tin.)", "next": "end_quiet"}]},
-   "end_quiet": {"speaker": "", "text": "He pays in exact change, as always. At the door he stops and, without turning, waves at the lake.", "end": true}
+   "n0": {
+    "speaker": "Silas",
+    "text": "Morning, Doctor. Nine sharp. Same time tomorrow, I expect?",
+    "aside": "He is looking at your hands, not your face.",
+    "choices": [
+     {
+      "text": "\"Open wide, Mr. Weatherby.\"",
+      "in_character": true,
+      "notes": {
+       "fidelity": 8
+      },
+      "next": "n1"
+     },
+     {
+      "text": "\"Good morning! Sorry, do I know you?\"",
+      "in_character": false,
+      "notes": {
+       "candor": 10,
+       "nerve": 5,
+       "fidelity": -10
+      },
+      "suspicion": {
+       "silas": 25
+      },
+      "next": "n1"
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "",
+    "text": "A gold crown on his lower left molar. Old work. Beautiful work. Nobody makes them like this any more.",
+    "choices": [
+     {
+      "text": "\"That's lovely. Who did it?\"",
+      "notes": {
+       "curiosity": 10
+      },
+      "evidence": "LF-055",
+      "next": "n2"
+     },
+     {
+      "text": "\"Nothing wrong with it. You're all done.\"",
+      "notes": {
+       "curiosity": -5
+      },
+      "next": "end_quiet"
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Silas",
+    "text": "That's Casimir's crown, you know.",
+    "aside": "A beat. His eyes do something. \"Your grandfather's. Of course. That's what I meant.\"",
+    "suspicion": {
+     "silas": 10
+    },
+    "choices": [
+     {
+      "text": "\"The old chart says that crown was placed for a T. Rook.\"",
+      "notes": {
+       "nerve": 15,
+       "candor": 10
+      },
+      "suspicion": {
+       "silas": 30
+      },
+      "evidence": "LF-056",
+      "next": "n3_rook"
+     },
+     {
+      "text": "\"Everyone says it's the best crown in town.\"",
+      "in_character": true,
+      "notes": {
+       "warmth": 10,
+       "fidelity": 5
+      },
+      "next": "n3_warm"
+     }
+    ]
+   },
+   "n3_rook": {
+    "speaker": "Silas",
+    "text": "Rook kept good clocks. Terrible teeth. Nothing to do with me, Doctor.",
+    "aside": "He hums four notes under his breath, and doesn't notice. Inside your head, a small, dry voice: \"Write that down.\"",
+    "tell": "hum",
+    "choices": [
+     {
+      "text": "(Say nothing. Pick up the mirror.)",
+      "next": "end_quiet"
+     }
+    ],
+    "claim": "silas_not_rook"
+   },
+   "n3_warm": {
+    "speaker": "Silas",
+    "text": "That's kind. Most days I forget it's there. Most days I forget a lot of things, and they're always the same things.",
+    "choices": [
+     {
+      "text": "(Smile. Pass him the mint tin.)",
+      "next": "end_quiet"
+     }
+    ]
+   },
+   "end_quiet": {
+    "speaker": "",
+    "text": "He pays in exact change, as always. At the door he stops and, without turning, waves at the lake.",
+    "end": true
+   }
   }
  },
  "bea": {
-  "npc": "bea", "who": "Bea Lindgren", "start": "n0",
+  "npc": "bea",
+  "who": "Bea Lindgren",
+  "start": "n0",
   "nodes": {
-   "n0": {"speaker": "Bea", "text": "You're early, hon.", "aside": "She presses a warm paper bag into your hands. Cinnamon. A note: \"Hope you stay.\"",
-          "choices": [
-            {"text": "\"Early for what?\"", "notes": {"curiosity": 12, "nerve": 5}, "suspicion": {"bea": 10}, "next": "n1"},
-            {"text": "\"You spoil me, Bea.\"", "in_character": true, "notes": {"warmth": 10, "fidelity": 6}, "next": "n2"}]},
-   "n1": {"speaker": "Bea", "text": "Oh, everything's a little early this year. Funny how it goes.", "evidence": "LF-009",
-          "choices": [{"text": "(Take the loaf. Notice she doesn't blink.)", "next": "end"}]},
-   "n2": {"speaker": "Bea", "text": "Somebody should. You've got a look about you, like you're about to do something brave.", "evidence": "LF-009",
-          "choices": [{"text": "(Laugh it off.)", "next": "end"}]},
-   "end": {"speaker": "", "text": "Not one cavity. Bea has never had a cavity.", "end": true}
+   "n0": {
+    "speaker": "Bea",
+    "text": "You're early, hon.",
+    "aside": "She presses a warm paper bag into your hands. Cinnamon. A note: \"Hope you stay.\"",
+    "choices": [
+     {
+      "text": "\"Early for what?\"",
+      "notes": {
+       "curiosity": 12,
+       "nerve": 5
+      },
+      "suspicion": {
+       "bea": 10
+      },
+      "next": "n1"
+     },
+     {
+      "text": "\"You spoil me, Bea.\"",
+      "in_character": true,
+      "notes": {
+       "warmth": 10,
+       "fidelity": 6
+      },
+      "next": "n2"
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Bea",
+    "text": "Oh, everything's a little early this year. Funny how it goes.",
+    "evidence": "LF-009",
+    "choices": [
+     {
+      "text": "(Take the loaf. Notice she doesn't blink.)",
+      "next": "end"
+     }
+    ],
+    "claim": "bea_baker"
+   },
+   "n2": {
+    "speaker": "Bea",
+    "text": "Somebody should. You've got a look about you, like you're about to do something brave.",
+    "evidence": "LF-009",
+    "choices": [
+     {
+      "text": "(Laugh it off.)",
+      "next": "end"
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "Not one cavity. Bea has never had a cavity.",
+    "end": true
+   }
   }
  },
  "cal": {
-  "npc": "cal", "who": "Cal Reyes", "start": "n0",
+  "npc": "cal",
+  "who": "Cal Reyes",
+  "start": "n0",
   "nodes": {
-   "n0": {"speaker": "Cal", "text": "Hi. Sorry, weird question. Do I know you?",
-          "choices": [
-            {"text": "\"Cal, it's Mags. You're due a cleaning.\"", "in_character": true, "notes": {"warmth": 5, "fidelity": 8}, "next": "n1"},
-            {"text": "\"I think... you might.\"", "in_character": false, "notes": {"candor": 15, "fidelity": -8}, "suspicion": {"cal": 10}, "next": "n1"}]},
-   "n1": {"speaker": "Cal", "text": "It says here, in my own handwriting: \"M. Pell. Dentist. Friend. Do not let her go.\" So that's you.",
-          "aside": "He turns the notebook towards you. The ink is fresh. Under it, in a different hand, someone has crossed out a word.", "evidence": "LF-015",
-          "choices": [
-            {"text": "\"Who crossed that out?\"", "notes": {"curiosity": 15}, "evidence": "LF-074", "next": "end"},
-            {"text": "\"Let's start with the cleaning.\"", "in_character": true, "notes": {"warmth": 5}, "next": "end"}]},
-   "end": {"speaker": "", "text": "Cal writes something small in the notebook as he leaves. You can't read it. You don't need to.", "end": true}
+   "n0": {
+    "speaker": "Cal",
+    "text": "Hi. Sorry, weird question. Do I know you?",
+    "choices": [
+     {
+      "text": "\"Cal, it's Mags. You're due a cleaning.\"",
+      "in_character": true,
+      "notes": {
+       "warmth": 5,
+       "fidelity": 8
+      },
+      "next": "n1"
+     },
+     {
+      "text": "\"I think... you might.\"",
+      "in_character": false,
+      "notes": {
+       "candor": 15,
+       "fidelity": -8
+      },
+      "suspicion": {
+       "cal": 10
+      },
+      "next": "n1"
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Cal",
+    "text": "It says here, in my own handwriting: \"M. Pell. Dentist. Friend. Do not let her go.\" So that's you.",
+    "aside": "He turns the notebook towards you. The ink is fresh. Under it, in a different hand, someone has crossed out a word.",
+    "evidence": "LF-015",
+    "choices": [
+     {
+      "text": "\"Who crossed that out?\"",
+      "notes": {
+       "curiosity": 15
+      },
+      "evidence": "LF-074",
+      "next": "end"
+     },
+     {
+      "text": "\"Let's start with the cleaning.\"",
+      "in_character": true,
+      "notes": {
+       "warmth": 5
+      },
+      "next": "end"
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "Cal writes something small in the notebook as he leaves. You can't read it. You don't need to.",
+    "end": true
+   }
   }
  }
 }

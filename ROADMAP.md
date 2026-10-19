@@ -20,6 +20,20 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - [ ] Save/load UI and autosave at each dusk
 - [x] Day 1 → Day 2 transition with the Notes card ("what you left behind"); Day 2 home for Jo is the next build
 
+## M1.5 — The investigation, the psyop and the sim (design: `02-gdd/02-investigation-psyop-sim-charter.md`)
+- [x] Sim kernel: 28 people, needs, schedules/autonomy, relationships, money, memory, rumours, restlessness, Decision/Strike, Gazette vs ledger (66 checks)
+- [x] Claims you can contradict with evidence from any body; "Show them something..." in conversation (6 claims)
+- [x] Evidence tampering: the Hush edits cards at dawn (targets what your unsealed Seals need); photographs in the Notebook; corrupt cards fail their Seals
+- [x] Drift (comfort is the trap), Alignment, Notoriety; the Prompter's lures vs Wren's truths; friendly drift label
+- [x] The Briefing (the false goal); Free Time (Sims-style actions incl. irrevocable Decisions); Town Report at dusk
+- [ ] Case file structure: per-victim timeline reconstruction and means/motive/opportunity grid; naming a suspect
+- [ ] Planted evidence with provenance (who left it, who gains); the four propaganda streams in play
+- [ ] The Room 9 trap (Lakeview Rest): the offered body; the Settling ending; its reveal
+- [ ] Sim depth: ~120 people (ambient walk-ons), jobs and wages, shops open/closed, weather, events, houses; sim state saved
+- [ ] Walk-on tells emerging from the sim (hums, damp cuffs) rather than scripted
+- [ ] Sim-driven Day content: consequences of your free-time acts (theft discovered, quarrels, rumour fallout) shown in later days' conversations
+- [ ] Drift tuning against a 15-day run; Settling threshold
+
 ## M2 — A world you can walk in
 - [ ] Third-person / diorama camera + character controller (touch stick + gamepad)
 - [ ] Terrain: ridge falling to a curved shoreline; streets that follow the contour
@@ -81,3 +95,4 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - 2026-10-19: Night, Case Board, Seal tests, the Slack; Day 1 loop playable end to end (S23, S25). Suites: core 101, dialogue 48, dental 23, board 13, town 9653, smoke OK.
 - 2026-10-19: Data-driven days (days.json); Days 2 and 3 playable; rhythm game, eavesdrop, Honesty Pull; robot-player smoke test plays Days 1-3 through the real UI. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 187, town 9653, smoke OK. Note: S30 (Day 1 was staged) is provable from Day 3 by tying the appointment book to the Prompt Book. Decide whether to gate it later.
 - 2026-10-19: Act I complete (Days 1-5): speech, radio, vault, Hymn choice; 11 seals reachable by Day 6 in the robot run. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 277, day45 29, town 9653, smoke OK. Fixed dark-on-dark text contrast on radio and night screens. Known: night search screens are a bare scatter of buttons; the Hymn's consequences (mood, suspicion, Slack text) exist but no Awakened NPC behaviour yet.
+- 2026-10-19: M1.5 started: sim kernel, claims, evidence tampering, drift/hints, Briefing, free time, Gazette. Suites (10): core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 278, day45 29, sim 66, investigation 55, town 9653, smoke OK (careful vs careless vs comfortable bots). New runner: `game/tests/run_all.sh` (syntax-checks every script first: a script parse error makes headless runs HANG, not fail).

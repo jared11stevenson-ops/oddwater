@@ -270,7 +270,8 @@
       "text": "(Nod. Remember.)",
       "next": "end"
      }
-    ]
+    ],
+    "claim": "fitz_nobody"
    },
    "end": {
     "speaker": "",

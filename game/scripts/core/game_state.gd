@@ -21,6 +21,14 @@ var remnants: RefCounted
 var town_mood := 60
 var ending := ""
 var flags: Dictionary = {}   # story flags: hymn_aired, delphine_resigned ...
+var claims: Dictionary = {}     # claim id -> "heard" | "cracked"
+var drift := 0.0               # the Hush winning: comfort. Hidden from the player as a friendly label
+var contentment := 0.0
+var alignment := 0.0           # played the person the way the clues say they were
+var notoriety := 0.0           # ruined or remade lives; the town talks
+var dawn_seals := 0
+var dawn_cracks := 0
+var dawn_photos := 0
 var honesty_pull := 0   # a child's fibs build up; at 100 the truth blurts out (resets each day)
 
 
@@ -48,9 +56,20 @@ func hush_strength() -> float:
 	return clampf(town_mood / 100.0, 0.0, 1.0)
 
 
+func cracked_count() -> int:
+	var n := 0
+	for k in claims:
+		if claims[k] == "cracked":
+			n += 1
+	return n
+
+
 func _enter_day() -> void:
 	notes = Notes.new()
 	honesty_pull = 0
+	dawn_seals = board.seals.size()
+	dawn_cracks = cracked_count()
+	dawn_photos = board.notebook.size()
 	var tool_id: String = current_life()["proof_tool"]
 	for l in lives:
 		board.set_tool(l["proof_tool"], false)
@@ -100,6 +119,52 @@ func apply_hymn(aired: bool) -> void:
 			suspicion.raise(npc, 10)   # the Awakened are watching you now
 
 
+func drift_label() -> String:
+	return "Sharp" if drift < 20.0 else ("Getting comfortable" if drift < 45.0 else ("Settled in" if drift < 70.0 else "At home"))
+
+
+## Dusk accounting. Playing a life well is pleasant, and pleasant is how the Hush wins.
+## in_mood: the controlled person's mood (0..100) from the sim.
+func close_day(in_mood: float, life_fidelity_bonus: float = 0.0) -> void:
+	var fid := float(notes.get_note("fidelity"))
+	# What keeps you awake is investigative progress today, not temperament.
+	var progress := float(board.seals.size() - dawn_seals) * 4.0 + float(cracked_count() - dawn_cracks) * 3.0 + float(board.notebook.size() - dawn_photos) * 0.8
+	var d := maxf(0.0, fid) / 8.0 + maxf(0.0, in_mood - 50.0) / 12.0 - progress
+	drift = clampf(drift + d, 0.0, 100.0)
+	contentment += maxf(0.0, in_mood - 40.0) * 0.1
+	if fid >= 15.0:
+		alignment += (fid / 10.0) + life_fidelity_bonus
+
+
+## The morning hush: it edits the case file in proportion to how calm the town is and how comfortable you've got.
+func hush_dawn() -> Array:
+	if day <= int(board.edit_cfg["grace_days"]):
+		return []
+	var strength := hush_strength() * (0.4 + drift / 100.0)
+	var n := int(round(strength * float(board.edit_cfg["max_per_dawn"]) * 2.0))
+	return board.hush_edit(seed_for_day(), mini(n, int(board.edit_cfg["max_per_dawn"])))
+
+
+func seed_for_day() -> int:
+	return hash("hush|%d|%d" % [day, board.evidence.size()])
+
+
+## Hints: Wren is a funny kid who tells you true things. The Prompter is calm, helpful, and steering you.
+func pick_hint() -> Dictionary:
+	var hints: Array = Data.load_json("hints.json")
+	var p_prompter := clampf(0.2 + drift / 100.0 * 0.7, 0.0, 0.9)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("hint|%d|%d" % [day, int(drift)])
+	var want_prompter := rng.randf() < p_prompter
+	var pool: Array = hints.filter(func(h): return (h["voice"] == "prompter") == want_prompter and int(h["day_min"]) <= day)
+	if pool.is_empty():
+		pool = hints.filter(func(h): return int(h["day_min"]) <= day)
+	var h: Dictionary = pool[rng.randi() % pool.size()]
+	if h["voice"] == "prompter":
+		flags["prompter_hints"] = int(flags.get("prompter_hints", 0)) + 1
+	return h
+
+
 func ending_for() -> String:
 	var order := ["fair_water", "low_water", "same_time_tomorrow"]
 	for key in order:
@@ -120,7 +185,7 @@ func ending_for() -> String:
 func to_dict() -> Dictionary:
 	return {"version": 1, "day": day, "phase": int(phase), "notes": notes.to_dict(),
 		"board": board.to_dict(), "suspicion": suspicion.values, "remnants": remnants.by_life,
-		"mood": town_mood, "ending": ending, "flags": flags}
+		"mood": town_mood, "ending": ending, "flags": flags, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -133,6 +198,8 @@ func load_dict(d: Dictionary) -> void:
 	town_mood = int(d["mood"])
 	ending = d["ending"]
 	flags = d.get("flags", {}).duplicate()
+	claims = d.get("claims", {}).duplicate()
+	drift = float(d.get("drift", 0.0)); contentment = float(d.get("contentment", 0.0)); alignment = float(d.get("alignment", 0.0)); notoriety = float(d.get("notoriety", 0.0))
 	_enter_day_tools_only()
 
 

@@ -11,17 +11,29 @@ var pins: Dictionary = {}           # LF id -> question
 var links: Array = []               # [a, b]
 var seals: Dictionary = {}          # S id -> day set
 var tools_available: Dictionary = {"any": true}
+var texts: Dictionary = {}        # evidence id -> the text the player currently sees
+var originals: Dictionary = {}    # evidence id -> the true text
+var edited: Dictionary = {}       # evidence id -> true while the Hush has altered it
+var notebook: Dictionary = {}     # evidence id -> photographed original (the Hush cannot reach it)
+var film_left := 3
+var edit_cfg: Dictionary = {}
 
 
 func _init() -> void:
 	seal_defs = Data.index_by(Data.load_json("seals.json"), "id")
 	ability_defs = Data.load_json("abilities.json")
+	edit_cfg = Data.load_json("hush_edits.json")
+	var ev: Dictionary = Data.load_json("evidence.json")
+	for id in ev:
+		originals[id] = ev[id]["text"]
+	film_left = int(edit_cfg["film_per_day"])
 
 
 func add_evidence(id: String) -> bool:
 	if evidence.has(id):
 		return false
 	evidence[id] = true
+	texts[id] = originals.get(id, id)
 	return true
 
 
@@ -58,6 +70,9 @@ func block_reason(seal_id: String) -> String:
 	for e in d["evidence"]:
 		if not pins.has(e):
 			return "needs_pinned:%s" % e
+	for e in d["evidence"]:
+		if edited.has(e):
+			return "corrupt:%s" % e
 	return ""
 
 
@@ -145,7 +160,7 @@ func has_ability(id: String) -> bool:
 
 
 func to_dict() -> Dictionary:
-	return {"evidence": evidence.keys(), "pins": pins, "links": links, "seals": seals}
+	return {"evidence": evidence.keys(), "pins": pins, "links": links, "seals": seals, "texts": texts, "edited": edited, "notebook": notebook, "film": film_left}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -157,3 +172,90 @@ func load_dict(d: Dictionary) -> void:
 	seals = {}
 	for k in d.get("seals", {}):
 		seals[k] = int(d["seals"][k])
+	texts = d.get("texts", {}).duplicate()
+	edited = d.get("edited", {}).duplicate()
+	notebook = d.get("notebook", {}).duplicate()
+	film_left = int(d.get("film", film_left))
+	for e in evidence.keys():
+		if not texts.has(e):
+			texts[e] = originals.get(e, e)
+
+
+# ------------------------------------------------------------------ evidence integrity (the Hush edits the case file)
+func swap_for(text: String) -> Array:
+	for s in edit_cfg["swaps"]:
+		if text.contains(s[0]):
+			return s
+	return []
+
+
+## Dawn: the Hush quietly alters up to `count` cards. It goes for what you are relying on: cards that
+## unsealed Seals still need come first. Photographed cards are safe. Deterministic for a seed.
+func hush_edit(seed: int, count: int) -> Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	var needed := {}
+	for sid in seal_defs:
+		if seals.has(sid):
+			continue
+		for e in seal_defs[sid]["evidence"]:
+			needed[e] = int(needed.get(e, 0)) + 1
+	var priority: Array = []
+	var rest: Array = []
+	for id in evidence.keys():
+		if edited.has(id) or notebook.has(id) or swap_for(originals.get(id, "")).is_empty():
+			continue
+		(priority if needed.has(id) else rest).append(id)
+	priority.sort_custom(func(a, b): return int(needed[a]) > int(needed[b]) or (needed[a] == needed[b] and a < b))
+	rest.sort()
+	var done: Array = []
+	for i in count:
+		var pick := ""
+		if not priority.is_empty():
+			pick = priority.pop_front()
+		elif not rest.is_empty():
+			pick = rest.pop_at(rng.randi() % rest.size())
+		else:
+			break
+		var s: Array = swap_for(originals[pick])
+		texts[pick] = String(originals[pick]).replace(s[0], s[1])
+		edited[pick] = true
+		done.append(pick)
+	return done
+
+
+func new_day_film() -> void:
+	film_left = int(edit_cfg["film_per_day"])
+
+
+## Photograph a card into the Notebook. Limited film each day.
+func photograph(id: String) -> bool:
+	if not evidence.has(id) or notebook.has(id) or film_left <= 0:
+		return false
+	notebook[id] = texts[id]   # what you see now is what you photograph: if it is already edited, you freeze the lie
+	film_left -= 1
+	return true
+
+
+## True if your photograph disagrees with what the card says now.
+func mismatch(id: String) -> bool:
+	return notebook.has(id) and notebook[id] != texts.get(id, "")
+
+
+func is_corrupt(id: String) -> bool:
+	return edited.has(id)
+
+
+## Restore a card to its true text: from a photograph taken before the edit, or by re-finding its source.
+func restore(id: String, from_source: bool = false) -> bool:
+	if not edited.has(id):
+		return false
+	if notebook.has(id) and notebook[id] == originals[id]:
+		texts[id] = originals[id]
+		edited.erase(id)
+		return true
+	if from_source:
+		texts[id] = originals[id]
+		edited.erase(id)
+		return true
+	return false

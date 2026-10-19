@@ -18,13 +18,17 @@ var bar: ProgressBar
 var text_label: Label
 var panel: PanelContainer
 var minute_btn: Button
+var hint_data: Dictionary = {}
 
 
-func setup(game_state: RefCounted, home_file: String, scale: float = 1.0) -> void:
+func setup(game_state: RefCounted, home_file: String, scale: float = 1.0, hint: Dictionary = {}) -> void:
 	state = game_state
 	home = Data.load_json(home_file)
 	timer_scale = scale
+	hint_data = hint
 	for it in home["items"]:
+		if float(it.get("requires_alignment", 0)) > state.alignment:
+			continue   # the town's lie is shaped to fit the person you're pretending to be
 		items[it["id"]] = it
 	time_total = float(state.tuning["search_seconds"]) * (timer_scale if timer_scale > 0.0 else 1.0)
 	time_left = time_total
@@ -45,6 +49,15 @@ func _build() -> void:
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", Color("f6ecd2"))
 	add_child(title)
+	if not hint_data.is_empty():
+		var hl := Label.new()
+		hl.text = ("A small voice: " if hint_data["voice"] == "wren" else "A calm voice: ") + hint_data["text"]
+		hl.position = Vector2(60, 190)
+		hl.custom_minimum_size = Vector2(1500, 0)
+		hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hl.add_theme_font_size_override("font_size", 26)
+		hl.add_theme_color_override("font_color", Color("f5b82e") if hint_data["voice"] == "wren" else Color("b8d8e8"))
+		add_child(hl)
 	bar = ProgressBar.new()
 	bar.position = Vector2(60, 140)
 	bar.size = Vector2(1100, 28)

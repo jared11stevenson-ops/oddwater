@@ -178,5 +178,25 @@
   "title": "The first stencil",
   "text": "Under Hank's paint: FAIR WATER, in blue.",
   "layer": "L4"
+ },
+ "LF-060": {
+  "title": "Silas's diary",
+  "text": "\"Awake. 14 June 1989. I am not who the sign says. I am nobody's clockmaker. I am Thaddeus Rook, and I have been asleep for twenty-seven years.\"",
+  "layer": "L4"
+ },
+ "LF-091": {
+  "title": "Casimir's last note",
+  "text": "\"9 Sept. If this is found, someone should feed the cat. And someone should ask Nell Ware what she was doing in Low Mercy at midnight.\"",
+  "layer": "L4"
+ },
+ "LF-062": {
+  "title": "Bea's recipe box",
+  "text": "A tin box of cards: loaf recipes on one side; on the back, a name and a date. Billie. Mags. Jo. Tobi.",
+  "layer": "L4"
+ },
+ "LF-058": {
+  "title": "Prompt Book: 1971",
+  "text": "\"B. Lindgren -> src. H. Voss. U/S on.\" A tick.",
+  "layer": "L4"
  }
 }

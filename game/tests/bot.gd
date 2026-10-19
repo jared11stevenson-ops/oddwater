@@ -4,16 +4,19 @@ extends RefCounted
 var main: Control
 var tree: SceneTree
 var log: Array = []
+var dull := false     # a comfortable player: lives the life, skips the investigating
+var careful := true   # a careful detective photographs evidence and presses contradictions
 
 
-func _init(m: Control, t: SceneTree) -> void:
+func _init(m: Control, t: SceneTree, careful_play: bool = true) -> void:
 	main = m
 	tree = t
+	careful = careful_play
 
 
 func screen() -> Control:
 	for c in main.ui.get_children():
-		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option"]:
+		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option", "do_action"]:
 			if c.has_method(method):
 				return c
 	return null
@@ -39,6 +42,8 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 			continue
 		if s.has_method("interact"):
 			for id in s.items.keys():
+				if dull and s.items[id]["kind"] not in ["pet", "role"]:
+					continue
 				s.interact(id)
 			s.finish(); log.append("snoop")
 		elif s.has_method("flag_tooth"):
@@ -56,9 +61,13 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 				if s.core.block_reason(sp["id"]) == "":
 					s.listen_spot(sp["id"])
 			s.finish(); log.append("eavesdrop")
+		elif s.has_method("tie_selected") and dull:
+			s.finished.emit(); log.append("board-skipped")
 		elif s.has_method("tie_selected"):
 			var ids: Array = main.state.board.evidence.keys()
 			ids.sort()
+			if careful:
+				_photograph_what_matters()
 			for id in ids:
 				main.state.board.pin(id, "what")
 			for i in ids.size() - 1:
@@ -77,6 +86,13 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 			while not s.core.finished() and k < 8:
 				s.choose_option(picks[k] if k < 4 else 0); k += 1
 			s.finish(); log.append("speech")
+		elif s.has_method("do_action"):
+			s.do_action("work", "")
+			s.do_action("eat", "")
+			var cs: Array = s.contacts()
+			if not cs.is_empty():
+				s.do_action("socialize", cs[0])
+			s.finish(); log.append("free")
 		elif s.has_method("pick_option"):
 			for i in s.core.slot_count():
 				s.pick_option(i, s.core.def["slots"][i]["correct"])
@@ -85,6 +101,30 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 			var g2 := 0
 			while not s.dlg.finished and g2 < 30:
 				s.pick(0); g2 += 1
+			if careful:
+				for cid in s.dlg.open_claims():
+					for eid in main.state.board.evidence.keys():
+						if s.dlg.claim_defs[cid]["contradicted_by"].has(eid):
+							s.dlg.present(eid)
 			s.finished.emit(s.npc); log.append("convo:" + s.npc)
 	log.append("max steps")
 	return false
+
+
+## Photograph (up to the film allowance) the cards that unsealed Seals still depend on, preferring ones the Hush can alter.
+func _photograph_what_matters() -> void:
+	var b: RefCounted = main.state.board
+	var need := {}
+	for sid in b.seal_defs:
+		if b.seals.has(sid):
+			continue
+		for e in b.seal_defs[sid]["evidence"]:
+			if b.evidence.has(e):
+				need[e] = int(need.get(e, 0)) + 1
+	var ids: Array = need.keys()
+	ids.sort_custom(func(a, c): return need[a] > need[c])
+	for id in ids:
+		if not b.swap_for(b.originals.get(id, "")).is_empty() and not b.notebook.has(id) and not b.is_corrupt(id):
+			b.photograph(id)
+	for id in b.edited.keys():
+		b.restore(id)

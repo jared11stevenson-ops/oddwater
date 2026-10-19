@@ -1,0 +1,9 @@
+{
+ "ticks_per_day": 36,
+ "day_start_hour": 6.0,
+ "tick_hours": 0.5,
+ "thin_weeks_restless_bonus": 0.7,
+ "base_restless": 0.5,
+ "rumor_distort": 0.1,
+ "mass_media_strength": 0.35
+}

@@ -14,6 +14,9 @@ var info: Label
 var ties_label: Label
 var seal_box: VBoxContainer
 var grid: GridContainer
+var film_label: Label
+var objective: Label
+var last_card := ""
 
 
 func setup(game_state: RefCounted) -> void:
@@ -31,9 +34,16 @@ func setup(game_state: RefCounted) -> void:
 	help.add_theme_font_size_override("font_size", 26)
 	help.add_theme_color_override("font_color", Color("4a3f7a"))
 	add_child(help)
+	objective = Label.new()
+	objective.text = "OBJECTIVE: get back to your own body. Find out what is happening to this town. Stop it.    (Mood: %s)" % state.drift_label()
+	objective.position = Vector2(70, 130)
+	objective.custom_minimum_size = Vector2(1780, 0)
+	objective.add_theme_font_size_override("font_size", 22)
+	objective.add_theme_color_override("font_color", Color("e23d3d"))
+	add_child(objective)
 	grid = GridContainer.new()
 	grid.columns = 4
-	grid.position = Vector2(70, 160)
+	grid.position = Vector2(70, 170)
 	grid.add_theme_constant_override("h_separation", 16)
 	grid.add_theme_constant_override("v_separation", 16)
 	add_child(grid)
@@ -47,6 +57,14 @@ func setup(game_state: RefCounted) -> void:
 		b.add_theme_font_size_override("font_size", 28)
 		b.pressed.connect(pin_selected.bind(q))
 		row.add_child(b)
+	var shot := Button.new(); shot.text = "Photograph"
+	shot.custom_minimum_size = Vector2(260, 84)
+	shot.add_theme_font_size_override("font_size", 28)
+	shot.pressed.connect(photograph_selected)
+	row.add_child(shot)
+	film_label = Label.new()
+	film_label.add_theme_font_size_override("font_size", 26)
+	row.add_child(film_label)
 	var tie := Button.new(); tie.text = "Tie together"
 	tie.custom_minimum_size = Vector2(260, 84)
 	tie.add_theme_font_size_override("font_size", 28)
@@ -83,6 +101,10 @@ func _card_text(id: String) -> String:
 	var s: String = d["title"]
 	if state.board.pins.has(id):
 		s += "\n[" + String(state.board.pins[id]).to_upper() + "?]"
+	if state.board.mismatch(id):
+		s += "\n(!) differs from your photograph"
+	elif state.board.notebook.has(id):
+		s += "\n(photographed)"
 	return s
 
 
@@ -106,6 +128,7 @@ func _refresh() -> void:
 	for l in state.board.links:
 		lines.append("%s  ———  %s" % [defs.get(l[0], {"title": l[0]})["title"], defs.get(l[1], {"title": l[1]})["title"]])
 	ties_label.text = ("Red strings:\n" + "\n".join(lines)) if not lines.is_empty() else "No strings yet."
+	film_label.text = "Film: %d" % state.board.film_left
 	for c in seal_box.get_children():
 		c.queue_free()
 	for sid in state.board.testable():
@@ -118,7 +141,36 @@ func _refresh() -> void:
 		seal_box.add_child(b)
 
 
+func read_card(id: String) -> void:
+	last_card = id
+	var d: Dictionary = defs.get(id, {"title": id})
+	var s: String = "%s: %s" % [d["title"], state.board.texts.get(id, "")]
+	if state.board.mismatch(id):
+		s += "\nYOUR PHOTOGRAPH SAYS: %s" % state.board.notebook[id]
+	info.text = s
+
+
+func photograph_selected() -> bool:
+	if selected.is_empty():
+		info.text = "Pick a card to photograph."
+		return false
+	var okp: bool = state.board.photograph(selected[0])
+	info.text = "Click. It's in the Notebook now." if okp else "No film left, or already photographed."
+	_refresh()
+	return okp
+
+
+## Put a corrupt card right, from its photograph.
+func restore_selected() -> bool:
+	if selected.is_empty():
+		return false
+	var r: bool = state.board.restore(selected[0])
+	_refresh()
+	return r
+
+
 func toggle_card(id: String) -> void:
+	read_card(id)
 	if selected.has(id):
 		selected.erase(id)
 	else:
@@ -151,7 +203,12 @@ func tie_selected() -> bool:
 
 
 func test_seal(sid: String) -> bool:
+	var why: String = state.board.block_reason(sid)
 	var sealed: bool = state.board.try_link_test(sid, state.day)
+	if why.begins_with("corrupt"):
+		info.text = "The strings don't hold. One of these doesn't say what you remember."
+		_refresh()
+		return false
 	if sealed:
 		info.text = "SEAL %s. %s" % [sid, state.board.seal_defs[sid]["truth"]]
 	else:

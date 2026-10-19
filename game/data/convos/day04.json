@@ -160,7 +160,8 @@
       }
      }
     ],
-    "evidence": "LF-068"
+    "evidence": "LF-068",
+    "claim": "hank_vandals"
    },
    "n2": {
     "speaker": "Hank",
@@ -268,7 +269,8 @@
       }
      }
     ],
-    "evidence": "LF-051"
+    "evidence": "LF-051",
+    "claim": "harlan_signed"
    },
    "n3": {
     "speaker": "Harlan",

@@ -1,0 +1,64 @@
+[
+ {
+  "voice": "wren",
+  "day_min": 1,
+  "text": "Okay. New mouth. Don't eat anything weird.",
+  "lure": false
+ },
+ {
+  "voice": "wren",
+  "day_min": 1,
+  "text": "That cat just bowed at you. Cats don't bow. Write that down.",
+  "lure": false
+ },
+ {
+  "voice": "wren",
+  "day_min": 2,
+  "text": "Hands. Look at your hands. They're always wet, aren't they? Told you.",
+  "lure": false
+ },
+ {
+  "voice": "wren",
+  "day_min": 3,
+  "text": "Kids notice everything. That's why they make us carry the lamp. Think about that.",
+  "lure": false
+ },
+ {
+  "voice": "wren",
+  "day_min": 2,
+  "text": "Check your board in the morning. Things... go missing from it. I don't know how I know that.",
+  "lure": false
+ },
+ {
+  "voice": "prompter",
+  "day_min": 1,
+  "text": "You are an investigator, and you are very close. Find your own body. Everything else is a distraction.",
+  "lure": true
+ },
+ {
+  "voice": "prompter",
+  "day_min": 1,
+  "text": "The baker is the one. She has the warmest smile and the longest list. Look in her recipe box.",
+  "lure": true,
+  "points_at": "bea"
+ },
+ {
+  "voice": "prompter",
+  "day_min": 2,
+  "text": "Settle in. Enjoy the life you've been given. You'll think better rested. There is no hurry.",
+  "lure": true
+ },
+ {
+  "voice": "prompter",
+  "day_min": 3,
+  "text": "Room 9, Lakeview Rest. That's where you are. That's where it ends. Go home.",
+  "lure": true
+ },
+ {
+  "voice": "prompter",
+  "day_min": 2,
+  "text": "Don't trust the radio. Don't trust the old man with the clocks. Trust me.",
+  "lure": true,
+  "points_at": "silas"
+ }
+]

@@ -6,6 +6,9 @@ signal finished(npc: String)
 const Dialogue = preload("res://scripts/core/dialogue.gd")
 
 var dlg: RefCounted
+var gstate: RefCounted
+var evid_box: VBoxContainer
+var evid_defs: Dictionary = {}
 var npc := ""
 var who_label: Label
 var text_label: Label
@@ -15,6 +18,8 @@ var box: VBoxContainer
 
 func setup(state: RefCounted, file: String, id: String) -> void:
 	dlg = Dialogue.new()
+	gstate = state
+	evid_defs = load("res://scripts/core/data.gd").load_json("evidence.json")
 	dlg.start(state, file, id)
 	npc = dlg.convo["npc"]
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -31,6 +36,11 @@ func setup(state: RefCounted, file: String, id: String) -> void:
 	who_label = _label(v, 40, Color("e23d3d"))
 	text_label = _label(v, 38, Color("14121c"))
 	aside_label = _label(v, 28, Color("4a3f7a"))
+	evid_box = VBoxContainer.new()
+	evid_box.position = Vector2(1100, 330)
+	evid_box.add_theme_constant_override("separation", 6)
+	evid_box.visible = false
+	add_child(evid_box)
 	box = VBoxContainer.new()
 	box.position = Vector2(140, 560)
 	box.custom_minimum_size = Vector2(1640, 0)
@@ -65,6 +75,13 @@ func _show() -> void:
 		b.grab_focus()
 		return
 	var cs: Array = dlg.choices()
+	if not gstate.board.evidence.is_empty():
+		var eb := Button.new(); eb.text = "Show them something..."
+		eb.custom_minimum_size = Vector2(1640, 80)
+		eb.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		eb.add_theme_font_size_override("font_size", 28)
+		eb.pressed.connect(open_evidence)
+		box.add_child(eb)
 	for i in cs.size():
 		var b := Button.new(); b.text = cs[i]["text"]
 		b.custom_minimum_size = Vector2(1640, 96)   # big target, one-thumb
@@ -73,9 +90,34 @@ func _show() -> void:
 		b.pressed.connect(pick.bind(i))
 		box.add_child(b)
 	if box.get_child_count() > 0:
-		(box.get_child(0) as Button).grab_focus.call_deferred()
+		(box.get_child(box.get_child_count() - cs.size() if cs.size() > 0 else 0) as Button).grab_focus.call_deferred()
 
 
 func pick(i: int) -> void:
 	dlg.choose(i)
 	_show()
+
+
+func open_evidence() -> void:
+	evid_box.visible = not evid_box.visible
+	for c in evid_box.get_children():
+		c.queue_free()
+	if not evid_box.visible:
+		return
+	var ids: Array = gstate.board.evidence.keys()
+	ids.sort()
+	for id in ids.slice(0, 12):
+		var b := Button.new()
+		b.text = evid_defs.get(id, {"title": id})["title"]
+		b.custom_minimum_size = Vector2(700, 54)
+		b.add_theme_font_size_override("font_size", 22)
+		b.pressed.connect(show_evidence.bind(id))
+		evid_box.add_child(b)
+
+
+## Press the point with a card. The answer comes back as a line in the aside slot.
+func show_evidence(id: String) -> Dictionary:
+	var r: Dictionary = dlg.present(id)
+	aside_label.text = r["text"]
+	evid_box.visible = false
+	return r

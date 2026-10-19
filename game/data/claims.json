@@ -1,0 +1,64 @@
+{
+ "silas_not_rook": {
+  "npc": "silas",
+  "text": "\"Rook kept good clocks. Terrible teeth. Nothing to do with me, Doctor.\"",
+  "contradicted_by": [
+   "LF-056"
+  ],
+  "crack": "He is very quiet for a moment. \"You could have just asked,\" he says. \"It's Thaddeus. I'm... his. Don't tell Nell I said so.\"",
+  "reveals": "LF-060",
+  "suspicion": 20
+ },
+ "dolores_no_212": {
+  "npc": "dolores",
+  "text": "\"There was never a Hymn 212. A hymnal is a list in order.\"",
+  "contradicted_by": [
+   "LF-040",
+   "LF-069"
+  ],
+  "crack": "\"...It was retired. We retired it. That is not the same as never.\" Her hands are shaking. \"Please. Not in front of the flowers.\"",
+  "reveals": "",
+  "suspicion": 25
+ },
+ "hank_vandals": {
+  "npc": "hank",
+  "text": "\"Kids. Vandals. FAIR WATER, in blue.\"",
+  "contradicted_by": [
+   "LF-048"
+  ],
+  "crack": "\"Older than June,\" he says, slowly. \"Older than me. It was there when my aunt painted the Chapel hall. Why was I scraping it off?\"",
+  "reveals": "",
+  "suspicion": 15
+ },
+ "harlan_signed": {
+  "npc": "harlan",
+  "text": "\"My father signed it. I held the pen.\"",
+  "contradicted_by": [
+   "LF-051"
+  ],
+  "crack": "\"Both. We both did. He wrote the number. I wrote her name. Hattie. It looks so small, in green.\"",
+  "reveals": "",
+  "suspicion": 5
+ },
+ "bea_baker": {
+  "npc": "bea",
+  "text": "\"Everything's a little early this year. Funny how it goes.\"",
+  "contradicted_by": [
+   "LF-062",
+   "LF-058"
+  ],
+  "crack": "She sets down the loaf. \"You're wearing her very well,\" she says, softly. \"Hon. We should talk.\"",
+  "reveals": "",
+  "suspicion": 30
+ },
+ "fitz_nobody": {
+  "npc": "fitz",
+  "text": "\"Nobody. A man I'm telling a story about. Different bar.\"",
+  "contradicted_by": [
+   "LF-040"
+  ],
+  "crack": "The glass stops turning. \"Four notes,\" Fitz says. \"I hum them in my sleep. I don't know why. A man called Ambrose runs a bar that isn't here.\"",
+  "reveals": "",
+  "suspicion": 20
+ }
+}

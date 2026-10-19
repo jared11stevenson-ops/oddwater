@@ -1,0 +1,47 @@
+{
+ "swaps": [
+  [
+   "Fair water",
+   "Fair weather"
+  ],
+  [
+   "212",
+   "112"
+  ],
+  [
+   "913",
+   "931"
+  ],
+  [
+   "Rook",
+   "Brook"
+  ],
+  [
+   "Casimir",
+   "Casimer"
+  ],
+  [
+   "1961",
+   "1951"
+  ],
+  [
+   "Pell",
+   "Bell"
+  ],
+  [
+   "Hattie",
+   "Hettie"
+  ],
+  [
+   "412",
+   "421"
+  ],
+  [
+   "Amos",
+   "Amon"
+  ]
+ ],
+ "film_per_day": 3,
+ "grace_days": 2,
+ "max_per_dawn": 2
+}

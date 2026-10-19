@@ -13,10 +13,14 @@ const SpeechUI = preload("res://scripts/ui/speech_ui.gd")
 const RadioUI = preload("res://scripts/ui/radio_ui.gd")
 const BoardUI = preload("res://scripts/ui/board_ui.gd")
 const SlackUI = preload("res://scripts/ui/slack_ui.gd")
+const FreeUI = preload("res://scripts/ui/free_ui.gd")
+const SimWorld = preload("res://scripts/sim/sim_world.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
 const POST := preload("res://shaders/page_post.gdshader")
 
 var state: RefCounted
+var sim: RefCounted
+var briefed := false
 var days: Dictionary
 var snoop: Control
 var queue: Array = []
@@ -28,6 +32,7 @@ var lenient := 1.0            # accessibility: rhythm timing leniency
 
 func _ready() -> void:
 	state = GameState.new()
+	sim = SimWorld.new(1961)
 	days = Data.load_json("days.json")
 	stage = Control.new()
 	stage.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -93,15 +98,33 @@ func _title() -> void:
 	_clear()
 	_bg(Color("f1dfc0"))
 	_text("UNDERSTUDY\n\nEvery morning someone in Little Mercy vanishes.\nEvery morning you wake up as them.", Vector2(300, 300), 48)
-	_button("Wake up", Vector2(300, 700), start_day, 360.0)
+	_button("Wake up", Vector2(300, 700), _briefing, 360.0)
+
+
+## The Briefing: the goal the player is handed. It is a role. (See 02-gdd/02-investigation-psyop-sim-charter.md.)
+func _briefing() -> void:
+	if briefed:
+		start_day()
+		return
+	briefed = true
+	_clear()
+	_bg(Color("0e0d1a"))
+	_text("A CALM VOICE, IN YOUR HEAD:\n\n\"You are an investigator from outside. People have been disappearing from Little Mercy, and you came to find out why. Something has put you into other people's bodies, one a day. Your own body is somewhere in this town.\n\nFind it. Find out what is happening. Stop it.\n\nYou are very close. Nobody must notice.\"", Vector2(240, 220), 38, Color("b8d8e8"))
+	_button("Open your eyes", Vector2(240, 800), start_day)
 
 
 func start_day() -> void:
 	_clear()
 	_bg(Color("2b2a3a"))
+	var life: Dictionary = state.current_life()
+	sim.start_day()
+	sim.take_control(life["id"])
+	state.board.new_day_film()
+	if state.day > 1:
+		state.hush_dawn()   # overnight, quietly, the Hush edits your case file
 	snoop = Snoop.new()
 	ui.add_child(snoop)
-	snoop.setup(state, day_def()["home"])
+	snoop.setup(state, day_def()["home"], 1.0, state.pick_hint())
 	snoop.finished.connect(_perform)
 
 
@@ -141,6 +164,8 @@ func _next_step() -> void:
 				"radio": _radio(s)
 				_:
 					_next_step()
+		"free_time":
+			_free()
 		"event":
 			if s["kind"] == "hymn":
 				_hymn()
@@ -192,6 +217,15 @@ func _eavesdrop(step: Dictionary) -> void:
 	ui.add_child(e)
 	e.setup(state, step["map"])
 	e.finished.connect(func(_r): _next_step())
+
+
+func _free() -> void:
+	_clear()
+	_bg(Color("efe4c8"))
+	var f := FreeUI.new()
+	ui.add_child(f)
+	f.setup(state, sim, state.current_life()["id"])
+	f.finished.connect(func(_r): _next_step())
 
 
 func _speech(step: Dictionary) -> void:
@@ -259,14 +293,29 @@ func _stamp(seal: String, verdict: String) -> void:
 
 # ---------------------------------------------------------------- step off / night
 func _step_off() -> void:
+	var life: Dictionary = state.current_life()
+	var person: RefCounted = sim.people[life["id"]]
+	state.close_day(person.mood())
+	sim.release_control(state.notes.to_dict())
+	sim.simulate_rest_of_day()      # the town carries on without you
 	state.advance()   # PERFORM -> STEP_OFF
 	state.advance()   # STEP_OFF -> NIGHT (Remnant forms)
 	_clear()
 	_bg(Color("2b2a3a"))
-	var life: Dictionary = state.current_life()
 	var r: Dictionary = state.remnants.by_life[life["id"]]["notes"]
 	_text("Dusk. You step out of %s's life.\n\nThey stay behind, and they're now a little:\n%s\n\nSomeone tied a red ribbon on your door. Who?" % [life["name"].split(" ")[0], _describe(r)], Vector2(260, 220), 40, Color("f6ecd2"))
-	_button("Night", Vector2(260, 800), _night)
+	_button("Read the Gazette", Vector2(260, 800), _report, 620.0)
+
+
+## The Town Report: the Gazette (a propaganda organ) and, underneath, what actually happened.
+func _report() -> void:
+	_clear()
+	_bg(Color("e8dcc0"))
+	var gaz: Array = sim.gazette()
+	var led: Array = sim.ledger().filter(func(s): return not s.contains("rumour about") or true).slice(0, 8)
+	_text("THE MERCY GAZETTE\n\n" + "\n".join(gaz.slice(0, 6)), Vector2(200, 100), 38)
+	_text("What you actually saw:\n" + ("\n".join(led) if not led.is_empty() else "(nothing out of the ordinary. Or nothing you were able to see.)"), Vector2(200, 500), 26, Color("4a3f7a"), 1500.0)
+	_button("Night", Vector2(200, 900), _night)
 
 
 func _night() -> void:
@@ -319,6 +368,7 @@ func _slack() -> void:
 	_clear()
 	_bg(Color("14121c"))
 	state.advance()   # NIGHT -> SLACK
+	var gone: Array = sim.slack()
 	var next_life: Dictionary = state.lives[state.day]
 	var s := SlackUI.new()
 	ui.add_child(s)
@@ -326,6 +376,8 @@ func _slack() -> void:
 	var se: Dictionary = day_def().get("slack_extra", {})
 	if not se.is_empty():
 		extra = se.get("hymn_aired" if state.flags.get("hymn_aired", false) else "hymn_declined", [])
+	for id in gone:
+		extra.append("%s is gone. By morning the Gazette will say they have relocated." % sim.people[id].display)
 	s.setup(next_life, next_life["decision_time"], extra)
 	s.finished.connect(_new_day)
 

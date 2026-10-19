@@ -1,0 +1,218 @@
+[
+ {
+  "a": "delphine",
+  "b": "june",
+  "affinity": 70,
+  "trust": 60
+ },
+ {
+  "a": "delphine",
+  "b": "harlan",
+  "affinity": 40,
+  "trust": 30
+ },
+ {
+  "a": "adaeze",
+  "b": "tobi",
+  "affinity": 90,
+  "trust": 90
+ },
+ {
+  "a": "daniel",
+  "b": "tobi",
+  "affinity": 90,
+  "trust": 90
+ },
+ {
+  "a": "adaeze",
+  "b": "daniel",
+  "affinity": 65,
+  "trust": 60
+ },
+ {
+  "a": "roy",
+  "b": "daniel",
+  "affinity": 55,
+  "trust": 40
+ },
+ {
+  "a": "roy",
+  "b": "tobi",
+  "affinity": 75,
+  "trust": 60
+ },
+ {
+  "a": "jo",
+  "b": "lux",
+  "affinity": 85,
+  "trust": 80
+ },
+ {
+  "a": "jo",
+  "b": "daniel",
+  "affinity": 60,
+  "trust": 60
+ },
+ {
+  "a": "jo",
+  "b": "tobi",
+  "affinity": 70,
+  "trust": 60
+ },
+ {
+  "a": "bea",
+  "b": "billie",
+  "affinity": 80,
+  "trust": 60
+ },
+ {
+  "a": "bea",
+  "b": "hank",
+  "affinity": 60,
+  "trust": 30
+ },
+ {
+  "a": "mags",
+  "b": "priya",
+  "affinity": 70,
+  "trust": 70
+ },
+ {
+  "a": "mags",
+  "b": "vern",
+  "affinity": 65,
+  "trust": 65
+ },
+ {
+  "a": "mags",
+  "b": "cal",
+  "affinity": 65,
+  "trust": 65
+ },
+ {
+  "a": "priya",
+  "b": "vern",
+  "affinity": 65,
+  "trust": 60
+ },
+ {
+  "a": "priya",
+  "b": "cal",
+  "affinity": 60,
+  "trust": 60
+ },
+ {
+  "a": "vern",
+  "b": "cal",
+  "affinity": 60,
+  "trust": 60
+ },
+ {
+  "a": "gus",
+  "b": "marcus",
+  "affinity": 70,
+  "trust": 70
+ },
+ {
+  "a": "silas",
+  "b": "tobi",
+  "affinity": 55,
+  "trust": 50
+ },
+ {
+  "a": "dolores",
+  "b": "ellis",
+  "affinity": 60,
+  "trust": 50
+ },
+ {
+  "a": "dolores",
+  "b": "hank",
+  "affinity": 55,
+  "trust": 50
+ },
+ {
+  "a": "nell",
+  "b": "ellis",
+  "affinity": 75,
+  "trust": 60
+ },
+ {
+  "a": "nell",
+  "b": "ottoline",
+  "affinity": -40,
+  "trust": 10
+ },
+ {
+  "a": "silas",
+  "b": "dolores",
+  "affinity": -20,
+  "trust": 10
+ },
+ {
+  "a": "bea",
+  "b": "nell",
+  "affinity": 15,
+  "trust": 10
+ },
+ {
+  "a": "hank",
+  "b": "june",
+  "affinity": -25,
+  "trust": 10
+ },
+ {
+  "a": "inez",
+  "b": "tobi",
+  "affinity": 65,
+  "trust": 55
+ },
+ {
+  "a": "inez",
+  "b": "june",
+  "affinity": 60,
+  "trust": 50
+ },
+ {
+  "a": "fitz",
+  "b": "lux",
+  "affinity": 55,
+  "trust": 40
+ },
+ {
+  "a": "connie",
+  "b": "cal",
+  "affinity": 45,
+  "trust": 45
+ },
+ {
+  "a": "dottie",
+  "b": "cal",
+  "affinity": 50,
+  "trust": 45
+ },
+ {
+  "a": "harlan",
+  "b": "ottoline",
+  "affinity": 20,
+  "trust": 20
+ },
+ {
+  "a": "mags",
+  "b": "delphine",
+  "affinity": 40,
+  "trust": 30
+ },
+ {
+  "a": "silas",
+  "b": "nell",
+  "affinity": 30,
+  "trust": 20
+ },
+ {
+  "a": "oren",
+  "b": "delphine",
+  "affinity": 35,
+  "trust": 30
+ }
+]

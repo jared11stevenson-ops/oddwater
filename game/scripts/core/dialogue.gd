@@ -8,6 +8,7 @@ var convo: Dictionary
 var node_id := ""
 var finished := false
 var tells: Array = []
+var claim_defs: Dictionary = {}
 
 
 func start(game_state: RefCounted, file: String, id: String) -> Dictionary:
@@ -15,6 +16,8 @@ func start(game_state: RefCounted, file: String, id: String) -> Dictionary:
 	convo = Data.load_json("convos/" + file)[id]
 	node_id = convo["start"]
 	finished = false
+	claim_defs = Data.load_json("claims.json")
+	_arrive()
 	return current()
 
 
@@ -70,6 +73,7 @@ func choose(i: int) -> Dictionary:
 		state.board.add_evidence(n["evidence"])
 	if n.has("tell"):
 		tells.append(n["tell"])
+	_arrive_claim(n)
 	if n.get("end", false):
 		finished = true
 	return n
@@ -77,3 +81,47 @@ func choose(i: int) -> Dictionary:
 
 func staged_test(npc: String) -> bool:
 	return state.suspicion.stages_test(npc)
+
+
+func _arrive() -> void:
+	_arrive_claim(current())
+
+
+func _arrive_claim(n: Dictionary) -> void:
+	if n.has("claim") and not state.claims.has(n["claim"]):
+		state.claims[n["claim"]] = "heard"
+
+
+## Press the point: show this person a piece of evidence. Works in any body, in any later conversation.
+## Returns {result: "crack" | "nothing" | "corrupt", text, claim?}.
+func present(evidence_id: String) -> Dictionary:
+	var npc: String = convo["npc"]
+	if not state.board.evidence.has(evidence_id):
+		return {"result": "nothing", "text": "You don't have that."}
+	if state.board.is_corrupt(evidence_id):
+		state.suspicion.raise(npc, 10)
+		return {"result": "corrupt", "text": "They read it. They shake their head. \"That's not what it says.\" (Something is wrong with your card.)"}
+	for cid in state.claims:
+		var c: Dictionary = claim_defs.get(cid, {})
+		if c.is_empty() or c["npc"] != npc or state.claims[cid] != "heard":
+			continue
+		if c["contradicted_by"].has(evidence_id):
+			state.claims[cid] = "cracked"
+			state.suspicion.raise(npc, int(c["suspicion"]))
+			state.notes.add("candor", 5)
+			state.notes.add("nerve", 5)
+			if c["reveals"] != "":
+				state.board.add_evidence(c["reveals"])
+			return {"result": "crack", "text": c["crack"], "claim": cid}
+	state.suspicion.raise(npc, 5)
+	return {"result": "nothing", "text": "That doesn't prove anything. They look at you a little longer than before."}
+
+
+## Claims this person has made that you could still contradict (for the UI).
+func open_claims() -> Array:
+	var out: Array = []
+	for cid in state.claims:
+		var c: Dictionary = claim_defs.get(cid, {})
+		if not c.is_empty() and c["npc"] == convo["npc"] and state.claims[cid] == "heard":
+			out.append(cid)
+	return out
