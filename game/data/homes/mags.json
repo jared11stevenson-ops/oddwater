@@ -1,0 +1,19 @@
+{
+ "life": "mags",
+ "title": "Tuesday, 6:31 a.m.",
+ "intro": "A bedroom you have never seen. It knows you.",
+ "items": [
+  {"id":"ribbon","label":"Red ribbon on the doorknob","kind":"role","x":120,"y":380,"text":"A bit of red ribbon, tied in a neat bow. Not Mags's style. Somebody was here before you woke up.","note":["curiosity",10]},
+  {"id":"mirror","label":"Mirror","kind":"mirror","x":1560,"y":300,"text":"A tired, kind face. Fingertips pruned like you've been in the bath for hours. They don't smooth out.","note":["curiosity",5]},
+  {"id":"bicuspid","label":"Bicuspid (cat)","kind":"pet","x":760,"y":760,"text":"The orange cat looks up, then bows his head all the way to the floor. Then he leads you to an empty bowl, as if you owe him breakfast.","note":["warmth",10]},
+  {"id":"bowl","label":"Cat bowl","kind":"decoy","x":960,"y":820,"text":"BICUSPID, in marker. 'Feed 7:15 sharp.' It is 6:32. You have time to be a good person.","note":["warmth",5]},
+  {"id":"drawer","label":"Locked bottom drawer","kind":"prop","x":300,"y":560,"text":"The key is taped under the drawer. Inside: eleven names on a list, each with a tick, and a box of yellow X-ray envelopes marked PELL, C.","evidence":"LF-019","note":["curiosity",15]},
+  {"id":"bible","label":"Bible on the nightstand","kind":"prop","x":520,"y":330,"text":"Tucked in the pages: a one-way ticket on the 6:40 launch. Not for today. For Wednesday.","evidence":"LF-021","note":["curiosity",10]},
+  {"id":"book","label":"Appointment book","kind":"prop","x":1180,"y":520,"text":"Eight patients, nine o'clock to four. The handwriting is Mags's, nearly. The ink is a different pen, and the loops lean the other way.","evidence":"LF-071","note":["curiosity",15]},
+  {"id":"phone","label":"Phone","kind":"role","x":1400,"y":700,"text":"One unplayed voicemail from Priya: 'Don't go before Thursday. Please. I think I found the pattern.'","evidence":"LF-018","note":["candor",5]},
+  {"id":"photo","label":"Framed photograph","kind":"role","x":1000,"y":260,"text":"An old man in a dentist's chair. 'C. Pell, 1958.' The window behind him is exactly the window in your office.","note":["curiosity",10]},
+  {"id":"fridge","label":"Fridge note","kind":"decoy","x":1700,"y":620,"text":"THU - INDEX? with a little tooth sticker. Below it, a magnet: POP. 913.","evidence":"LF-011","note":["curiosity",5]},
+  {"id":"suitcase","label":"Half-packed suitcase","kind":"decoy","x":380,"y":820,"text":"Seven pairs of socks and one very serious toothbrush. Someone was leaving and trying not to look like it.","note":["candor",5]},
+  {"id":"plant","label":"Sad houseplant","kind":"decoy","x":1560,"y":860,"text":"A fern with the energy of a Monday. You water it. It does not say thank you but you feel seen.","note":["warmth",5]}
+ ]
+}

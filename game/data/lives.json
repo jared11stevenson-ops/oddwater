@@ -1,0 +1,237 @@
+[
+ {
+  "day": 1,
+  "id": "mags",
+  "name": "Mags Pell",
+  "role": "Dentist",
+  "age": 44,
+  "decision": "Sell the practice and leave town",
+  "pet": "Bicuspid",
+  "pet_reaction": "bows to the floor",
+  "bleed": "Open wide; studies mouths",
+  "proof_tool": "dental_overlay",
+  "resonance": "Casimir Pell, 63",
+  "habits": [
+   "hums while working",
+   "calls people friend"
+  ]
+ },
+ {
+  "day": 2,
+  "id": "jo",
+  "name": "Jo Brask",
+  "role": "Drummer",
+  "age": 31,
+  "decision": "Take the touring slot",
+  "pet": "Lemmy",
+  "pet_reaction": "drums the Reply on the cage bar",
+  "bleed": "Taps tables; counts people in",
+  "proof_tool": "reply",
+  "resonance": "Gideon Brask, 19",
+  "habits": [
+   "says sorry to furniture",
+   "makes pancakes at 3pm"
+  ]
+ },
+ {
+  "day": 3,
+  "id": "tobi",
+  "name": "Tobi Okafor-Marsh",
+  "role": "Nine-year-old",
+  "age": 9,
+  "decision": "Refuse the lamp",
+  "pet": "Sir Hours",
+  "pet_reaction": "raises a front foot and waves",
+  "bleed": "Asks why; recites Facts",
+  "proof_tool": "small_paths",
+  "resonance": "Amos Marsh, 9",
+  "habits": [
+   "double-knots shoes",
+   "corrects adults"
+  ]
+ },
+ {
+  "day": 4,
+  "id": "delphine",
+  "name": "Delphine Pruitt",
+  "role": "Mayor",
+  "age": 58,
+  "decision": "Resign after the Raising",
+  "pet": "Gavel",
+  "pet_reaction": "howls once and lies on your feet",
+  "bleed": "Neighbors...; two-handed handshake",
+  "proof_tool": "vault_key",
+  "resonance": "Hattie Pruitt, 31",
+  "habits": [
+   "opens with nothing to report",
+   "remembers every child's name"
+  ]
+ },
+ {
+  "day": 5,
+  "id": "vern",
+  "name": "Vern Castellano",
+  "role": "Radio host",
+  "age": 68,
+  "decision": "Retire and close with Hymn 212",
+  "pet": "Static",
+  "pet_reaction": "presses against the speaker",
+  "bleed": "That was...; talks to invisible microphones",
+  "proof_tool": "reel",
+  "resonance": "Lowell Page, 40",
+  "habits": [
+   "bow ties",
+   "records alphabetised"
+  ]
+ },
+ {
+  "day": 6,
+  "id": "gus",
+  "name": "Gus Tamm",
+  "role": "Launch captain",
+  "age": 67,
+  "decision": "Cross and scatter Ingrid",
+  "pet": "Port",
+  "pet_reaction": "salutes with a paw",
+  "bleed": "Mind the gap, ballast",
+  "proof_tool": "launch",
+  "resonance": "Anders Tamm, 54",
+  "habits": [
+   "names the waves",
+   "calls passengers ballast"
+  ]
+ },
+ {
+  "day": 7,
+  "id": "priya",
+  "name": "Priya Nandakumar",
+  "role": "Librarian",
+  "age": 36,
+  "decision": "Quit for the fellowship",
+  "pet": "Footnote",
+  "pet_reaction": "presses to the glass, gills flared",
+  "bleed": "Source?",
+  "proof_tool": "index",
+  "resonance": "Dorothea Hale, 14",
+  "habits": [
+   "speaks in footnotes",
+   "taped glasses"
+  ]
+ },
+ {
+  "day": 8,
+  "id": "marcus",
+  "name": "Marcus Dellacroix",
+  "role": "Funeral director",
+  "age": 47,
+  "decision": "New sign and a real funeral",
+  "pet": "Parsley",
+  "pet_reaction": "stands and waves both paws",
+  "bleed": "My condolences; lowers voice",
+  "proof_tool": "examination",
+  "resonance": "Augustin Dellacroix, 52",
+  "habits": [
+   "impeccable dress",
+   "dry humour"
+  ]
+ },
+ {
+  "day": 9,
+  "id": "billie",
+  "name": "Billie Achterberg",
+  "role": "Diner cook",
+  "age": 52,
+  "decision": "Propose to Bea",
+  "pet": "Gerald",
+  "pet_reaction": "stands on one leg and bows",
+  "bleed": "Order up; calls everyone hon",
+  "proof_tool": "counter",
+  "resonance": "Posy Achterberg, 34",
+  "habits": [
+   "never sits",
+   "fast sarcasm"
+  ]
+ },
+ {
+  "day": 10,
+  "id": "inez",
+  "name": "Inez Calloway",
+  "role": "Teacher",
+  "age": 34,
+  "decision": "Resign and open a Saturday school",
+  "pet": "Professor Crumb",
+  "pet_reaction": "stops the wheel and stands",
+  "bleed": "Clap-clap eyes on me",
+  "proof_tool": "scrape",
+  "resonance": "Lucille Ashby, 26",
+  "habits": [
+   "sings at transitions",
+   "use your words"
+  ]
+ },
+ {
+  "day": 11,
+  "id": "dottie",
+  "name": "Dottie Fenn",
+  "role": "Pet groomer",
+  "age": 49,
+  "decision": "Keep the Lake Dog",
+  "pet": "Gloria",
+  "pet_reaction": "leans on you facing the lake",
+  "bleed": "Baby talk to everything",
+  "proof_tool": "dog_book",
+  "resonance": "Pearl Aldous, 36",
+  "habits": [
+   "lavender scent",
+   "treats in pockets"
+  ]
+ },
+ {
+  "day": 12,
+  "id": "oren",
+  "name": "Oren Haldane",
+  "role": "Dam operator",
+  "age": 55,
+  "decision": "Request transfer with true readings",
+  "pet": "Datum",
+  "pet_reaction": "bows and stays silent",
+  "bleed": "Within tolerance",
+  "proof_tool": "gauge",
+  "resonance": "Walter Haldane, 48",
+  "habits": [
+   "reads numbers aloud",
+   "checks gauges"
+  ]
+ },
+ {
+  "day": 13,
+  "id": "ellis",
+  "name": "Ellis Ware",
+  "role": "Pastor",
+  "age": 58,
+  "decision": "Resign as the Voice",
+  "pet": "Verse",
+  "pet_reaction": "howls the Hymn's tonic",
+  "bleed": "Pauses mid-sentence; Let us",
+  "proof_tool": "pause",
+  "resonance": "Ruth Ware, 34",
+  "habits": [
+   "bakes bad bread",
+   "one-beat pause"
+  ]
+ },
+ {
+  "day": 14,
+  "id": "prop_room",
+  "name": "The Prop Room",
+  "role": "Nobody",
+  "age": 0,
+  "decision": "",
+  "pet": "",
+  "pet_reaction": "",
+  "bleed": "",
+  "proof_tool": "prop_room",
+  "resonance": "Wren Aldous, 9",
+  "habits": []
+ }
+]

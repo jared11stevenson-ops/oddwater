@@ -1,0 +1,309 @@
+[
+ {
+  "id": "S01",
+  "truth": "\"Same time tomorrow\" is a call across a valley",
+  "layer": "L1",
+  "tool": "any",
+  "evidence": [
+   "LF-004",
+   "LF-033"
+  ]
+ },
+ {
+  "id": "S02",
+  "truth": "Waving at the lake is an answer",
+  "layer": "L1",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S03",
+  "truth": "Clocks never change",
+  "layer": "L1",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S04",
+  "truth": "Staying Day is a ritual",
+  "layer": "L1",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S05",
+  "truth": "The blue stripe is a water line",
+  "layer": "L1",
+  "tool": "any",
+  "evidence": [
+   "LF-008"
+  ]
+ },
+ {
+  "id": "S06",
+  "truth": "POP. 913 and the Extra Plate",
+  "layer": "L1",
+  "tool": "any",
+  "evidence": [
+   "LF-011"
+  ]
+ },
+ {
+  "id": "S07",
+  "truth": "Takes follow Decisions",
+  "layer": "L2",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S08",
+  "truth": "Takes cluster in the Thin Weeks",
+  "layer": "L2",
+  "tool": "index",
+  "evidence": []
+ },
+ {
+  "id": "S09",
+  "truth": "Every Decision changes a life (not exposes a secret)",
+  "layer": "L2",
+  "tool": "board",
+  "evidence": []
+ },
+ {
+  "id": "S10",
+  "truth": "Cal forgets the Taken",
+  "layer": "L2",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S11",
+  "truth": "Postcards come from the Still",
+  "layer": "L2",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S12",
+  "truth": "Dedications spell FAIR WATER",
+  "layer": "L2",
+  "tool": "reel",
+  "evidence": []
+ },
+ {
+  "id": "S13",
+  "truth": "62 have \"visited\"",
+  "layer": "L2",
+  "tool": "index",
+  "evidence": []
+ },
+ {
+  "id": "S14",
+  "truth": "Someone edits Cal's notebook",
+  "layer": "L2",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S15",
+  "truth": "The Rise is a mirror of Low Mercy",
+  "layer": "L3",
+  "tool": "map",
+  "evidence": []
+ },
+ {
+  "id": "S16",
+  "truth": "913 = 701 + 212",
+  "layer": "L3",
+  "tool": "vault_key",
+  "evidence": [
+   "LF-035"
+  ]
+ },
+ {
+  "id": "S17",
+  "truth": "The evacuation was falsified",
+  "layer": "L3",
+  "tool": "vault_key",
+  "evidence": [
+   "LF-035"
+  ]
+ },
+ {
+  "id": "S18",
+  "truth": "The blue stripe is 412 ft",
+  "layer": "L3",
+  "tool": "gauge",
+  "evidence": []
+ },
+ {
+  "id": "S19",
+  "truth": "The gates closed at 4:12",
+  "layer": "L3",
+  "tool": "gauge",
+  "evidence": []
+ },
+ {
+  "id": "S20",
+  "truth": "The Reply is the Roll",
+  "layer": "L3",
+  "tool": "reply",
+  "evidence": [
+   "LF-047"
+  ]
+ },
+ {
+  "id": "S21",
+  "truth": "Hymn #212 is missing",
+  "layer": "L3",
+  "tool": "reel",
+  "evidence": []
+ },
+ {
+  "id": "S22",
+  "truth": "The last broadcast",
+  "layer": "L3",
+  "tool": "reel",
+  "evidence": [
+   "LF-036"
+  ]
+ },
+ {
+  "id": "S23",
+  "truth": "Casimir pulled Amos's tooth that night",
+  "layer": "L3",
+  "tool": "dental_overlay",
+  "evidence": [
+   "LF-043"
+  ]
+ },
+ {
+  "id": "S24",
+  "truth": "A lamp follows the boat",
+  "layer": "L3",
+  "tool": "launch",
+  "evidence": []
+ },
+ {
+  "id": "S25",
+  "truth": "Silas's crown is Rook's",
+  "layer": "L4",
+  "tool": "dental_overlay",
+  "evidence": [
+   "LF-055",
+   "LF-056"
+  ]
+ },
+ {
+  "id": "S26",
+  "truth": "The seven tells",
+  "layer": "L4",
+  "tool": "dog_book",
+  "evidence": []
+ },
+ {
+  "id": "S27",
+  "truth": "Walk-ons die by \"drowning\" in bed",
+  "layer": "L4",
+  "tool": "examination",
+  "evidence": []
+ },
+ {
+  "id": "S28",
+  "truth": "Death certificates falsified",
+  "layer": "L4",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S29",
+  "truth": "The Prompt Book exists",
+  "layer": "L4",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S30",
+  "truth": "Day 1 was staged",
+  "layer": "L4",
+  "tool": "any",
+  "evidence": [
+   "LF-071",
+   "LF-057"
+  ]
+ },
+ {
+  "id": "S31",
+  "truth": "Bea is Hester Voss",
+  "layer": "L4",
+  "tool": "index",
+  "evidence": []
+ },
+ {
+  "id": "S32",
+  "truth": "The Holdfast and the Waking",
+  "layer": "L4",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S33",
+  "truth": "Your Remnants are alive",
+  "layer": "L5",
+  "tool": "any",
+  "evidence": []
+ },
+ {
+  "id": "S34",
+  "truth": "The Chorus: 149 → 136",
+  "layer": "L5",
+  "tool": "prop_room",
+  "evidence": []
+ },
+ {
+  "id": "S35",
+  "truth": "Wren is the Inner Voice",
+  "layer": "L5",
+  "tool": "dog_book",
+  "evidence": []
+ },
+ {
+  "id": "S36",
+  "truth": "The Chorus woke because Wren refused",
+  "layer": "L5",
+  "tool": "prop_room",
+  "evidence": []
+ },
+ {
+  "id": "S37",
+  "truth": "The Cut Clause",
+  "layer": "O",
+  "tool": "pause",
+  "evidence": [
+   "LF-085"
+  ]
+ },
+ {
+  "id": "S38",
+  "truth": "Nell is Understudy #0",
+  "layer": "O",
+  "tool": "any",
+  "evidence": [
+   "LF-087"
+  ]
+ },
+ {
+  "id": "S39",
+  "truth": "The Roll is complete (212)",
+  "layer": "O",
+  "tool": "roll",
+  "evidence": []
+ },
+ {
+  "id": "S40",
+  "truth": "Fair water",
+  "layer": "O",
+  "tool": "reel",
+  "evidence": []
+ }
+]

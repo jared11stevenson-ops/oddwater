@@ -1,6 +1,6 @@
 # UNDERSTUDY — Core Systems Spec (GDD v0.1)
 
-> Builds on `00-lore-loop-charter.md`. Data-driven throughout: every number below lives in a ScriptableObject, not in code.
+> Builds on `00-lore-loop-charter.md`. Data-driven throughout: every number below lives in JSON under `game/data/`, not in code. Engine: Godot 4.7 (GDScript).
 
 ## 1. Game state
 

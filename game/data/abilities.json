@@ -1,0 +1,57 @@
+[
+ {
+  "id": "take_your_minute",
+  "layer": "L1",
+  "count": 3
+ },
+ {
+  "id": "wave",
+  "layer": "L1",
+  "count": 6
+ },
+ {
+  "id": "decision_radar",
+  "layer": "L2",
+  "count": 4
+ },
+ {
+  "id": "nudge",
+  "layer": "L2",
+  "count": 8
+ },
+ {
+  "id": "overlay",
+  "layer": "L3",
+  "count": 4
+ },
+ {
+  "id": "roll_call",
+  "layer": "L3",
+  "count": 8
+ },
+ {
+  "id": "tell_sight",
+  "layer": "L4",
+  "count": 4
+ },
+ {
+  "id": "prompt",
+  "layer": "L4",
+  "count": 8
+ },
+ {
+  "id": "shed",
+  "layer": "L5",
+  "count": 3
+ },
+ {
+  "id": "hum",
+  "layer": "L5",
+  "count": 4
+ },
+ {
+  "id": "fair_water",
+  "layer": "O",
+  "count": 4
+ }
+]

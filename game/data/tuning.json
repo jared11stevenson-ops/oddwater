@@ -1,0 +1,12 @@
+{
+ "search_seconds": 75,
+ "search_min": 40,
+ "search_max": 150,
+ "minute_bonus": 10,
+ "suspicion_stage_test": 80,
+ "suspicion_decay_clear": 15,
+ "suspicion_decay_fog": 4,
+ "fog_below_mood": 30,
+ "shed_decay": 0.5,
+ "last_day": 15
+}
