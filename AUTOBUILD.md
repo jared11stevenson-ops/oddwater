@@ -23,3 +23,10 @@ You are continuing UNDERSTUDY, a single-player, offline narrative mystery game i
 - If blocked (failing environment, ambiguous requirement), do the safest useful smaller thing, record the blocker in `NOTES-FOR-USER.md`, and stop. Never loop retrying.
 - Stop early if the roadmap's remaining items all need humans (see "Not achievable autonomously"): write a status summary to `NOTES-FOR-USER.md` and do nothing else.
 - Budget: one focused increment of roughly 5–20 minutes of work. Prefer depth and correctness over breadth.
+
+## Playable zips (required every pass)
+After tests pass and the pass is committed, run `tools/build_zips.sh` (Windows, Linux, Web zips into `dist/`, git-ignored),
+then force-push the zips as a single commit to the orphan `builds` branch (keeps `main` small), and send the zips to the user.
+Export templates must be installed (`~/.local/share/godot/export_templates/4.7.stable`); if missing, fetch
+`https://downloads.godotengine.org/?version=4.7&flavor=stable&slug=export_templates.tpz&platform=templates`.
+Android/iOS builds need the Android SDK / Xcode and are not produced yet.
