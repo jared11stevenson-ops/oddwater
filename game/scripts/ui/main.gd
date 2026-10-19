@@ -6,6 +6,8 @@ const Snoop = preload("res://scripts/ui/snoop.gd")
 const DialogueUI = preload("res://scripts/ui/dialogue_ui.gd")
 const DentalUI = preload("res://scripts/ui/dental_ui.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
+const BoardUI = preload("res://scripts/ui/board_ui.gd")
+const SlackUI = preload("res://scripts/ui/slack_ui.gd")
 const POST := preload("res://shaders/page_post.gdshader")
 
 const DAY1_PATIENTS := ["silas", "bea", "cal"]
@@ -109,9 +111,57 @@ func _step_off() -> void:
 	l.position = Vector2(260, 220)
 	l.add_theme_font_size_override("font_size", 40)
 	ui.add_child(l)
-	var b := Button.new(); b.text = "Night (next pass)"
+	var b := Button.new(); b.text = "Night"
 	b.position = Vector2(260, 800); b.custom_minimum_size = Vector2(520, 100)
+	b.add_theme_font_size_override("font_size", 34)
+	b.pressed.connect(_night)
 	ui.add_child(b); b.grab_focus()
+
+
+## NIGHT: one location (Pell Dentistry after hours), then the Case Board, then the Slack.
+func _night() -> void:
+	_clear()
+	var bg := ColorRect.new(); bg.color = Color("1b1a2e"); bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(bg)
+	snoop = Snoop.new()
+	ui.add_child(snoop)
+	snoop.setup(state, "homes/practice_night.json")
+	snoop.finished.connect(func(_r): _board())
+
+
+func _board() -> void:
+	_clear()
+	var bg := ColorRect.new(); bg.color = Color("efe4c8"); bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(bg)
+	var b := BoardUI.new()
+	ui.add_child(b)
+	b.setup(state)
+	b.finished.connect(_slack)
+
+
+func _slack() -> void:
+	_clear()
+	var bg := ColorRect.new(); bg.color = Color("14121c"); bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(bg)
+	state.advance()   # NIGHT -> SLACK
+	var next_life: Dictionary = state.lives[state.day]   # tomorrow
+	var s := SlackUI.new()
+	ui.add_child(s)
+	s.setup(next_life, "11:58 p.m.")
+	s.finished.connect(_new_day)
+
+
+func _new_day() -> void:
+	state.advance()   # SLACK -> next day's WAKE
+	_clear()
+	var bg := ColorRect.new(); bg.color = Color("f1dfc0"); bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(bg)
+	var l := Label.new()
+	var life: Dictionary = state.current_life()
+	l.text = "DAY %d\n\nYou wake up as %s.\n\n(Their bedroom is built next pass. The loop above is the Day 1 slice.)\n\nSeals so far: %d / 40" % [state.day, life["name"], state.board.seals.size()]
+	l.position = Vector2(260, 280)
+	l.add_theme_font_size_override("font_size", 46)
+	ui.add_child(l)
 
 
 func _describe(n: Dictionary) -> String:

@@ -1,0 +1,15 @@
+{
+ "LF-009": {"title": "Welcome loaf note", "text": "\"Hope you stay.\" Signed B.", "layer": "L1"},
+ "LF-011": {"title": "Fridge magnet", "text": "POP. 913. A town that never updates its sign.", "layer": "L1"},
+ "LF-015": {"title": "Cal's notebook", "text": "\"M. Pell. Dentist. Friend. Do not let her go.\"", "layer": "L2"},
+ "LF-018": {"title": "Priya's voicemail", "text": "\"Don't go before Thursday. Please. I think I found the pattern.\"", "layer": "L2"},
+ "LF-019": {"title": "The Match List", "text": "Eleven names, each ticked. Mags had been matching her patients to a dead man's charts.", "layer": "L2"},
+ "LF-020": {"title": "Mags's diary", "text": "\"Teeth don't lie.\"", "layer": "L2"},
+ "LF-021": {"title": "One-way ticket", "text": "The 6:40 launch. Not for today. For tomorrow.", "layer": "L2"},
+ "LF-043": {"title": "Casimir's ledger", "text": "9 Sept 1961. \"A. Marsh, 9. Extraction, lower left. Paid in eggs.\" The last entry.", "layer": "L3"},
+ "LF-055": {"title": "Chart: T. Rook, 1958", "text": "A gold crown and two fillings, each stamped CP.", "layer": "L4"},
+ "LF-056": {"title": "Overlay: Silas = Rook", "text": "The X-ray of Silas's mouth carries Rook's work, mark for mark.", "layer": "L4"},
+ "LF-070": {"title": "Delphine's note", "text": "\"Come at one. Bring the records.\"", "layer": "L4"},
+ "LF-071": {"title": "Appointment book", "text": "Eight patients, written in a hand that is almost Mags's.", "layer": "L4"},
+ "LF-074": {"title": "A second hand", "text": "Someone has been correcting Cal's notebook in the margins.", "layer": "L4"}
+}

@@ -45,6 +45,36 @@ func _initialize() -> void:
 	await process_frame
 	if not main.state.remnants.has_remnant("mags"): fails += 1; print("FAIL remnant not formed")
 	if main.state.phase != 3: fails += 1; print("FAIL not at NIGHT: ", main.state.phase)
-	if main.state.board.evidence.size() < 6: fails += 1; print("FAIL evidence ", main.state.board.evidence.size())
-	print("smoke: ", "OK" if fails == 0 else "%d failed" % fails, " evidence=", main.state.board.evidence.size())
+	# NIGHT: search Pell Dentistry after hours, then the Case Board
+	main._night()
+	await process_frame
+	var sn: Control = main.snoop
+	for id in sn.items.keys(): sn.interact(id)
+	sn.finish()
+	await process_frame
+	var bu: Control = null
+	for c in main.ui.get_children():
+		if c.has_method("tie_selected"): bu = c
+	if bu == null: fails += 1; print("FAIL no case board"); quit(fails); return
+	bu.toggle_card("LF-043")
+	if not bu.pin_selected("what"): fails += 1; print("FAIL pin")
+	if not main.state.board.testable().has("S23"): fails += 1; print("FAIL S23 should be testable")
+	if not bu.test_seal("S23"): fails += 1; print("FAIL S23 test")
+	# the Slack, then Day 2
+	bu.finished.emit()
+	await process_frame
+	var sl: Control = null
+	for c in main.ui.get_children():
+		if c.has_method("next_line"): sl = c
+	if sl == null: fails += 1; print("FAIL no slack"); quit(fails); return
+	var n := 0
+	while sl.idx < sl.lines.size() - 1 and n < 20:
+		sl.next_line(); n += 1
+	if not sl.lines[-1].contains("Jo Brask"): fails += 1; print("FAIL tomorrow should be Jo: ", sl.lines[-1])
+	sl.next_line()
+	await process_frame
+	if main.state.day != 2 or main.state.phase != 0: fails += 1; print("FAIL not Day 2 WAKE ", main.state.day, main.state.phase)
+	if not main.state.board.seals.has("S23") or not main.state.board.seals.has("S25"): fails += 1; print("FAIL seals ", main.state.board.seals.keys())
+	if main.state.board.evidence.size() < 10: fails += 1; print("FAIL evidence ", main.state.board.evidence.size())
+	print("smoke: ", "OK" if fails == 0 else "%d failed" % fails, " day=", main.state.day, " seals=", main.state.board.seals.keys())
 	quit(fails)

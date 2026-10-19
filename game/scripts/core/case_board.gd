@@ -73,6 +73,48 @@ func complete_test(seal_id: String, day: int) -> bool:
 	return true
 
 
+## Are all of these pinned cards joined (directly or through others) by strings?
+func links_connect(ids: Array) -> bool:
+	if ids.size() <= 1:
+		return true
+	var seen := {ids[0]: true}
+	var frontier: Array = [ids[0]]
+	while not frontier.is_empty():
+		var cur: String = frontier.pop_back()
+		for l in links:
+			var other := ""
+			if l[0] == cur:
+				other = l[1]
+			elif l[1] == cur:
+				other = l[0]
+			if other != "" and not seen.has(other):
+				seen[other] = true
+				frontier.append(other)
+	for i in ids:
+		if not seen.has(i):
+			return false
+	return true
+
+
+## The generic Seal test: right tool, evidence pinned, and the strings join it up.
+func try_link_test(seal_id: String, day: int) -> bool:
+	if not can_test(seal_id):
+		return false
+	if not links_connect(seal_defs[seal_id]["evidence"]):
+		return false
+	return complete_test(seal_id, day)
+
+
+## Seals the player could test right now (tool available, evidence pinned, unsealed).
+func testable() -> Array:
+	var out: Array = []
+	for id in seal_defs:
+		if seal_defs[id]["evidence"].size() > 0 and can_test(id):
+			out.append(id)
+	out.sort()
+	return out
+
+
 func count_layer(layer: String) -> int:
 	var n := 0
 	for id in seals:

@@ -1,0 +1,15 @@
+{
+ "life": "mags",
+ "title": "Tuesday, 9:40 p.m.",
+ "intro": "Pell Dentistry after hours. The sterilizer ticks. The lake is black in the window.",
+ "items": [
+  {"id":"cabinet","label":"Records cabinet","kind":"prop","x":200,"y":420,"text":"Bottom drawer, behind the Pell family charts: a ledger bound in oilcloth. The last entry is dated 9 September 1961. 'A. Marsh, 9. Extraction, lower left. Paid in eggs.'","evidence":"LF-043","note":["curiosity",15]},
+  {"id":"deskdrawer","label":"Desk drawer","kind":"prop","x":560,"y":300,"text":"A note in the Mayor's handwriting: 'Come at one. Bring the records.' The ink is fresh.","evidence":"LF-070","note":["curiosity",10]},
+  {"id":"chair","label":"The dental chair","kind":"role","x":960,"y":420,"text":"You sit in it. Facing the lake, the way every patient does. It is the calmest you have felt all day.","note":["warmth",5]},
+  {"id":"window","label":"The window","kind":"role","x":1360,"y":280,"text":"The glass is very slightly rippling, as if it were water. Out on the lake a light flashes once, and stops. You wave without thinking. Something waves back.","note":["curiosity",10]},
+  {"id":"diary","label":"Mags's diary","kind":"prop","x":300,"y":700,"text":"One line on the last page, underlined twice: 'Teeth don't lie.'","evidence":"LF-020","note":["candor",5]},
+  {"id":"sterilizer","label":"Sterilizer","kind":"decoy","x":760,"y":760,"text":"It beeps, with great confidence, about nothing.","note":["warmth",2]},
+  {"id":"mints","label":"Bowl of mints","kind":"decoy","x":1160,"y":760,"text":"For the brave. You take two. You are not sure which category you are in.","note":["warmth",3]},
+  {"id":"lightbox","label":"X-ray light box","kind":"decoy","x":1500,"y":640,"text":"Silas's X-ray, still clipped up. Three tiny stamps glow back at you: CP. CP. CP.","note":["curiosity",3]}
+ ]
+}
