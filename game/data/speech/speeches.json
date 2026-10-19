@@ -1,0 +1,173 @@
+{
+ "town_hall": {
+  "title": "Founders' Day planning meeting",
+  "segments": {
+   "holdfast": 50,
+   "neutral": 50,
+   "waking": 50
+  },
+  "weights": {
+   "holdfast": 0.4,
+   "neutral": 0.4,
+   "waking": 0.2
+  },
+  "beats": [
+   {
+    "prompt": "The Council Chamber is full. The clock behind you takes no notice. Eighty faces wait for the sentence they have heard every month for sixty-three years.",
+    "choices": [
+     {
+      "text": "\"Neighbors, nothing to report.\"  (the tradition)",
+      "fx": {
+       "holdfast": 15,
+       "neutral": 5,
+       "waking": -5
+      },
+      "notes": {
+       "fidelity": 10
+      }
+     },
+     {
+      "text": "\"Neighbors, there is something to report.\"",
+      "fx": {
+       "holdfast": -15,
+       "neutral": 5,
+       "waking": 15
+      },
+      "notes": {
+       "nerve": 15,
+       "candor": 10
+      }
+     },
+     {
+      "text": "A joke about the pageant casserole sign-up sheet.",
+      "fx": {
+       "holdfast": 5,
+       "neutral": 15,
+       "waking": 0
+      },
+      "notes": {
+       "warmth": 10
+      }
+     }
+    ]
+   },
+   {
+    "prompt": "Hank Moss, from the back, on his feet: \"Pruitt, tradition IS the town!\" Heads turn.",
+    "choices": [
+     {
+      "text": "\"Tradition is a promise, Hank. Who is it a promise to?\"",
+      "fx": {
+       "holdfast": -5,
+       "neutral": 5,
+       "waking": 10
+      },
+      "notes": {
+       "curiosity": 10,
+       "nerve": 5
+      }
+     },
+     {
+      "text": "\"You're right, Hank. Tradition first.\"",
+      "fx": {
+       "holdfast": 15,
+       "neutral": 0,
+       "waking": -10
+      },
+      "notes": {
+       "fidelity": 10
+      }
+     },
+     {
+      "text": "\"Let's hear from someone else.\"",
+      "fx": {
+       "holdfast": 0,
+       "neutral": 10,
+       "waking": 0
+      },
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   {
+    "prompt": "Item four: the Raising needs a lamp-bearer, a nine-year-old, by Tuesday. Last year's child says he's not sure about it. Someone coughs.",
+    "choices": [
+     {
+      "text": "Ask for volunteers.",
+      "fx": {
+       "holdfast": 0,
+       "neutral": 5,
+       "waking": 0
+      },
+      "notes": {
+       "warmth": 3
+      }
+     },
+     {
+      "text": "\"Perhaps we skip the lamp this year.\"",
+      "fx": {
+       "holdfast": -25,
+       "neutral": -5,
+       "waking": 20
+      },
+      "notes": {
+       "nerve": 20
+      }
+     },
+     {
+      "text": "\"The Marsh boy carries it. As always.\"",
+      "fx": {
+       "holdfast": 10,
+       "neutral": 0,
+       "waking": -10
+      },
+      "notes": {
+       "fidelity": 8
+      }
+     }
+    ]
+   },
+   {
+    "prompt": "Any other business? You have a letter in your pocket. It has a stamp on it. It is already in the post.",
+    "choices": [
+     {
+      "text": "Announce you will step down after the Raising. The line of Pruitts ends with you.",
+      "fx": {
+       "holdfast": -20,
+       "neutral": 5,
+       "waking": 10
+      },
+      "notes": {
+       "nerve": 25,
+       "candor": 20
+      },
+      "flag": "delphine_resigned"
+     },
+     {
+      "text": "\"Nothing further.\"",
+      "fx": {
+       "holdfast": 10,
+       "neutral": 5,
+       "waking": -5
+      },
+      "notes": {
+       "fidelity": 10
+      }
+     },
+     {
+      "text": "\"There'll be a surprise at the Raising.\"",
+      "fx": {
+       "holdfast": -5,
+       "neutral": 10,
+       "waking": 5
+      },
+      "notes": {
+       "curiosity": 10
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -14,15 +14,17 @@ Engine: **Godot 4.7 stable** (GDScript), Mobile renderer. Single-player, offline
 - `scripts/ui/` — presentation: title, Wake & Snoop
 - `tests/` — headless suites
 
-## Status (pass 3)
-**Days 1, 2 and 3 are playable end to end**, each driven by `data/days.json`: Wake & Snoop -> Perform (conversations, vignettes) -> Step Off (Remnant) -> Night (search + event) -> Case Board -> the 4:12 Slack -> next day.
+## Status (pass 4)
+**Act I (Days 1-5) is playable end to end**, each day driven by `data/days.json`.
 - Day 1 Mags: dental X-ray overlay (S25), ledger (S23)
-- Day 2 Jo: two-lane rhythm gig; the Reply at the Grange basement (S20)
-- Day 3 Tobi: Honesty Pull in dialogue; Small Paths eavesdropping; Playhouse Prompt Book (S29)
-- A **robot player** (`tests/bot.gd`) plays Days 1-3 through the real UI in `tests/smoke.gd`.
-Tests: `run_tests` 101, `dialogue_tests` 48, `dental_tests` 23, `board_tests` 13, `rhythm_tests` 11, `day23_tests` 187, `town_tests` 9,653, `smoke`.
-Next: Day 4 Delphine (speech vignette, vault: S16 / S17), Day 5 Vern (radio, Hymn #212: the Act I climax), spatial Case Board, walkable world.
-Known: screens are functional menus with a shared ink/paper theme; no portraits, audio or walkable world yet; Slack is a text placeholder; nothing profiled on a device.
+- Day 2 Jo: two-lane rhythm gig; the Reply (S20)
+- Day 3 Tobi: Honesty Pull; Small Paths eavesdropping; Prompt Book (S29)
+- Day 4 Delphine: Town Hall speech (reading three crowd groups); the vault (S16, S17)
+- Day 5 Vern: Dedication Hour (S12), WMRC archive (S21, S22), the Hymn #212 choice (Act I climax)
+- A **robot player** (`tests/bot.gd`) plays Days 1-5 through the real UI in `tests/smoke.gd`.
+Tests (9 suites): core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 277, day45 29, town 9,653, smoke.
+Next: Act I polish (Awakened NPC reactions to the Hymn; Encore days / Overlap), the S30 reveal gate, spatial Case Board, walkable world, Day 6 Gus onward.
+Known: functional menu screens with a shared ink/paper theme; no portraits, audio or walkable world; Slack is a text placeholder; nothing profiled on a device.
 
 ## Platform notes (honest)
 - **Shipping target: mobile (iOS/Android). There is no Switch port.** Switch is only the quality and performance standard we hold ourselves to (Switch-class budgets: ~30 fps locked equivalent, tight memory).

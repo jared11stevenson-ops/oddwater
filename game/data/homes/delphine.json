@@ -1,0 +1,141 @@
+{
+ "life": "delphine",
+ "title": "Friday, 6:50 a.m.",
+ "intro": "The Mayor's house. Everything is tidy, in the way of people who have run out of things they are allowed to change.",
+ "items": [
+  {
+   "id": "ribbon",
+   "label": "Red ribbon on the doorknob",
+   "kind": "role",
+   "x": 120,
+   "y": 380,
+   "text": "A red ribbon on the doorknob of the Mayor's bedroom. Nobody has a key to the Mayor's house except the Playhouse, and the Mayor is the Playhouse's landlord. You decide not to think about it before coffee.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "mirror",
+   "label": "Mirror",
+   "kind": "mirror",
+   "x": 1560,
+   "y": 300,
+   "text": "A competent, tired face that has been in a lot of photographs. Pruned fingertips. You decide to wear gloves to the meeting.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "gavel",
+   "label": "Gavel (basset hound)",
+   "kind": "pet",
+   "x": 760,
+   "y": 760,
+   "text": "Gavel howls once, long and low, and lies down across your feet. You are not going anywhere. He is a very warm paperweight with opinions.",
+   "note": [
+    "warmth",
+    10
+   ]
+  },
+  {
+   "id": "hymnal",
+   "label": "Green hymnal on the shelf",
+   "kind": "prop",
+   "x": 300,
+   "y": 560,
+   "text": "A green hymnal, not the Chapel's. Between the pages of Hymn 211 and 213, a folded list of names on very old paper. Two hundred and twelve. Some have a tick. One is crossed out hard: PRUITT, H.",
+   "note": [
+    "curiosity",
+    20
+   ],
+   "evidence": "LF-042"
+  },
+  {
+   "id": "phone",
+   "label": "Phone",
+   "kind": "prop",
+   "x": 1400,
+   "y": 700,
+   "text": "Three voicemails from Harlan, your father, all the same: 'I signed the sheet, Del. I signed it.' The third one is just breathing.",
+   "note": [
+    "candor",
+    10
+   ],
+   "evidence": "LF-050"
+  },
+  {
+   "id": "letter",
+   "label": "Letter of resignation (copy)",
+   "kind": "role",
+   "x": 520,
+   "y": 330,
+   "text": "'Dear Council, effective the day after Founders' Day...' A copy. The original is already in the post. You can't take it back. That's the point.",
+   "note": [
+    "nerve",
+    10
+   ]
+  },
+  {
+   "id": "draft",
+   "label": "Speech draft, v3",
+   "kind": "role",
+   "x": 1000,
+   "y": 300,
+   "text": "'Neighbors, there is something to report.' Underlined. In the margin, in your own hand: 'Say it before you lose the nerve.'",
+   "note": [
+    "nerve",
+    10
+   ]
+  },
+  {
+   "id": "keyring",
+   "label": "Vault key on a ribbon",
+   "kind": "role",
+   "x": 1180,
+   "y": 520,
+   "text": "A brass key on a very old ribbon. The Town Hall vault. It opens at the same time every evening, if you have the key and no better idea.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "photos",
+   "label": "Four generations of Pruitts",
+   "kind": "role",
+   "x": 1700,
+   "y": 620,
+   "text": "Edmund, Harlan, you, June. Every one of you stands in front of the lake. None of you is smiling. Hattie is not in the photo. There is a gap where a fifth frame hung.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "mug",
+   "label": "Mug: World's Okayest Mayor",
+   "kind": "decoy",
+   "x": 380,
+   "y": 820,
+   "text": "Your daughter gave it to you. It's the most honest thing anyone has ever said about this office.",
+   "note": [
+    "warmth",
+    5
+   ]
+  },
+  {
+   "id": "fern",
+   "label": "Fern with strong opinions",
+   "kind": "decoy",
+   "x": 1560,
+   "y": 860,
+   "text": "It has been dying with dignity since 2019. You water it. It resents it.",
+   "note": [
+    "warmth",
+    2
+   ]
+  }
+ ]
+}

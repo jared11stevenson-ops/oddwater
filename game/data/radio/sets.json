@@ -1,0 +1,64 @@
+{
+ "dedication_hour": {
+  "title": "Dedication Hour with Vern Castellano",
+  "answer": "FAIRW",
+  "next_nights": "ATER",
+  "slots": [
+   {
+    "caller": "Silas, from the clock shop",
+    "dedication": "\"For someone who has been waiting a very long time. Something with a bit of weather in it.\"",
+    "options": [
+     "Fair Weather Friend",
+     "Moon River",
+     "Old Man River",
+     "Pennies from Heaven"
+    ],
+    "correct": 0
+   },
+   {
+    "caller": "Bea, from the bakery",
+    "dedication": "\"For anyone who's far from home. Something that is always near.\"",
+    "options": [
+     "Bridge Over Troubled Water",
+     "Always Be Near",
+     "Crying in the Rain",
+     "Dream a Little Dream"
+    ],
+    "correct": 1
+   },
+   {
+    "caller": "Fitz, from The Low Water",
+    "dedication": "\"For the fella who's drying the same glass. I'll be seeing you.\"",
+    "options": [
+     "Smile",
+     "Tuxedo Junction",
+     "I'll Be Seeing You",
+     "Unforgettable"
+    ],
+    "correct": 2
+   },
+   {
+    "caller": "Dolores, from the Chapel",
+    "dedication": "\"For the faithful. Something old and steady. A rock.\"",
+    "options": [
+     "Rock of Ages",
+     "Amazing Grace",
+     "Nearer My God to Thee",
+     "Be Thou My Vision"
+    ],
+    "correct": 0
+   },
+   {
+    "caller": "A child's voice, no name",
+    "dedication": "\"For the ones in the water. Something with water in it. Please.\"",
+    "options": [
+     "Waters of March",
+     "Riders on the Storm",
+     "Summertime",
+     "Singing in the Rain"
+    ],
+    "correct": 0
+   }
+  ]
+ }
+}

@@ -1,0 +1,105 @@
+{
+ "life": "vern",
+ "title": "Saturday, 11:40 p.m.",
+ "intro": "WMRC after the hour. The ON AIR sign is dark. The records cool like old stones.",
+ "items": [
+  {
+   "id": "reel61",
+   "label": "Reel: SAT 9/9/61 NOT AIRED",
+   "kind": "prop",
+   "x": 200,
+   "y": 420,
+   "text": "You thread it. A man's voice, very calm, very fast: '...it's in the square. The water is in the square. Fair water, Mercy. Fair water, every one of you.' The tape ends in a long, clean silence.",
+   "note": [
+    "curiosity",
+    20
+   ],
+   "evidence": "LF-036"
+  },
+  {
+   "id": "bulletins",
+   "label": "Chapel bulletin file",
+   "kind": "prop",
+   "x": 560,
+   "y": 300,
+   "text": "A bulletin from 1963: 'Hymn 212 is retired with thanks.' Under it, a note in pencil: 'It was never ours to retire.'",
+   "note": [
+    "curiosity",
+    15
+   ],
+   "evidence": "LF-069"
+  },
+  {
+   "id": "transmitter",
+   "label": "Emergency transmitter",
+   "kind": "role",
+   "x": 960,
+   "y": 420,
+   "text": "A hand-cranked set in a cabinet marked IN CASE. Someone wound it recently. The crank is warm.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "wall",
+   "label": "Pencil on the wall",
+   "kind": "role",
+   "x": 1360,
+   "y": 280,
+   "text": "Behind the filing cabinet, small and neat: FAIR WATER. Below it, the same words in different handwriting, over and over, sixty-three years of them.",
+   "note": [
+    "curiosity",
+    15
+   ]
+  },
+  {
+   "id": "racks",
+   "label": "Tape racks",
+   "kind": "decoy",
+   "x": 300,
+   "y": 700,
+   "text": "Eleven thousand tapes of weather, hymns, and one man saying 'And now, the weather' like it was a love letter.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "coffee",
+   "label": "Cold coffee",
+   "kind": "decoy",
+   "x": 760,
+   "y": 760,
+   "text": "Vern's. Three days old. It's practically a lifestyle.",
+   "note": [
+    "warmth",
+    2
+   ]
+  },
+  {
+   "id": "console",
+   "label": "The console",
+   "kind": "decoy",
+   "x": 1160,
+   "y": 760,
+   "text": "Faders. Dials. A little brass plate: 'Presented to L. Page for services to broadcasting, 1960.'",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "sign",
+   "label": "ON AIR sign",
+   "kind": "role",
+   "x": 1500,
+   "y": 640,
+   "text": "Dark. If you flicked it, the whole valley would hear. You could. You decide to think about that.",
+   "note": [
+    "nerve",
+    5
+   ]
+  }
+ ]
+}

@@ -1,0 +1,153 @@
+{
+ "life": "vern",
+ "title": "Saturday, 6:55 a.m.",
+ "intro": "A flat full of cables and cat hair. Everything is labelled, in a very good hand.",
+ "items": [
+  {
+   "id": "ribbon",
+   "label": "Red ribbon on the doorknob",
+   "kind": "role",
+   "x": 120,
+   "y": 380,
+   "text": "The red ribbon. A bow so neat you suspect it was tied by someone who has done it before. Many times. For many doors.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "mirror",
+   "label": "Mirror",
+   "kind": "mirror",
+   "x": 1560,
+   "y": 300,
+   "text": "A velvet face with a bow tie already knotted. Your fingertips are pruned. You will do the show in gloves, like a very sophisticated surgeon.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "static",
+   "label": "Static (deaf white cat)",
+   "kind": "pet",
+   "x": 760,
+   "y": 760,
+   "text": "Static can't hear a thing. She presses her entire body against the speaker cabinet anyway and goes completely still, whiskers pointed at the lake window.",
+   "note": [
+    "warmth",
+    10
+   ]
+  },
+  {
+   "id": "playlist",
+   "label": "Playlist sheet",
+   "kind": "prop",
+   "x": 300,
+   "y": 560,
+   "text": "A month of Dedication Hours, typed. Tonight: Fair Weather Friend, Always Be Near, I'll Be Seeing You, Rock of Ages, Waters of March. Next week: Another Day, Tomorrow, Evening Star, River Deep. Down the margin, in pencil, the first letters, circled.",
+   "note": [
+    "curiosity",
+    20
+   ],
+   "evidence": "LF-022"
+  },
+  {
+   "id": "reel",
+   "label": "Reel: NIGHT WATER, 1959",
+   "kind": "prop",
+   "x": 520,
+   "y": 330,
+   "text": "A tape box. On the label, a woman's neat hand: 'Low Mercy Chapel Choir. Hymn 212.' Cued on the machine. Vern has been looking at it for three weeks.",
+   "note": [
+    "curiosity",
+    15
+   ],
+   "evidence": "LF-040"
+  },
+  {
+   "id": "calendar",
+   "label": "Calendar: LAST SHOW",
+   "kind": "role",
+   "x": 1000,
+   "y": 300,
+   "text": "Tonight's square is circled three times: 'LAST SHOW.' Underneath: 'close with the hymn?' A question mark, hit so hard it tore the page.",
+   "note": [
+    "nerve",
+    10
+   ]
+  },
+  {
+   "id": "mic",
+   "label": "Microphone",
+   "kind": "role",
+   "x": 1400,
+   "y": 700,
+   "text": "A beautiful old ribbon mic. You say 'Good evening' to it in your best voice. It is a very good voice. It isn't yours.",
+   "note": [
+    "fidelity",
+    8
+   ]
+  },
+  {
+   "id": "photo",
+   "label": "Photograph: WMRC, 1961",
+   "kind": "role",
+   "x": 1180,
+   "y": 520,
+   "text": "A young man at a console, laughing at something off-camera. L. Page, on the back. Behind him the window is full of lake.",
+   "note": [
+    "curiosity",
+    10
+   ]
+  },
+  {
+   "id": "letters",
+   "label": "Fan letters",
+   "kind": "decoy",
+   "x": 1700,
+   "y": 620,
+   "text": "'Dear Vern, play 'Moon River' for my husband's ghost.' 'Dear Vern, can you stop saying 'goodbye' on the radio.' (You never do.)",
+   "note": [
+    "warmth",
+    5
+   ]
+  },
+  {
+   "id": "records",
+   "label": "45s, alphabetised",
+   "kind": "decoy",
+   "x": 380,
+   "y": 820,
+   "text": "The only archive in town sorted properly. Even the typos are in order.",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "kettle",
+   "label": "Kettle",
+   "kind": "decoy",
+   "x": 760,
+   "y": 950,
+   "text": "Warm. Someone put it on. You pour a cup. You drink it. It tastes of kindness and a faint hint of lake.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "fern",
+   "label": "Plant",
+   "kind": "decoy",
+   "x": 1560,
+   "y": 860,
+   "text": "A cactus named Sir Richard Branson. It is alive out of spite.",
+   "note": [
+    "warmth",
+    2
+   ]
+  }
+ ]
+}

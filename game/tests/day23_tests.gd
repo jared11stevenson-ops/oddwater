@@ -17,7 +17,7 @@ func ok(c: bool, m: String) -> void:
 func _initialize() -> void:
 	var ev: Dictionary = Data.load_json("evidence.json")
 	# every convo is well-formed, every evidence id used anywhere has a card
-	for f in ["day01.json", "day02.json", "day03.json"]:
+	for f in ["day01.json", "day02.json", "day03.json", "day04.json", "day05.json"]:
 		var all: Dictionary = Data.load_json("convos/" + f)
 		for id in all:
 			var nodes: Dictionary = all[id]["nodes"]
@@ -34,7 +34,7 @@ func _initialize() -> void:
 					ok(nodes.has(c["next"]), "%s/%s/%s -> %s" % [f, id, nid, c["next"]])
 					if c.has("evidence"): ok(ev.has(c["evidence"]), "evidence card %s" % c["evidence"])
 			ok(ends, "%s/%s can end" % [f, id])
-	for h in ["jo", "tobi", "grange_night", "playhouse_night", "mags", "practice_night"]:
+	for h in ["jo", "tobi", "grange_night", "playhouse_night", "mags", "practice_night", "delphine", "vern", "town_hall_vault", "wmrc_archive"]:
 		var home: Dictionary = Data.load_json("homes/%s.json" % h)
 		ok(home["items"].size() >= 8, "%s has items" % h)
 		for it in home["items"]:

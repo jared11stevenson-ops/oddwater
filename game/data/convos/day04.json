@@ -1,0 +1,294 @@
+{
+ "june": {
+  "npc": "june",
+  "who": "June Pruitt",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "June",
+    "text": "You've got the face. The 'I'm about to say something and ruin breakfast' face.",
+    "aside": "Sixteen, dark eyeliner, a backpack full of stencils she thinks you don't know about.",
+    "choices": [
+     {
+      "text": "\"Eat. School. Bus. Please.\"",
+      "next": "n1",
+      "notes": {
+       "fidelity": 8,
+       "warmth": 3
+      },
+      "in_character": true
+     },
+     {
+      "text": "\"Tonight I'm going to tell the town something.\"",
+      "next": "n2",
+      "notes": {
+       "candor": 15,
+       "nerve": 10
+      },
+      "suspicion": {
+       "june": 5
+      },
+      "in_character": false
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "June",
+    "text": "You sound like a recording of yourself. A very nice recording.",
+    "choices": [
+     {
+      "text": "(Pass her the toast.)",
+      "next": "end",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "June",
+    "text": "Is it about the stencils? Because I didn't, officially. FAIR WATER just came to me. I woke up, and I was holding the can.",
+    "choices": [
+     {
+      "text": "\"Where did it come to you from?\"",
+      "next": "n3",
+      "notes": {
+       "curiosity": 15
+      },
+      "suspicion": {
+       "june": 5
+      }
+     },
+     {
+      "text": "\"I'm not cross. I think it's beautiful.\"",
+      "next": "n4",
+      "notes": {
+       "warmth": 15,
+       "candor": 5
+      }
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "June",
+    "text": "From the water. Don't look at me like that. Everybody's heard it. They just don't say.",
+    "choices": [
+     {
+      "text": "(Take that very seriously.)",
+      "next": "end",
+      "notes": {
+       "candor": 10
+      }
+     }
+    ],
+    "evidence": "LF-048"
+   },
+   "n4": {
+    "speaker": "June",
+    "text": "...You're being weird. It's nice. Don't stop.",
+    "choices": [
+     {
+      "text": "(Leave a twenty on the table. For paint.)",
+      "next": "end",
+      "notes": {
+       "warmth": 10
+      }
+     }
+    ],
+    "evidence": "LF-048"
+   },
+   "end": {
+    "speaker": "",
+    "text": "June waves at the lake from the bus stop, and then, when she thinks you aren't looking, she waves at you. A short wave. A real one.",
+    "end": true
+   }
+  }
+ },
+ "hank": {
+  "npc": "hank",
+  "who": "Hank Moss",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Hank",
+    "text": "Madam Mayor. Council at noon. I'll be at the back, heckling, as is my civic duty.",
+    "aside": "He is mixing Lake Blue in the back of the hardware store. Forty gallons a year. Every spring, for the stripe.",
+    "choices": [
+     {
+      "text": "\"Hank, what do you do with the paint you scrape off?\"",
+      "next": "n1",
+      "notes": {
+       "curiosity": 15,
+       "nerve": 5
+      },
+      "suspicion": {
+       "hank": 10
+      },
+      "in_character": false
+     },
+     {
+      "text": "\"I'd expect nothing less.\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 8,
+       "fidelity": 6
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Hank",
+    "text": "I put it back on the walls. That's what paint's for. ...There's a stencil under the last coat. FAIR WATER. In blue. Kids. Vandals.",
+    "choices": [
+     {
+      "text": "\"Keep that coat. Don't paint over the next one.\"",
+      "next": "n3",
+      "notes": {
+       "nerve": 15,
+       "candor": 10
+      },
+      "suspicion": {
+       "hank": 15
+      }
+     },
+     {
+      "text": "\"Whose handwriting is it?\"",
+      "next": "n4",
+      "notes": {
+       "curiosity": 10
+      }
+     }
+    ],
+    "evidence": "LF-068"
+   },
+   "n2": {
+    "speaker": "Hank",
+    "text": "You're a good Mayor, Del. You keep things as they are. That's the whole job.",
+    "choices": [
+     {
+      "text": "(Smile. Wince.)",
+      "next": "end",
+      "notes": {
+       "fidelity": 5
+      }
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Hank",
+    "text": "...That's not like you. That's... you sound like somebody I'd listen to.",
+    "choices": [
+     {
+      "text": "(Leave before he changes his mind.)",
+      "next": "end",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n4": {
+    "speaker": "Hank",
+    "text": "The first one's older than June. Older than me. I remember the smell of cinnamon when I scraped it. I don't know why I told you that.",
+    "choices": [
+     {
+      "text": "(Say nothing. Write it down.)",
+      "next": "end",
+      "notes": {
+       "candor": 8
+      }
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "Hank waves at the lake the way you wave at someone who owes you money, and loves you anyway.",
+    "end": true
+   }
+  }
+ },
+ "harlan": {
+  "npc": "harlan",
+  "who": "Harlan Pruitt",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Harlan",
+    "text": "Hattie! You came. They said you'd drowned. Sit. Have a biscuit.",
+    "aside": "He holds a green fountain pen, uncapped, over a napkin. It's leaking.",
+    "choices": [
+     {
+      "text": "\"It's Delphine, Dad.\"",
+      "next": "n1",
+      "notes": {
+       "candor": 10,
+       "fidelity": 3
+      },
+      "in_character": false
+     },
+     {
+      "text": "\"I came, Harlan. Tell me about the sheet.\"",
+      "next": "n2",
+      "notes": {
+       "curiosity": 15,
+       "nerve": 10
+      },
+      "suspicion": {
+       "harlan": 0
+      }
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Harlan",
+    "text": "Del. Del. Don't let them put me in the water, Del.",
+    "choices": [
+     {
+      "text": "(Take his hand.)",
+      "next": "n3",
+      "notes": {
+       "warmth": 15
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Harlan",
+    "text": "My father signed it. I held the pen. Hattie was in the 913. You can't sign a person into a number and then say she's gone, can you?",
+    "choices": [
+     {
+      "text": "\"Where's the evidence, Harlan?\"",
+      "next": "n3",
+      "notes": {
+       "curiosity": 10
+      },
+      "suspicion": {
+       "harlan": 5
+      }
+     }
+    ],
+    "evidence": "LF-051"
+   },
+   "n3": {
+    "speaker": "Harlan",
+    "text": "It's in the hymnal. The green one. Don't read the last page.",
+    "choices": [
+     {
+      "text": "(Read the last page, later.)",
+      "next": "end",
+      "notes": {
+       "candor": 8
+      }
+     }
+    ],
+    "evidence": "LF-051"
+   },
+   "end": {
+    "speaker": "",
+    "text": "He waves at the window, and for one second looks at you with absolute clarity, and says, perfectly calmly: 'Fair water, Hattie.' Then he asks if the biscuits are out.",
+    "end": true
+   }
+  }
+ }
+}

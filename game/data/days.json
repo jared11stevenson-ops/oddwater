@@ -83,5 +83,69 @@
     "id": "roy"
    }
   ]
+ },
+ "4": {
+  "life": "delphine",
+  "home": "homes/delphine.json",
+  "night": "homes/town_hall_vault.json",
+  "perform": [
+   {
+    "type": "convo",
+    "file": "day04.json",
+    "id": "june"
+   },
+   {
+    "type": "convo",
+    "file": "day04.json",
+    "id": "hank"
+   },
+   {
+    "type": "vignette",
+    "kind": "speech",
+    "speech": "town_hall"
+   },
+   {
+    "type": "convo",
+    "file": "day04.json",
+    "id": "harlan"
+   }
+  ]
+ },
+ "5": {
+  "life": "vern",
+  "home": "homes/vern.json",
+  "night": "homes/wmrc_archive.json",
+  "perform": [
+   {
+    "type": "convo",
+    "file": "day05.json",
+    "id": "dolores"
+   },
+   {
+    "type": "convo",
+    "file": "day05.json",
+    "id": "silas"
+   },
+   {
+    "type": "vignette",
+    "kind": "radio",
+    "set": "dedication_hour"
+   },
+   {
+    "type": "event",
+    "kind": "hymn"
+   }
+  ],
+  "slack_extra": {
+   "hymn_aired": [
+    "Across Little Mercy, in kitchens, a great many people sit down very suddenly.",
+    "Fingertips wrinkle. At the clock shop a man stops winding. At the bakery someone stops kneading. In the Chapel an organist closes the lid and says nothing for an hour.",
+    "Eight people who came to look at you on your first morning are now looking at you from every window you pass."
+   ],
+   "hymn_declined": [
+    "The reel stays on the machine. The hymn never leaves the room.",
+    "Somewhere in town, someone who was waiting for it does not get what they were waiting for, and goes on waiting."
+   ]
+  }
  }
 }

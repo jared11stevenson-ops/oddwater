@@ -1,0 +1,177 @@
+{
+ "dolores": {
+  "npc": "dolores",
+  "who": "Dolores Vance",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Dolores",
+    "text": "Vernon. Your Dedication Hour tonight. Do play something uplifting. The last few have been so... damp.",
+    "aside": "She is arranging chrysanthemums with the grim precision of a person disarming something.",
+    "choices": [
+     {
+      "text": "\"Dolores, there's a hymn missing from your hymnal. 212.\"",
+      "next": "n1",
+      "notes": {
+       "nerve": 20,
+       "curiosity": 10
+      },
+      "suspicion": {
+       "dolores": 30
+      },
+      "in_character": false
+     },
+     {
+      "text": "\"I'll keep it cheerful, Dolores.\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 5,
+       "fidelity": 8
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Dolores",
+    "text": "There was never a Hymn 212. The hymnal goes from 211 to 213. That's what a hymnal is, Vernon. A list in order.",
+    "aside": "Her hand has stopped on a chrysanthemum.",
+    "choices": [
+     {
+      "text": "(Hum four rising notes.)",
+      "next": "n3",
+      "notes": {
+       "nerve": 15,
+       "curiosity": 10
+      },
+      "suspicion": {
+       "dolores": 25
+      }
+     },
+     {
+      "text": "\"My mistake.\"",
+      "next": "n2",
+      "notes": {
+       "fidelity": 5
+      }
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Dolores",
+    "text": "Thank you. Some things are better left as they are. It is a great mercy. People forget that, how kind it is, to leave things as they are.",
+    "choices": [
+     {
+      "text": "(Nod. Don't blink.)",
+      "next": "end"
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Dolores",
+    "text": "...Don't.",
+    "aside": "She is humming it too. She doesn't know. Her face has gone the colour of the candles.",
+    "choices": [
+     {
+      "text": "(Stop.)",
+      "next": "end",
+      "notes": {
+       "warmth": 3
+      }
+     }
+    ],
+    "tell": "hum"
+   },
+   "end": {
+    "speaker": "",
+    "text": "She waves at the Chapel window, the lake on the other side of it, with great formality, like a woman waving off a train she is afraid to board.",
+    "end": true
+   }
+  }
+ },
+ "silas": {
+  "npc": "silas",
+  "who": "Silas Weatherby",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Silas",
+    "text": "Evening, Vern. I've a dedication, if you've the room. 'For the man by the water.' No song. You choose.",
+    "aside": "Three watches on his wrist. Three times. None of them tonight's.",
+    "choices": [
+     {
+      "text": "\"Who is the man by the water, Silas?\"",
+      "next": "n1",
+      "notes": {
+       "curiosity": 15,
+       "candor": 10
+      },
+      "suspicion": {
+       "silas": 10
+      },
+      "in_character": false
+     },
+     {
+      "text": "\"I'll find the perfect one.\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 8,
+       "fidelity": 6
+      },
+      "in_character": true
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Silas",
+    "text": "He's a clockmaker. He isn't from around here. ...He's from rather nearer than that.",
+    "choices": [
+     {
+      "text": "\"And the Hymn?\"",
+      "next": "n3",
+      "notes": {
+       "nerve": 15
+      },
+      "suspicion": {
+       "silas": 20
+      }
+     },
+     {
+      "text": "(Leave it.)",
+      "next": "n2"
+     }
+    ]
+   },
+   "n2": {
+    "speaker": "Silas",
+    "text": "You're a kind man, Vernon. Mind how you play the thing you're thinking of playing. If you do.",
+    "choices": [
+     {
+      "text": "(Say nothing.)",
+      "next": "end"
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Silas",
+    "text": "If it goes out tonight, a good many people in this valley will sit down very suddenly in their kitchens. Play it softly. They'll need time to remember.",
+    "choices": [
+     {
+      "text": "(Nod. It's a threat and a gift.)",
+      "next": "end",
+      "notes": {
+       "nerve": 10,
+       "candor": 10
+      }
+     }
+    ],
+    "evidence": "LF-040"
+   },
+   "end": {
+    "speaker": "",
+    "text": "Silas does not wave at the lake. He taps the glass of the middle watch with one finger, three times, as if tapping on a door.",
+    "end": true
+   }
+  }
+ }
+}

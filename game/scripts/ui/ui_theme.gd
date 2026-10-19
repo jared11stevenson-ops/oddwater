@@ -31,4 +31,10 @@ static func build() -> Theme:
 	t.set_color("font_disabled_color", "Button", INK.lightened(0.5))
 	t.set_color("font_color", "Label", INK)
 	t.set_constant("outline_size", "Button", 0)
+	var bar_bg := _box(PAPER.darkened(0.25), INK, 3)
+	var bar_fill := _box(MARIGOLD, INK, 3)
+	bar_bg.shadow_size = 0
+	bar_fill.shadow_size = 0
+	t.set_stylebox("background", "ProgressBar", bar_bg)
+	t.set_stylebox("fill", "ProgressBar", bar_fill)
 	return t

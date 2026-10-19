@@ -13,7 +13,7 @@ func _init(m: Control, t: SceneTree) -> void:
 
 func screen() -> Control:
 	for c in main.ui.get_children():
-		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line"]:
+		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option"]:
 			if c.has_method(method):
 				return c
 	return null
@@ -71,6 +71,16 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 			while s.idx < s.lines.size() - 1 and g < 30:
 				s.next_line(); g += 1
 			s.next_line(); log.append("slack")
+		elif s.has_method("choose_option"):
+			var picks := [1, 0, 1, 0]   # the bold route: truth, question, skip the lamp, resign
+			var k := 0
+			while not s.core.finished() and k < 8:
+				s.choose_option(picks[k] if k < 4 else 0); k += 1
+			s.finish(); log.append("speech")
+		elif s.has_method("pick_option"):
+			for i in s.core.slot_count():
+				s.pick_option(i, s.core.def["slots"][i]["correct"])
+			s.finish(); log.append("radio")
 		elif s.has_method("pick"):
 			var g2 := 0
 			while not s.dlg.finished and g2 < 30:

@@ -32,8 +32,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 ## M3 — Act I content (Days 2–5)
 - [x] Day 2 Jo: home, 3 conversations (Daniel, Lux, Fitz), two-lane rhythm gig, the Reply (S20) in the Grange basement at night
 - [~] Day 3 Tobi: home, 3 conversations (Adaeze, Ms. Calloway, Roy), Honesty Pull, Small Paths eavesdrop, Playhouse night (Prompt Book, S29). Still to do: child-height camera and walkable paths (it's menu-based now)
-- [ ] Day 4 Delphine: speech vignette, vault (S16 / S17), conversations
-- [ ] Day 5 Vern: radio vignette, the Reel, Hymn #212 (Act I climax)
+- [x] Day 4 Delphine: home, 3 conversations (June, Hank, Harlan), Town Hall speech vignette (three crowd groups, resignation flag), Town Hall vault at night (S16, S17)
+- [x] Day 5 Vern: home, conversations (Dolores, Silas), Dedication Hour (spells FAIR WATER, S12), WMRC archive at night (S21, S22), the Hymn #212 choice with consequences (Act I climax)
 - [ ] Encore days: Remnants run their old tools (Overlap)
 - [ ] Slice ending: S30 reveal (Day 1 was a casting call)
 
@@ -80,3 +80,4 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - 2026-10-19: Dental overlay Proof Tool + shared UI theme; Day 1 plays waking -> dialogue -> overlay -> Seal S25 -> dusk. Suites: core 101, dialogue 48, dental 23, town 9653, smoke OK.
 - 2026-10-19: Night, Case Board, Seal tests, the Slack; Day 1 loop playable end to end (S23, S25). Suites: core 101, dialogue 48, dental 23, board 13, town 9653, smoke OK.
 - 2026-10-19: Data-driven days (days.json); Days 2 and 3 playable; rhythm game, eavesdrop, Honesty Pull; robot-player smoke test plays Days 1-3 through the real UI. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 187, town 9653, smoke OK. Note: S30 (Day 1 was staged) is provable from Day 3 by tying the appointment book to the Prompt Book. Decide whether to gate it later.
+- 2026-10-19: Act I complete (Days 1-5): speech, radio, vault, Hymn choice; 11 seals reachable by Day 6 in the robot run. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 277, day45 29, town 9653, smoke OK. Fixed dark-on-dark text contrast on radio and night screens. Known: night search screens are a bare scatter of buttons; the Hymn's consequences (mood, suspicion, Slack text) exist but no Awakened NPC behaviour yet.

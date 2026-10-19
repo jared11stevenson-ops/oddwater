@@ -20,6 +20,7 @@ var suspicion: RefCounted
 var remnants: RefCounted
 var town_mood := 60
 var ending := ""
+var flags: Dictionary = {}   # story flags: hymn_aired, delphine_resigned ...
 var honesty_pull := 0   # a child's fibs build up; at 100 the truth blurts out (resets each day)
 
 
@@ -89,6 +90,16 @@ func advance(keep_note: String = "") -> Phase:
 	return phase
 
 
+## Vern's choice. Airing Hymn #212 wakes the walk-ons: the town gets afraid (fog), the Waking grows.
+func apply_hymn(aired: bool) -> void:
+	flags["hymn_aired"] = aired
+	flags["hymn_decided"] = true
+	if aired:
+		town_mood = clampi(town_mood - 25, 0, 100)
+		for npc in ["silas", "bea", "dolores", "fitz", "roy", "connie"]:
+			suspicion.raise(npc, 10)   # the Awakened are watching you now
+
+
 func ending_for() -> String:
 	var order := ["fair_water", "low_water", "same_time_tomorrow"]
 	for key in order:
@@ -109,7 +120,7 @@ func ending_for() -> String:
 func to_dict() -> Dictionary:
 	return {"version": 1, "day": day, "phase": int(phase), "notes": notes.to_dict(),
 		"board": board.to_dict(), "suspicion": suspicion.values, "remnants": remnants.by_life,
-		"mood": town_mood, "ending": ending}
+		"mood": town_mood, "ending": ending, "flags": flags}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -121,6 +132,7 @@ func load_dict(d: Dictionary) -> void:
 	remnants.by_life = d["remnants"].duplicate(true)
 	town_mood = int(d["mood"])
 	ending = d["ending"]
+	flags = d.get("flags", {}).duplicate()
 	_enter_day_tools_only()
 
 

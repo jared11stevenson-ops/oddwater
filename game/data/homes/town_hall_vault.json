@@ -1,0 +1,105 @@
+{
+ "life": "delphine",
+ "title": "Friday, 10:05 p.m.",
+ "intro": "Town Hall, after hours. The great clock ticks above you like a patient animal.",
+ "items": [
+  {
+   "id": "box61",
+   "label": "Archive box: SEPT 1961",
+   "kind": "prop",
+   "x": 200,
+   "y": 420,
+   "text": "A box marked in green ink. Inside, one sheet: 'EVACUATION REPORT. 913 persons accounted for. Signed E. Pruitt, 9 Sept, 6 p.m.' The pen leaked. Your thumb comes away green.",
+   "note": [
+    "curiosity",
+    20
+   ],
+   "evidence": "LF-035"
+  },
+  {
+   "id": "memo",
+   "label": "Authority memo, folder 7",
+   "kind": "prop",
+   "x": 560,
+   "y": 300,
+   "text": "'Close gates upon first surge. Schedule takes precedence.' Stamped 7 September 1961. Somebody has underlined 'precedence' so hard it went through.",
+   "note": [
+    "curiosity",
+    15
+   ],
+   "evidence": "LF-034"
+  },
+  {
+   "id": "clock",
+   "label": "Behind the clock face",
+   "kind": "role",
+   "x": 960,
+   "y": 420,
+   "text": "You climb the ladder. Behind the dial is a movement older than the Hall. The minute-hand pin has been filed flat in one place, so it can't pass 4:12 without a click.",
+   "note": [
+    "curiosity",
+    15
+   ]
+  },
+  {
+   "id": "minutes",
+   "label": "Council minutes, 1961",
+   "kind": "role",
+   "x": 1360,
+   "y": 280,
+   "text": "Every month for sixty-three years: 'Nothing to report.' Except one page, 11 September 1961, in a different hand: 'Report: 212.' Nothing else.",
+   "note": [
+    "curiosity",
+    15
+   ]
+  },
+  {
+   "id": "portraits",
+   "label": "Portrait wall: the Pruitts",
+   "kind": "decoy",
+   "x": 300,
+   "y": 700,
+   "text": "Four grim faces and a fifth hook with no frame. Dust shows where it was.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  },
+  {
+   "id": "stamp",
+   "label": "Rubber stamp: ACCOUNTED FOR",
+   "kind": "decoy",
+   "x": 760,
+   "y": 760,
+   "text": "A heavy, green, wooden stamp. 'ACCOUNTED FOR.' You stamp the back of your hand. It doesn't wash off.",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "urn",
+   "label": "Dusty trophy: Best Pageant 1974",
+   "kind": "decoy",
+   "x": 1160,
+   "y": 760,
+   "text": "The 1974 pageant was apparently outstanding. The lamp-bearer has been cut out of the photograph.",
+   "note": [
+    "warmth",
+    2
+   ]
+  },
+  {
+   "id": "window",
+   "label": "Window onto the square",
+   "kind": "role",
+   "x": 1500,
+   "y": 640,
+   "text": "The square is empty. At 4:12 the clock holds for a minute. You are not here for that. Not tonight.",
+   "note": [
+    "curiosity",
+    5
+   ]
+  }
+ ]
+}

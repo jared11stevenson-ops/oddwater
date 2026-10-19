@@ -4,24 +4,26 @@ func _initialize() -> void:
 	root.add_child(main)
 	await process_frame
 	var out := OS.get_environment("SHOT")
-	# rhythm mid-song
-	main._rhythm({"song": "gig_set_one"})
+	main._speech({"speech": "town_hall"})
+	await process_frame
+	var sp: Control = null
+	for c in main.ui.get_children():
+		if c.has_method("choose_option"): sp = c
+	sp.choose_option(1); sp.choose_option(0)
+	for i in 3: await process_frame
+	root.get_viewport().get_texture().get_image().save_png(out + "_speech.png")
+	main._radio({"set": "dedication_hour"})
 	await process_frame
 	var r: Control = null
 	for c in main.ui.get_children():
-		if c.has_method("tap_lane"): r = c
-	r.clock = 4.6
-	r.rhythm.update(4.6)
-	r.tap_lane(0); r.tap_lane(1)
+		if c.has_method("pick_option"): r = c
+	r.pick_option(0, 0); r.pick_option(1, 1)
 	for i in 3: await process_frame
-	root.get_viewport().get_texture().get_image().save_png(out + "_rhythm.png")
-	# eavesdrop
-	main._eavesdrop({"map": "tobi_day"})
+	root.get_viewport().get_texture().get_image().save_png(out + "_radio.png")
+	main._night()
 	await process_frame
-	var e: Control = null
-	for c in main.ui.get_children():
-		if c.has_method("listen_spot"): e = c
-	e.listen_spot("vent"); e.listen_spot("dock")
+	main.snoop.interact('box61') if main.snoop.items.has('box61') else null
+	main.snoop.interact(main.snoop.items.keys()[0])
 	for i in 3: await process_frame
-	root.get_viewport().get_texture().get_image().save_png(out + "_eaves.png")
+	root.get_viewport().get_texture().get_image().save_png(out + "_night.png")
 	quit()

@@ -88,7 +88,9 @@
   "truth": "Dedications spell FAIR WATER",
   "layer": "L2",
   "tool": "reel",
-  "evidence": []
+  "evidence": [
+   "LF-022"
+  ]
  },
  {
   "id": "S13",
@@ -117,7 +119,8 @@
   "layer": "L3",
   "tool": "vault_key",
   "evidence": [
-   "LF-035"
+   "LF-035",
+   "LF-011"
   ]
  },
  {
@@ -126,7 +129,8 @@
   "layer": "L3",
   "tool": "vault_key",
   "evidence": [
-   "LF-035"
+   "LF-035",
+   "LF-034"
   ]
  },
  {
@@ -157,7 +161,10 @@
   "truth": "Hymn #212 is missing",
   "layer": "L3",
   "tool": "reel",
-  "evidence": []
+  "evidence": [
+   "LF-036",
+   "LF-069"
+  ]
  },
  {
   "id": "S22",

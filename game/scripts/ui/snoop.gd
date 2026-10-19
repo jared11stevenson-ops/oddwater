@@ -43,6 +43,7 @@ func _build() -> void:
 	title.text = "%s\n%s" % [home["title"], home["intro"]]
 	title.position = Vector2(60, 30)
 	title.add_theme_font_size_override("font_size", 34)
+	title.add_theme_color_override("font_color", Color("f6ecd2"))
 	add_child(title)
 	bar = ProgressBar.new()
 	bar.position = Vector2(60, 140)
@@ -71,6 +72,9 @@ func _build() -> void:
 		b.name = id
 		add_child(b)
 	panel = PanelContainer.new()
+	var psb := StyleBoxFlat.new()
+	psb.bg_color = Color("ffe9a8"); psb.border_color = Color("14121c"); psb.set_border_width_all(5); psb.set_content_margin_all(16)
+	panel.add_theme_stylebox_override("panel", psb)
 	panel.position = Vector2(160, 900)
 	panel.custom_minimum_size = Vector2(1600, 150)
 	text_label = Label.new()

@@ -9,7 +9,7 @@ var idx := 0
 var btn: Button
 
 
-func setup(next_life: Dictionary, decision_time: String) -> void:
+func setup(next_life: Dictionary, decision_time: String, extra: Array = []) -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	lines = [
 		"4:11 a.m.",
@@ -18,6 +18,7 @@ func setup(next_life: Dictionary, decision_time: String) -> void:
 		"%s hit send at %s last night. A decision. A small one, the size of a life." % [next_life["name"], decision_time],
 		"A sound like a church bell heard through a wall. The bed is empty. The kettle is already on.",
 		"Someone tied a red ribbon on a doorknob.",
+		] + extra + [
 		"Tomorrow you will be:\n\n%s, %s." % [next_life["name"], next_life["role"].to_lower()]]
 	label = Label.new()
 	label.position = Vector2(240, 280)

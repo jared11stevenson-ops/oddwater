@@ -9,6 +9,8 @@ const DialogueUI = preload("res://scripts/ui/dialogue_ui.gd")
 const DentalUI = preload("res://scripts/ui/dental_ui.gd")
 const RhythmUI = preload("res://scripts/ui/rhythm_ui.gd")
 const EavesdropUI = preload("res://scripts/ui/eavesdrop_ui.gd")
+const SpeechUI = preload("res://scripts/ui/speech_ui.gd")
+const RadioUI = preload("res://scripts/ui/radio_ui.gd")
 const BoardUI = preload("res://scripts/ui/board_ui.gd")
 const SlackUI = preload("res://scripts/ui/slack_ui.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
@@ -135,8 +137,15 @@ func _next_step() -> void:
 			match s["kind"]:
 				"rhythm": _rhythm(s)
 				"small_paths": _eavesdrop(s)
+				"speech": _speech(s)
+				"radio": _radio(s)
 				_:
 					_next_step()
+		"event":
+			if s["kind"] == "hymn":
+				_hymn()
+			else:
+				_next_step()
 		_:
 			_next_step()
 
@@ -183,6 +192,54 @@ func _eavesdrop(step: Dictionary) -> void:
 	ui.add_child(e)
 	e.setup(state, step["map"])
 	e.finished.connect(func(_r): _next_step())
+
+
+func _speech(step: Dictionary) -> void:
+	_clear()
+	_bg(Color("d9cfb5"))
+	var sp := SpeechUI.new()
+	ui.add_child(sp)
+	sp.setup(state, step["speech"])
+	sp.finished.connect(func(_r): _next_step())
+
+
+func _radio(step: Dictionary) -> void:
+	_clear()
+	_bg(Color("1b1a2e"))
+	var r := RadioUI.new()
+	ui.add_child(r)
+	r.setup(step["set"])
+	r.finished.connect(func(res):
+		state.notes.add("warmth", 3 * res["stars"])
+		state.notes.add("curiosity", 4 * res["stars"])
+		if res["spells"] and state.board.evidence.has("LF-022"):
+			state.board.pin("LF-022", "what")
+			if state.board.complete_test("S12", state.day):
+				_stamp("S12", "The first letters of Vern's dedications, week after week, spell FAIR WATER. Someone has been sending a message down the radio for a very long time.")
+				return
+		_next_step())
+
+
+## The Act I climax: Vern's last show. Does the hymn go out?
+func _hymn() -> void:
+	_clear()
+	_bg(Color("0e0d1a"))
+	_text("11:58 p.m. The last record is spinning down.\n\nThe reel is cued: four rising notes, then the Low Mercy Chapel choir, 1959. Hymn 212. It has not been heard in this valley for sixty-one years.\n\nIf it goes out, everyone in the valley will hear it. Everyone.", Vector2(260, 200), 40, Color("f6ecd2"))
+	_button("Air Hymn 212", Vector2(260, 700), func(): _hymn_result(true), 560.0)
+	var b2 := Button.new(); b2.text = "Play something else"
+	b2.position = Vector2(900, 700); b2.custom_minimum_size = Vector2(560, 100)
+	b2.add_theme_font_size_override("font_size", 34)
+	b2.pressed.connect(func(): _hymn_result(false))
+	ui.add_child(b2)
+
+
+func _hymn_result(aired: bool) -> void:
+	state.apply_hymn(aired)
+	state.notes.add("nerve", 25 if aired else -10)
+	_clear()
+	_bg(Color("0e0d1a"))
+	_text("You open the fader.\n\nFour notes. Then a roomful of voices from sixty-one years ago, breathing in at once.\n\nOutside, the lake goes very still." if aired else "You let it spin down. The hymn stays on the reel. You tell yourself you will play it tomorrow.", Vector2(260, 260), 42, Color("7fd0d8") if aired else Color("b8b0d8"))
+	_button("Sign off", Vector2(260, 760), _next_step)
 
 
 func _applause(stars: int, line: String, cont: Callable) -> void:
@@ -265,7 +322,11 @@ func _slack() -> void:
 	var next_life: Dictionary = state.lives[state.day]
 	var s := SlackUI.new()
 	ui.add_child(s)
-	s.setup(next_life, next_life["decision_time"])
+	var extra: Array = []
+	var se: Dictionary = day_def().get("slack_extra", {})
+	if not se.is_empty():
+		extra = se.get("hymn_aired" if state.flags.get("hymn_aired", false) else "hymn_declined", [])
+	s.setup(next_life, next_life["decision_time"], extra)
 	s.finished.connect(_new_day)
 
 
