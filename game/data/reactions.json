@@ -1,0 +1,22 @@
+{
+ "memory": {
+  "stole from me": {"line": ["You took money from me. I haven't forgotten.", "Don't think I don't know what you did with my wallet."], "tone": "cold", "suspicion": 20},
+  "saw %s steal": {"line": ["I saw what you did, you know. I saw it.", "People talk. I saw it myself."], "tone": "cold", "suspicion": 12},
+  "insulted me": {"line": ["I'm still thinking about what you said to me.", "After the way you spoke to me, I'm surprised you'd walk up."], "tone": "cold", "suspicion": 10},
+  "saw an ugly scene": {"line": ["That scene yesterday... I'm trying to be polite about it."], "tone": "wary", "suspicion": 6},
+  "gave me a gift": {"line": ["I never thanked you properly for the money. Thank you.", "You didn't have to do that. I haven't forgotten it."], "tone": "warm", "suspicion": -8}
+ },
+ "rumor": {
+  "believed": ["I heard something about you. \"%s\" Is that true?", "People are saying: \"%s\" I'm only repeating it."],
+  "gossip": ["Have you heard? \"%s\" Everyone's talking."]
+ },
+ "mood": {
+  "radiant": "They're in a good mood, and it shows.",
+  "content": "",
+  "flat": "They seem a little flat today.",
+  "low": "They look worn down. Something is weighing on them.",
+  "desperate": "They look like they haven't slept. There's something wrong, and they're hiding it badly."
+ },
+ "money": {"broke": "They check their pockets as they talk. Money is tight.", "flush": ""},
+ "vacancy": ["It's not the same without %s. Nobody says where they went.", "%s left, didn't they. Funny, I can't remember a goodbye."]
+}

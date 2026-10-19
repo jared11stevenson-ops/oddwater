@@ -16,11 +16,11 @@ var aside_label: Label
 var box: VBoxContainer
 
 
-func setup(state: RefCounted, file: String, id: String) -> void:
+func setup(state: RefCounted, file: String, id: String, sim: RefCounted = null) -> void:
 	dlg = Dialogue.new()
 	gstate = state
 	evid_defs = load("res://scripts/core/data.gd").load_json("evidence.json")
-	dlg.start(state, file, id)
+	dlg.start(state, file, id, sim)
 	npc = dlg.convo["npc"]
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var panel := PanelContainer.new()
@@ -64,6 +64,11 @@ func _show() -> void:
 	who_label.text = n.get("speaker", "")
 	text_label.text = n["text"]
 	aside_label.text = n.get("aside", "")
+	if dlg.node_id == dlg.convo["start"] and not dlg.openers.is_empty():
+		var lines: Array = []
+		for o in dlg.openers:
+			lines.append(("\"%s\"" % o["text"]) if o["tone"] != "aside" else "(%s)" % o["text"])
+		aside_label.text = "\n".join(lines) + ("\n" + aside_label.text if aside_label.text != "" else "")
 	for c in box.get_children():
 		c.queue_free()
 	if dlg.finished:

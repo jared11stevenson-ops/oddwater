@@ -2,6 +2,7 @@ extends RefCounted
 ## Data-driven conversations. Choices change Notes, suspicion and evidence; none can hard-fail the run.
 
 const Data = preload("res://scripts/core/data.gd")
+const Reactions = preload("res://scripts/core/reactions.gd")
 
 var state: RefCounted
 var convo: Dictionary
@@ -9,14 +10,21 @@ var node_id := ""
 var finished := false
 var tells: Array = []
 var claim_defs: Dictionary = {}
+var openers: Array = []     # what this person brings up, read from the living town (see reactions.gd)
 
 
-func start(game_state: RefCounted, file: String, id: String) -> Dictionary:
+func start(game_state: RefCounted, file: String, id: String, sim: RefCounted = null) -> Dictionary:
 	state = game_state
 	convo = Data.load_json("convos/" + file)[id]
 	node_id = convo["start"]
 	finished = false
 	claim_defs = Data.load_json("claims.json")
+	openers = Reactions.openers(sim, convo["npc"], state.current_life()["id"], int(state.day)) if sim != null else []
+	for o in openers:
+		if int(o["suspicion"]) > 0:
+			state.suspicion.raise(convo["npc"], int(o["suspicion"]))
+		elif int(o["suspicion"]) < 0:
+			state.suspicion.calm(convo["npc"], -int(o["suspicion"]))
 	_arrive()
 	return current()
 

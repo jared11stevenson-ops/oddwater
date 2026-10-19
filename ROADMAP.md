@@ -33,7 +33,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 
 ## M1.4 — Gameplay-first redesign (design: `02-gdd/03-gameplay-first-design.md`, supersedes the lore-led charters)
 - [x] The Cause and STEER: nightly host choice from restlessness plus relative priority; comfort/unsettle night actions; observable tells; authored order holds over 20 seeds, two nudges steer (21 checks); host-by-life flow; Long Night screen
-- [ ] The reactivity layer: conversations read the sim (memories, believed rumours, mood, money) so the town brings up what you did, in any body
+- [x] The reactivity layer (`core/reactions.gd`, `data/reactions.json`, 14 checks): people open by bringing up what the host did to them or in front of them (theft, insult, gift), rumours they believe, gossip, friends who are gone, mood and money; suspicion shifts with it. A different body is not blamed for the theft, but the rumour follows
 - [ ] Case file: Pattern grid (host history x restlessness / last visitor / place), timeline, access chain, theory; predict tomorrow's host twice to prove the Rule
 - [ ] Night visits to past lives and the end-of-run Reckoning (long-arc payoff for the sandbox player)
 - [ ] Body search: access chain and the Visit; the body's condition worsens as a clue

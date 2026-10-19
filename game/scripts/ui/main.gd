@@ -187,7 +187,7 @@ func _next_step() -> void:
 		"convo":
 			var d := DialogueUI.new()
 			ui.add_child(d)
-			d.setup(state, s["file"], s["id"])
+			d.setup(state, s["file"], s["id"], sim)
 			d.finished.connect(func(npc): _after_convo(npc, s))
 		"vignette":
 			match s["kind"]:
