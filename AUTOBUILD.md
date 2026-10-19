@@ -1,6 +1,6 @@
 # Autonomous build — instructions for the hourly run
 
-You are continuing UNDERSTUDY, a single-player, offline narrative mystery game in **Godot 4.7 (GDScript)**. Read `02-gdd/00-lore-loop-charter.md` and `ROADMAP.md` first. Canon is in `01-lore-bible/`. Quality bar: Nintendo first-party polish, 4K, Switch/mobile, accessible, cozy and funny on top, grief underneath.
+You are continuing UNDERSTUDY, a single-player, offline narrative mystery game in **Godot 4.7 (GDScript)**. Read `02-gdd/00-lore-loop-charter.md` and `ROADMAP.md` first. Canon is in `01-lore-bible/`. Quality bar: Nintendo first-party polish and a Switch-class performance budget (the *standard*, not a port target: there is no Switch release), 4K-capable, shipping on mobile (iOS/Android), accessible, cozy and funny on top, grief underneath.
 
 ## One run = one increment
 1. **Set up** (the container is fresh each time):
@@ -16,7 +16,7 @@ You are continuing UNDERSTUDY, a single-player, offline narrative mystery game i
 
 ## Rules
 - Single-player and offline only. No accounts, telemetry, ads or live service.
-- Be honest in commit messages and docs: say what was verified and what was not. Do not claim device performance, Switch support or final-art quality you have not demonstrated.
+- Be honest in commit messages and docs: say what was verified and what was not. Do not claim device performance or final-art quality you have not demonstrated.
 - Do not rewrite canon in `01-lore-bible/`. Additive notes only; if the build needs a lore decision, write the question in `NOTES-FOR-USER.md` and carry on with the safest default.
 - No new dependencies, binary asset downloads or network calls beyond the Godot download above. Never commit secrets. Generated assets must be original (no copied art, music or fonts).
 - Keep the repo small: do not commit `.godot/`, screenshots larger than ~1 MB, or build outputs. Reference renders go in `03-art/reference/` only when they document a milestone.

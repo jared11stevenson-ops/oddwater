@@ -21,6 +21,6 @@ Next: the dental vignette (X-ray overlay Proof Tool), Night + Case Board UI, the
 Known: dialogue screen is functional but plain (no portraits or comic framing yet).
 
 ## Platform notes (honest)
-- Godot does not ship Nintendo Switch export. Switch needs a licensed third-party port (e.g. W4 Games / Lone Wolf) and Nintendo developer-program access. Everything here is written to be portable; the Switch build is a later, external step.
+- **Shipping target: mobile (iOS/Android). There is no Switch port.** Switch is only the quality and performance standard we hold ourselves to (Switch-class budgets: ~30 fps locked equivalent, tight memory).
 - 4K: the UI is authored at 1920×1080 with `canvas_items` stretch, so it renders crisp at 3840×2160. 3D target budgets are in `02-gdd/01-core-systems-spec.md`.
-- Nothing has been profiled on device yet; frame-rate targets (Switch 30 fps, mobile 60 fps) are unverified.
+- Nothing has been profiled on device yet; frame-rate targets (Switch-class budget; mobile 60 fps) are unverified.

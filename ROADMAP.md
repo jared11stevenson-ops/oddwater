@@ -64,15 +64,15 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - [ ] Pause / title / chapter select / photo mode
 
 ## M8 — Performance and release
-- [ ] Profiling scripts and frame-time budget tests (Switch 30 fps, mobile 60 fps targets)
+- [ ] Profiling scripts and frame-time budget tests (Switch-class budget as the bar; mobile 60 fps target)
 - [ ] LOD / streaming per district
 - [ ] Export presets (Android, iOS); CI that runs every suite
-- [ ] Switch port handoff package (needs a licensed third-party port and devkit; **human step**)
+- [ ] Release checklist for iOS and Android stores (**needs developer accounts: human step**)
 
 ## Not achievable autonomously (tracked, not forgotten)
 - Final hand-drawn/modelled art, professional VO and a composed score: need artists, actors, composers. The build produces placeholders and clean hook points.
 - Real-device profiling and certification: needs hardware and platform accounts.
-- Nintendo Switch export: needs a licensed port and a Nintendo developer account.
+- Store submission: needs Apple and Google developer accounts.
 - Playtesting with real players.
 
 ## Change log

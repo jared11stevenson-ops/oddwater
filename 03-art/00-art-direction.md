@@ -65,7 +65,7 @@ Render a frame: `xvfb-run -a godot --path game --rendering-driver opengl3 --rend
 ## Honest status and next fixes
 
 - Everything is **primitive geometry**: houses are boxes, people are capsules. This proves the *rendering language*, not the final art.
-- Frames were rendered by **software GL** (Mesa llvmpipe) at up to 3840×2160. That proves the shaders are correct at 4K. **It says nothing about performance** on Switch or mobile.
+- Frames were rendered by **software GL** (Mesa llvmpipe) at up to 3840×2160. That proves the shaders are correct at 4K. **It says nothing about performance** on mobile or Switch-class hardware.
 - The post pass uses `hint_screen_texture` mip blur and one full-screen pass. It's designed to be cheap, but is **unprofiled on device**.
 - Known flaws: the angled brows read angry (need neutral), the lake is a flat disc (needs animated wash and shoreline), characters need proper silhouettes, no real backgrounds or textures yet.
 - Next art passes: (1) neutral-brow face set and 6 body silhouettes, (2) painterly lake and shoreline, (3) one hand-modelled home interior (Mags's bedroom) with the Wake & Snoop camera, (4) comic-panel cutscene framework, (5) wire `hush` and `truth` to `GameState`, (6) device profiling.

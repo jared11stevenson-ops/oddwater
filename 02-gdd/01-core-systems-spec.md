@@ -75,7 +75,7 @@ Text scale 100–200%; three colourblind modes (tells have shape cues, not colou
 ## 10. Scope and performance budget
 
 - Full game: 15 days × ~14 min + Day 15 finale ≈ **4 hours** first run; **7–8 hours** to see everything.
-- Targets: Switch locked 30 fps docked and handheld; mobile 60 fps. Diorama town of ~120 buildings, ≤180 k tris on screen, baked GI + one real-time light.
+- Platform: **mobile (iOS/Android) is the shipping target. There is no Switch release.** Switch is only the quality and performance *bar*: the game must be budgeted so it would hold a locked 30 fps on Switch-class hardware, and run at 60 fps on current mobile devices. Diorama town of ~120 buildings, ≤180 k tris on screen, baked GI + one real-time light.
 - Memory plan: stream per-day; keep the Model scene resident.
 
 ## 11. Vertical slice mapping

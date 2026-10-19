@@ -39,7 +39,7 @@ A game must have a question that sells it in one breath. Ours has three, and the
 
 ## 3. The loop: Wake · Perform · Step Off · Night · Slack
 
-One in-game day = **12–15 minutes** of play, designed for a commute, a lunch break or a Switch couch session.
+One in-game day = **12–15 minutes** of play, designed for a commute, a lunch break or a sofa session.
 
 | Beat | Time | What you do | Lore it operates | Reward |
 |---|---|---|---|---|
