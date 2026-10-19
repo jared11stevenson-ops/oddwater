@@ -12,8 +12,8 @@ This charter supersedes any conflict with `01-lore-bible/`. The canon (who, what
 | Player | What they want | What the game gives them | Where they stop |
 |---|---|---|---|
 | **Cozy** | Charm, pets, mini-games, "one more day" | Complete 15-day story with a satisfying ending (**Staying Day**), gorgeous diorama, 13 distinct toys, collectibles | Credits. Happy. |
-| **Engaged** | A mystery to solve | The Case Board, tells, Seals that unlock powers, endings 1 and 2 | After ending 1/2, sees "something's missing" and starts a Season 2 run |
-| **Obsessive** | A world that survives scrutiny | 40 Seals, 90 fragments, 30 cross-references, the Community Roll, the secret fourth ending, a canon that answers fan theories | Never. This is the audience that makes the game last. |
+| **Engaged** | A mystery to solve | The Case Board, tells, Seals that unlock powers, endings 1 and 2 | After ending 1/2, sees "something's missing" and starts a New Run (offline New Game+) |
+| **Obsessive** | A world that survives scrutiny | 40 Seals, 90 fragments, 30 cross-references, the Roll of the 212, the secret fourth ending, a canon that answers fan theories | Never. This is the audience that makes the game last. |
 
 **Design test for every feature:** *can a player enjoy it without understanding it, and enjoy it more if they do?* If it fails either half, redesign it.
 
@@ -63,7 +63,7 @@ So the player carries evidence across days and waits for the day they hold the r
 
 - **Overlap as tool access.** Your earlier Remnants will run their old tool for you if they like you (WARMTH) or fear you (NERVE). Mags's Remnant will run the dental overlay on Silas on Day 9, if you were kind to her on Day 1.
 - **Bleed as discovery.** A habit from a past role can unlock a Seal in a later one (the drummer's tap opens the Tape; the child's "why?" breaks the Mayor's deflection).
-- **Replay.** A Season 2 run makes you want to do things differently in a different order. The Seals you missed are the reason.
+- **Replay.** A New Run (New Game+) makes you want to do things differently in a different order. The Seals you missed are the reason.
 
 | Day | Life | Proof Tool | What it proves |
 |---|---|---|---|
@@ -128,7 +128,7 @@ A **Seal** is a proven truth. The player pins evidence on the Case Board and *te
 | S36 | The Chorus woke because Wren refused | L5 | Prop Room, Day 14 |
 | S37 | The Cut Clause | Ω | **The Pause** (Ellis) |
 | S38 | Nell is Understudy #0 | Ω | Ottoline + struck name on the Roll |
-| S39 | The Roll is complete (212) | Ω | **Community Roll** + bell tower |
+| S39 | The Roll is complete (212) | Ω | **The Roll**: assemble all 212 names from in-game sources |
 | S40 | Fair water | Ω | **Reel** + graffiti + Wren's drawing |
 
 ---
@@ -158,7 +158,7 @@ Abilities are *unlocked by truths*. Each is fun to use, helps casual players too
 In the Prop Room there is a diorama of Low Mercy under glass: the drowned town as a tabletop model. **Every Seal places one piece in it**: a roof, a lamp-post, the church spire, a tiny dentist's chair. It is:
 
 - The **progress UI** (40 pieces, no menus)
-- The **collection hook** for cozy players (miniatures, pets, props; shareable screenshots)
+- The **collection hook** for cozy players (miniatures, pets, props; a photo mode)
 - The **visual spoiler-proof memory** of what you understand
 - In Ending 4, the **lamp** lights it, one window at a time, 212 of them.
 
@@ -177,17 +177,15 @@ A casual player's ending is a *good* ending, not a failure. The three others are
 
 ---
 
-## 9. Lore beyond the game
+## 9. Lore inside the game (single-player, fully offline)
 
-The audience that stays is built outside the app as much as inside it:
+There is no online component, no accounts, no shared state. The lore's depth lives in the game world itself:
 
-1. **WMRC 88.1 live stream.** A real, in-world radio station that plays the Dedication Hour. The songs spell FAIR WATER over a month.
-2. **Little Mercy Public Library site.** An in-world web page with the Index, the Pageant programs and Priya's unfinished entries.
-3. **The Community Roll.** Every player's pinned evidence contributes one fragment of one of 212 names; the Roll fills in for everyone and unlocks S39 for all.
-4. **Season mode ("Same Time Tomorrow").** Opt-in: one in-game day unlocks per real day at 4:12 p.m. local; a global conversation runs for 15 days. Binge play stays available.
-5. **Shareable Theory Cards.** A one-screen summary of a player's board, with no spoilers.
-
----
+1. **WMRC 88.1.** A tunable in-game radio, in every home and the car. The Dedication Hour plays across the days; its songs spell FAIR WATER over the fifteen nights, for players who write them down.
+2. **The Library.** Priya's Index, the Pageant programs and the town archive are physical, browsable, searchable objects in the Little Mercy library.
+3. **The Roll.** The 212 names are assembled by the player alone, one name at a time, from the bell-tower register, the Reply Tape, the Chapel candles, Casimir's ledger, gravestone-less memorials and the Dog Book. Completing it sets S39.
+4. **New Run (New Game+).** After any ending, the player may start the 15 days again, keeping Seals and Abilities. The town is the same, the player is not: cross-references pay off, a few scenes only appear on a second pass, and the missing Seals become the goal.
+5. **Photo mode and a Theory Board export** that saves to the device only, for the player's own use.
 
 ## 10. Changes to the lore bible
 
@@ -197,7 +195,7 @@ None of these overturn canon. They deepen it so the lore is *operable*.
 2. **Seals** replace the Seven Keys as the unit of progress; the Seven Keys remain as the Ω subset (S37–S40 + K1–K7).
 3. **The Model** replaces a log or journal as the progress UI.
 4. **Day 14 and Day 15 are gameplay** (the Prop Room and the Raising), not cutscene.
-5. **The Community Roll** is a canonical object: the bell-tower register can be completed by players.
+5. **The Roll** is a canonical object the player can complete alone from in-game sources.
 6. **Ending 3 is the warm default.** It is a good ending, no longer the "stay" failure case.
 7. **Nudge** lets the player shape a Decision's form, giving agency inside a fixed 13-day spine.
 8. **The Inner Voice (Wren)** is also the accessibility voice: she gives plain-language hints after two failed attempts.

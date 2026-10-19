@@ -49,7 +49,7 @@ At dusk a **Notes card** shows what you left behind in the Remnant, in one line 
 4. **Test.** When a plausible link or a set of ≥2 cards matches a Seal's conditions, a **Test** appears at the next opportunity where the Proof Tool exists (the role, the place, the day).
 5. **Seal.** Pass the 20–40 s test: the Seal sets, a Model piece lands, Wren says one line.
 
-Rules: no Seal can be missed *permanently* before Season 2 starts; the Prop Room on Day 14 reopens up to 6 unfinished Tests as "rehearsals," because we never lock the story behind a bad day.
+Rules: no Seal can be missed *permanently* before a New Run starts; the Prop Room on Day 14 reopens up to 6 unfinished Tests as "rehearsals," because we never lock the story behind a bad day.
 
 ## 7. Presentation hooks tied to systems
 
@@ -95,3 +95,5 @@ Night locations: the lakeshore, the Playhouse, Town Hall (after hours), the Gran
 ## 12. Next in line
 
 Deliverable 3 (Act I script, all 90 fragments) writes against these Seals: every line of Day 1–5 dialogue is tagged with the Seal it feeds.
+
+**Single-player only.** No online features, accounts, shared state or live service. Save data is local.
