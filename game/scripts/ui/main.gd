@@ -4,6 +4,8 @@ extends Control
 const GameState = preload("res://scripts/core/game_state.gd")
 const Snoop = preload("res://scripts/ui/snoop.gd")
 const DialogueUI = preload("res://scripts/ui/dialogue_ui.gd")
+const DentalUI = preload("res://scripts/ui/dental_ui.gd")
+const UITheme = preload("res://scripts/ui/ui_theme.gd")
 const POST := preload("res://shaders/page_post.gdshader")
 
 const DAY1_PATIENTS := ["silas", "bea", "cal"]
@@ -27,7 +29,7 @@ func _ready() -> void:
 	post_mat = ShaderMaterial.new(); post_mat.shader = POST; rect.material = post_mat
 	layer.add_child(rect)
 	var ui_layer := CanvasLayer.new(); ui_layer.layer = 60; add_child(ui_layer)
-	ui = Control.new(); ui.set_anchors_preset(Control.PRESET_FULL_RECT); ui_layer.add_child(ui)
+	ui = Control.new(); ui.set_anchors_preset(Control.PRESET_FULL_RECT); ui.theme = UITheme.build(); ui_layer.add_child(ui)
 	_title()
 
 
@@ -92,7 +94,7 @@ func _next_patient() -> void:
 	var d := DialogueUI.new()
 	ui.add_child(d)
 	d.setup(state, "day01.json", queue.pop_front())
-	d.finished.connect(func(_n): _next_patient())
+	d.finished.connect(_after_convo)
 
 
 func _step_off() -> void:
@@ -121,3 +123,49 @@ func _describe(n: Dictionary) -> String:
 		if absi(v) >= 8:
 			out.append("  %s (%+d)" % [words[k][1 if v > 0 else 0], v])
 	return "\n".join(out) if not out.is_empty() else "  unremarkable. A quiet Tuesday."
+
+
+## After a conversation, some patients trigger the X-ray overlay Proof Tool.
+func _after_convo(npc: String) -> void:
+	var challenged: bool = npc == "silas" and state.board.evidence.has("LF-056")
+	if not challenged:
+		_next_patient()
+		return
+	_clear()
+	var bg := ColorRect.new(); bg.color = Color("e9e4d4"); bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(bg)
+	var d := DentalUI.new()
+	ui.add_child(d)
+	d.setup(npc)
+	d.finished.connect(_after_overlay)
+
+
+func _after_overlay(result: Dictionary) -> void:
+	if result["proven"] and result["seal"] != "":
+		for e in ["LF-055", "LF-056"]:
+			state.board.pin(e, "who")
+		state.notes.add("curiosity", 10)
+		if state.board.complete_test(result["seal"], state.day):
+			_stamp(result)
+			return
+	_next_patient()
+
+
+## A red Seal stamp on the page: the player's first proven truth.
+func _stamp(result: Dictionary) -> void:
+	_clear()
+	var bg := ColorRect.new(); bg.color = Color("f1dfc0"); bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(bg)
+	var l := Label.new()
+	l.text = "SEAL  %s\n\n%s\n\n(One piece of the Model is placed. Something small and dry in your head says: \"Told you.\")" % [result["seal"], result["verdict"]]
+	l.position = Vector2(220, 240)
+	l.custom_minimum_size = Vector2(1480, 0)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.add_theme_font_size_override("font_size", 42)
+	l.add_theme_color_override("font_color", Color("e23d3d"))
+	ui.add_child(l)
+	var b := Button.new(); b.text = "Next patient"
+	b.position = Vector2(220, 820); b.custom_minimum_size = Vector2(520, 100)
+	b.add_theme_font_size_override("font_size", 34)
+	b.pressed.connect(_next_patient)
+	ui.add_child(b); b.grab_focus()

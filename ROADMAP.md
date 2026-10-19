@@ -12,7 +12,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - [x] Ink & Odd Water shaders, style lab, town layout at 2x+ scale
 
 ## M1 — Day 1 fully playable (one complete loop)
-- [ ] Dental vignette: steady-hand drill + X-ray overlay Proof Tool (sets S23 / S25)
+- [~] Dental vignette: X-ray overlay Proof Tool done (sets S25, playable in Day 1 flow, shared paper/ink UI theme). Still to do: steady-hand drill UI (core `steadiness.gd` is done and tested), S23 via the Amos ledger
 - [ ] Seal Test flow: board shows testable seals; passing a 20–40 s test sets the Seal and places a Model piece
 - [ ] Case Board UI: cards, pins to Who/What/When/Why, string links, touch + gamepad
 - [ ] Night phase: one location (Mags's practice after hours) with search + eavesdrop
@@ -77,3 +77,4 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 
 ## Change log
 (Each autonomous run appends one line: date, what shipped, test counts.)
+- 2026-10-19: Dental overlay Proof Tool + shared UI theme; Day 1 plays waking -> dialogue -> overlay -> Seal S25 -> dusk. Suites: core 101, dialogue 48, dental 23, town 9653, smoke OK.

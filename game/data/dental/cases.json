@@ -1,0 +1,46 @@
+{
+ "silas": {
+  "patient": "Silas Weatherby", "npc": "silas", "need": 3, "seal": "S25",
+  "record_name": "T. Rook, 1958 (C. Pell)",
+  "record": {
+   "19": {"kind": "crown", "material": "gold", "mark": "CP"},
+   "30": {"kind": "filling", "material": "amalgam", "mark": "CP"},
+   "14": {"kind": "inlay", "material": "gold", "mark": "CP"},
+   "3":  {"kind": "filling", "material": "amalgam", "mark": "CP"}
+  },
+  "current": {
+   "19": {"kind": "crown", "material": "gold", "mark": "CP"},
+   "30": {"kind": "filling", "material": "amalgam", "mark": "CP"},
+   "14": {"kind": "inlay", "material": "gold", "mark": "CP"},
+   "8":  {"kind": "filling", "material": "composite", "mark": "MP"},
+   "27": {"kind": "filling", "material": "amalgam", "mark": "AP"}
+  },
+  "verdict_match": "Three of Casimir Pell's marks, placed in 1958 for a man called Rook. They are in Silas Weatherby's mouth.",
+  "verdict_none": "Nothing here that you can prove."
+ },
+ "bea": {
+  "patient": "Bea Lindgren", "npc": "bea", "need": 2, "seal": "",
+  "record_name": "H. Voss, 1960 (C. Pell)",
+  "record": {
+   "5":  {"kind": "filling", "material": "amalgam", "mark": "CP"},
+   "12": {"kind": "filling", "material": "amalgam", "mark": "CP"}
+  },
+  "current": {
+   "5":  {"kind": "filling", "material": "amalgam", "mark": "CP"},
+   "12": {"kind": "filling", "material": "amalgam", "mark": "CP"}
+  },
+  "verdict_match": "Two of Casimir's fillings, 1960, for a Hester Voss. Bea has not had a single cavity since.",
+  "verdict_none": "Nothing here that you can prove."
+ },
+ "delphine": {
+  "patient": "Delphine Pruitt", "npc": "delphine", "need": 1, "seal": "",
+  "record_name": "no record on file",
+  "record": {},
+  "current": {
+   "30": {"kind": "crown", "material": "porcelain", "mark": "AP"},
+   "19": {"kind": "filling", "material": "composite", "mark": "AP"}
+  },
+  "verdict_match": "",
+  "verdict_none": "All of this is Alan Pell's work, from after she was born. She is exactly who she says she is."
+ }
+}
