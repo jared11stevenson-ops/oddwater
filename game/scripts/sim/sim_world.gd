@@ -399,6 +399,7 @@ func start_day() -> void:
 			# overnight: rest, hunger, a little social decay
 			p.needs["energy"] = clampf(float(p.needs["energy"]) + 45.0, 0, 100)
 			p.needs["hunger"] = clampf(float(p.needs["hunger"]) - 12.0, 0, 100)
+			p.needs["restless"] = clampf(float(p.needs["restless"]) - 30.0, 0, 100)   # a night's sleep takes the edge off
 
 
 ## What the town's paper prints. A propaganda organ: soft on quarrels and theft, silent on Decisions.

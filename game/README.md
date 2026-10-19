@@ -14,7 +14,10 @@ Engine: **Godot 4.7 stable** (GDScript), Mobile renderer. Single-player, offline
 - `scripts/ui/` — presentation: title, Wake & Snoop
 - `tests/` — headless suites
 
-## Status (pass 5): investigation, psyop and sim
+## Status (pass 6): gameplay first
+Design of record: `02-gdd/03-gameplay-first-design.md` (lore is an idea bank). New: **STEER**. Every night the Cause takes whoever is most ready to change (authored priority + the sim's restlessness). On the Long Night screen you can comfort or unsettle people: two deliberate nudges change tomorrow's host, one never does. The authored order holds when nobody interferes.
+
+## (pass 5) investigation, psyop and sim
 Design direction: `02-gdd/02-investigation-psyop-sim-charter.md`. You are told you are an outside investigator hunting your own body. That goal is a role (the Briefing). The town lies to you through four propaganda streams plus the Hush.
 Built and tested:
 - **Sim kernel** (`scripts/sim/`): 28 people with needs, routines, autonomy, relationships, money, memory, rumours and restlessness; a Remnant who Decides is Struck; the Gazette softens what the ledger records.

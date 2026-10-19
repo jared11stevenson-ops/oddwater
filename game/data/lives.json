@@ -15,7 +15,8 @@
    "hums while working",
    "calls people friend"
   ],
-  "decision_time": "9:47 p.m."
+  "decision_time": "9:47 p.m.",
+  "priority": 100
  },
  {
   "day": 2,
@@ -33,7 +34,8 @@
    "says sorry to furniture",
    "makes pancakes at 3pm"
   ],
-  "decision_time": "11:58 p.m."
+  "decision_time": "11:58 p.m.",
+  "priority": 85
  },
  {
   "day": 3,
@@ -51,7 +53,8 @@
    "double-knots shoes",
    "corrects adults"
   ],
-  "decision_time": "supper, 6:30 p.m."
+  "decision_time": "supper, 6:30 p.m.",
+  "priority": 70
  },
  {
   "day": 4,
@@ -69,7 +72,8 @@
    "opens with nothing to report",
    "remembers every child's name"
   ],
-  "decision_time": "Thursday night, 10:15 p.m."
+  "decision_time": "Thursday night, 10:15 p.m.",
+  "priority": 55
  },
  {
   "day": 5,
@@ -87,7 +91,8 @@
    "bow ties",
    "records alphabetised"
   ],
-  "decision_time": "10:02 p.m."
+  "decision_time": "10:02 p.m.",
+  "priority": 40
  },
  {
   "day": 6,
@@ -105,7 +110,8 @@
    "names the waves",
    "calls passengers ballast"
   ],
-  "decision_time": "11:30 p.m."
+  "decision_time": "11:30 p.m.",
+  "priority": 25
  },
  {
   "day": 7,
@@ -123,7 +129,8 @@
    "speaks in footnotes",
    "taped glasses"
   ],
-  "decision_time": "12:03 a.m."
+  "decision_time": "12:03 a.m.",
+  "priority": 10
  },
  {
   "day": 8,
@@ -141,7 +148,8 @@
    "impeccable dress",
    "dry humour"
   ],
-  "decision_time": "9:15 p.m."
+  "decision_time": "9:15 p.m.",
+  "priority": -5
  },
  {
   "day": 9,
@@ -159,7 +167,8 @@
    "never sits",
    "fast sarcasm"
   ],
-  "decision_time": "closing, 10:40 p.m."
+  "decision_time": "closing, 10:40 p.m.",
+  "priority": -20
  },
  {
   "day": 10,
@@ -177,7 +186,8 @@
    "sings at transitions",
    "use your words"
   ],
-  "decision_time": "8:20 p.m."
+  "decision_time": "8:20 p.m.",
+  "priority": -35
  },
  {
   "day": 11,
@@ -195,7 +205,8 @@
    "lavender scent",
    "treats in pockets"
   ],
-  "decision_time": "7:05 p.m."
+  "decision_time": "7:05 p.m.",
+  "priority": -50
  },
  {
   "day": 12,
@@ -213,7 +224,8 @@
    "reads numbers aloud",
    "checks gauges"
   ],
-  "decision_time": "11:11 p.m."
+  "decision_time": "11:11 p.m.",
+  "priority": -65
  },
  {
   "day": 13,
@@ -231,7 +243,8 @@
    "bakes bad bread",
    "one-beat pause"
   ],
-  "decision_time": "10:30 p.m."
+  "decision_time": "10:30 p.m.",
+  "priority": -80
  },
  {
   "day": 14,
@@ -246,6 +259,7 @@
   "proof_tool": "prop_room",
   "resonance": "Wren Aldous, 9",
   "habits": [],
-  "decision_time": "never"
+  "decision_time": "never",
+  "priority": 0
  }
 ]

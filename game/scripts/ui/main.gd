@@ -15,13 +15,17 @@ const BoardUI = preload("res://scripts/ui/board_ui.gd")
 const SlackUI = preload("res://scripts/ui/slack_ui.gd")
 const FreeUI = preload("res://scripts/ui/free_ui.gd")
 const SimWorld = preload("res://scripts/sim/sim_world.gd")
+const Cause = preload("res://scripts/sim/cause.gd")
+const DuskUI = preload("res://scripts/ui/dusk_ui.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
 const POST := preload("res://shaders/page_post.gdshader")
 
 var state: RefCounted
 var sim: RefCounted
+var cause: RefCounted
 var briefed := false
 var days: Dictionary
+var days_by_life: Dictionary = {}
 var snoop: Control
 var queue: Array = []
 var stage: Control            # backgrounds / world (gets the print pass)
@@ -33,7 +37,10 @@ var lenient := 1.0            # accessibility: rhythm timing leniency
 func _ready() -> void:
 	state = GameState.new()
 	sim = SimWorld.new(1961)
+	cause = Cause.new()
 	days = Data.load_json("days.json")
+	for k in days:
+		days_by_life[days[k]["life"]] = days[k]
 	stage = Control.new()
 	stage.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(stage)
@@ -90,7 +97,12 @@ func _button(t: String, pos: Vector2, cb: Callable, w: float = 520.0) -> Button:
 
 
 func day_def() -> Dictionary:
-	return days[str(state.day)]
+	return days_by_life[state.current_life()["id"]]
+
+
+## Who the Cause may take: lives with authored days, not yet hosted.
+func eligible_hosts() -> Array:
+	return days_by_life.keys().filter(func(id): return not cause.used.has(id))
 
 
 # ---------------------------------------------------------------- title / wake
@@ -119,6 +131,7 @@ func start_day() -> void:
 	var life: Dictionary = state.current_life()
 	sim.start_day()
 	sim.take_control(life["id"])
+	cause.mark_used(life["id"])
 	state.board.new_day_film()
 	if state.day > 1:
 		state.hush_dawn()   # overnight, quietly, the Hush edits your case file
@@ -361,7 +374,17 @@ func _board() -> void:
 	var b := BoardUI.new()
 	ui.add_child(b)
 	b.setup(state)
-	b.finished.connect(_slack)
+	b.finished.connect(_dusk_watch)
+
+
+## STEER: the player's lever on tomorrow.
+func _dusk_watch() -> void:
+	_clear()
+	_bg(Color("14121c"))
+	var d := DuskUI.new()
+	ui.add_child(d)
+	d.setup(state, sim, cause, eligible_hosts())
+	d.finished.connect(func(_r): _slack())
 
 
 func _slack() -> void:
@@ -369,7 +392,8 @@ func _slack() -> void:
 	_bg(Color("14121c"))
 	state.advance()   # NIGHT -> SLACK
 	var gone: Array = sim.slack()
-	var next_life: Dictionary = state.lives[state.day]
+	state.next_host = cause.pick(sim, eligible_hosts())
+	var next_life: Dictionary = state.life_by_id(state.next_host if state.next_host != "" else state.baseline_next_id())
 	var s := SlackUI.new()
 	ui.add_child(s)
 	var extra: Array = []
@@ -384,7 +408,7 @@ func _slack() -> void:
 
 func _new_day() -> void:
 	state.advance()   # SLACK -> next day's WAKE (or ENDED)
-	if days.has(str(state.day)) and state.phase == 0:
+	if days_by_life.has(state.current_life()["id"]) and state.phase == 0:
 		start_day()
 		return
 	_clear()

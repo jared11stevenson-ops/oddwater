@@ -5,6 +5,7 @@ var main: Control
 var tree: SceneTree
 var log: Array = []
 var dull := false     # a comfortable player: lives the life, skips the investigating
+var steer_to := ""    # if set, the bot uses the Long Night to make tomorrow's host this person
 var careful := true   # a careful detective photographs evidence and presses contradictions
 
 
@@ -16,7 +17,7 @@ func _init(m: Control, t: SceneTree, careful_play: bool = true) -> void:
 
 func screen() -> Control:
 	for c in main.ui.get_children():
-		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option", "do_action"]:
+		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option", "do_action", "night_do"]:
 			if c.has_method(method):
 				return c
 	return null
@@ -93,6 +94,19 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 			if not cs.is_empty():
 				s.do_action("socialize", cs[0])
 			s.finish(); log.append("free")
+		elif s.has_method("night_do"):
+			if steer_to != "":
+				var guard := 0
+				while guard < 6 and s.budget > 0:
+					guard += 1
+					var r: Array = main.cause.ranking(main.sim, main.eligible_hosts())
+					if r.is_empty() or r[0]["id"] == steer_to:
+						break
+					if guard % 2 == 1:
+						s.night_do("comfort", r[0]["id"])
+					else:
+						s.night_do("unsettle", steer_to)
+			s.finish(); log.append("long-night")
 		elif s.has_method("pick_option"):
 			for i in s.core.slot_count():
 				s.pick_option(i, s.core.def["slots"][i]["correct"])

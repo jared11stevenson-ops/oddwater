@@ -20,6 +20,15 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - [ ] Save/load UI and autosave at each dusk
 - [x] Day 1 → Day 2 transition with the Notes card ("what you left behind"); Day 2 home for Jo is the next build
 
+## M1.4 — Gameplay-first redesign (design: `02-gdd/03-gameplay-first-design.md`, supersedes the lore-led charters)
+- [x] The Cause and STEER: nightly host choice from restlessness plus relative priority; comfort/unsettle night actions; observable tells; authored order holds over 20 seeds, two nudges steer (21 checks); host-by-life flow; Long Night screen
+- [ ] The reactivity layer: conversations read the sim (memories, believed rumours, mood, money) so the town brings up what you did, in any body
+- [ ] Case file: Pattern grid (host history x restlessness / last visitor / place), timeline, access chain, theory; predict tomorrow's host twice to prove the Rule
+- [ ] Night visits to past lives and the end-of-run Reckoning (long-arc payoff for the sandbox player)
+- [ ] Body search: access chain and the Visit; the body's condition worsens as a clue
+- [ ] Confrontation puzzle that uses the sim; endings: Long Day / Home / Case Closed / Cost / Settled
+- [ ] Eligibility: every simulated person becomes a possible host as days are authored (currently 5)
+
 ## M1.5 — The investigation, the psyop and the sim (design: `02-gdd/02-investigation-psyop-sim-charter.md`)
 - [x] Sim kernel: 28 people, needs, schedules/autonomy, relationships, money, memory, rumours, restlessness, Decision/Strike, Gazette vs ledger (66 checks)
 - [x] Claims you can contradict with evidence from any body; "Show them something..." in conversation (6 claims)
@@ -96,3 +105,4 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - 2026-10-19: Data-driven days (days.json); Days 2 and 3 playable; rhythm game, eavesdrop, Honesty Pull; robot-player smoke test plays Days 1-3 through the real UI. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 187, town 9653, smoke OK. Note: S30 (Day 1 was staged) is provable from Day 3 by tying the appointment book to the Prompt Book. Decide whether to gate it later.
 - 2026-10-19: Act I complete (Days 1-5): speech, radio, vault, Hymn choice; 11 seals reachable by Day 6 in the robot run. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 277, day45 29, town 9653, smoke OK. Fixed dark-on-dark text contrast on radio and night screens. Known: night search screens are a bare scatter of buttons; the Hymn's consequences (mood, suspicion, Slack text) exist but no Awakened NPC behaviour yet.
 - 2026-10-19: M1.5 started: sim kernel, claims, evidence tampering, drift/hints, Briefing, free time, Gazette. Suites (10): core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 278, day45 29, sim 66, investigation 55, town 9653, smoke OK (careful vs careless vs comfortable bots). New runner: `game/tests/run_all.sh` (syntax-checks every script first: a script parse error makes headless runs HANG, not fail).
+- 2026-10-19: Gameplay-first redesign: STEER (the Cause, Long Night). Lore is an idea bank until gameplay is honed. Suites (11): + cause 21. Found: bounded levers are good (two deliberate nudges steer, one never does); priority must be relative to who's left; sim restlessness needed overnight relief to produce observable tells.

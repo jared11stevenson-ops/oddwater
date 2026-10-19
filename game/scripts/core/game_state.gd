@@ -29,6 +29,8 @@ var notoriety := 0.0           # ruined or remade lives; the town talks
 var dawn_seals := 0
 var dawn_cracks := 0
 var dawn_photos := 0
+var host_history: Array = []   # who the player has been, day by day (day N is host_history[N-1])
+var next_host := ""          # set at the Slack by the Cause; blank = authored order
 var honesty_pull := 0   # a child's fibs build up; at 100 the truth blurts out (resets each day)
 
 
@@ -36,6 +38,7 @@ func _init() -> void:
 	tuning = Data.load_json("tuning.json")
 	lives = Data.load_json("lives.json")
 	endings = Data.load_json("endings.json")
+	host_history = [lives[0]["id"]]
 	board = CaseBoard.new()
 	suspicion = Suspicion.new(tuning)
 	remnants = Remnants.new(tuning)
@@ -43,8 +46,25 @@ func _init() -> void:
 	_enter_day()
 
 
+func life_by_id(id: String) -> Dictionary:
+	for l in lives:
+		if l["id"] == id:
+			return l
+	return lives[lives.size() - 1]
+
+
 func current_life() -> Dictionary:
+	if day <= host_history.size():
+		return life_by_id(host_history[day - 1])
 	return lives[mini(day, lives.size()) - 1]
+
+
+## The authored order: the first life not yet hosted, or the Prop Room when they are all used.
+func baseline_next_id() -> String:
+	for l in lives:
+		if l["id"] != "prop_room" and not host_history.has(l["id"]):
+			return l["id"]
+	return "prop_room"
 
 
 func is_foggy() -> bool:
@@ -103,6 +123,9 @@ func advance(keep_note: String = "") -> Phase:
 				ending = ending_for()
 				phase = Phase.ENDED
 			else:
+				var nh := next_host if next_host != "" else baseline_next_id()
+				host_history.append(nh)
+				next_host = ""
 				day += 1
 				phase = Phase.WAKE
 				_enter_day()
@@ -185,7 +208,7 @@ func ending_for() -> String:
 func to_dict() -> Dictionary:
 	return {"version": 1, "day": day, "phase": int(phase), "notes": notes.to_dict(),
 		"board": board.to_dict(), "suspicion": suspicion.values, "remnants": remnants.by_life,
-		"mood": town_mood, "ending": ending, "flags": flags, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
+		"mood": town_mood, "ending": ending, "flags": flags, "hosts": host_history, "next_host": next_host, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -199,6 +222,8 @@ func load_dict(d: Dictionary) -> void:
 	ending = d["ending"]
 	flags = d.get("flags", {}).duplicate()
 	claims = d.get("claims", {}).duplicate()
+	host_history = d.get("hosts", host_history).duplicate()
+	next_host = d.get("next_host", "")
 	drift = float(d.get("drift", 0.0)); contentment = float(d.get("contentment", 0.0)); alignment = float(d.get("alignment", 0.0)); notoriety = float(d.get("notoriety", 0.0))
 	_enter_day_tools_only()
 

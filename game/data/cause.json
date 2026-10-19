@@ -1,0 +1,9 @@
+{
+ "restless_weight": 0.5,
+ "calm_amount": 20,
+ "unsettle_amount": 20,
+ "night_actions": 2,
+ "witness_hours_from_tick": 32,
+ "rule_hint_after_hosts": 3,
+ "priority_step": 15
+}

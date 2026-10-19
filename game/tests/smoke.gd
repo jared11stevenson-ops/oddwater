@@ -71,6 +71,21 @@ func _initialize() -> void:
 	var s3: RefCounted = main3.state
 	check(s3.drift > s.drift + 5.0, "comfort is the trap: drift %.1f (comfortable) vs %.1f (detective)" % [s3.drift, s.drift])
 	check(s3.board.seals.size() < s.board.seals.size(), "and the comfortable player has solved far less (%d vs %d seals)" % [s3.board.seals.size(), s.board.seals.size()])
+	# ---- STEER: with the Long Night, the player chooses who they wake up as
+	var main4: Control = load("res://scenes/main.tscn").instantiate()
+	root.add_child(main4)
+	await process_frame
+	main4.start_day()
+	var steerer := Bot.new(main4, self, true)
+	steerer.steer_to = "tobi"
+	check(await steerer.play_until_day(2), "steering run reached Day 2: %s" % [steerer.log])
+	check(main4.state.current_life()["id"] == "tobi", "the detective steered tomorrow's host from Jo to Tobi (got %s)" % main4.state.current_life()["id"])
+	check(main4.state.host_history == ["mags", "tobi"], "history: %s" % [main4.state.host_history])
+	steerer.steer_to = "delphine"
+	check(await steerer.play_until_day(3), "steered again: %s" % [steerer.log])
+	check(main4.state.current_life()["id"] == "delphine", "and again, to Delphine, skipping Jo (%s)" % main4.state.current_life()["id"])
+	var baseline_hosts: Array = s.host_history
+	check(baseline_hosts.slice(0, 5) == ["mags", "jo", "tobi", "delphine", "vern"], "unsteered, the authored order holds: %s" % [baseline_hosts])
 	print("careful: seals=%d corrupt=%d drift=%.1f | careless: seals=%d corrupt=%d drift=%.1f | comfortable: seals=%d drift=%.1f label=%s" % [s.board.seals.size(), careful_corrupt, s.drift, s2.board.seals.size(), corrupt, s2.drift, s3.board.seals.size(), s3.drift, s3.drift_label()])
 	print("smoke: ", "OK" if fails == 0 else "%d failed" % fails, " day=", s.day, " seals=", s.board.seals.keys(), " evidence=", s.board.evidence.size())
 	quit(fails)
