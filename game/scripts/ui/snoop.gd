@@ -51,12 +51,12 @@ func _build() -> void:
 	add_child(title)
 	if not hint_data.is_empty():
 		var hl := Label.new()
-		hl.text = ("A small voice: " if hint_data["voice"] == "wren" else "A calm voice: ") + hint_data["text"]
+		hl.text = ({"wren": "A small voice: ", "self": "Your own voice: "}.get(hint_data["voice"], "A calm voice: ")) + hint_data["text"]
 		hl.position = Vector2(60, 190)
 		hl.custom_minimum_size = Vector2(1500, 0)
 		hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		hl.add_theme_font_size_override("font_size", 26)
-		hl.add_theme_color_override("font_color", Color("f5b82e") if hint_data["voice"] == "wren" else Color("b8d8e8"))
+		hl.add_theme_color_override("font_color", Color("f5b82e") if hint_data["voice"] == "wren" else (Color("f6ecd2") if hint_data["voice"] == "self" else Color("b8d8e8")))
 		add_child(hl)
 	bar = ProgressBar.new()
 	bar.position = Vector2(60, 140)

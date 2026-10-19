@@ -242,7 +242,8 @@ func release_control(notes_in: Dictionary = {}) -> void:
 		p.traits["sociable"] = clampf(p.trait_of("sociable") + float(notes_in.get("warmth", 0)) / 400.0, 0.0, 1.0)
 		p.traits["honest"] = clampf(p.trait_of("honest") + float(notes_in.get("candor", 0)) / 400.0, 0.0, 1.0)
 		p.traits["bold"] = clampf(p.trait_of("bold") + float(notes_in.get("nerve", 0)) / 400.0, 0.0, 1.0)
-		p.walkon = true
+		if p.id != "player":
+			p.walkon = true
 	player_id = ""
 
 
@@ -336,7 +337,7 @@ func player_act(id: String, action: String, args: Dictionary = {}) -> Dictionary
 		"burn_diary":
 			p.needs["restless"] = clampf(float(p.needs["restless"]) - 15.0, 0, 100)
 			res["text"] = "The diary burns. Nobody will ever read it. Neither will you."
-		"quit_job", "sell_house", "leave_town", "confess", "propose":
+		"quit_job", "sell_house", "leave_town", "confess", "propose", "sign_lease", "take_job":
 			res = _decision(p, action, tgt)
 		_:
 			return {"ok": false, "decision": false, "text": "unknown action"}
@@ -359,8 +360,13 @@ func _decision(p: RefCounted, what: String, tgt: RefCounted) -> Dictionary:
 			p.needs["restless"] = 0.0
 		"propose":
 			text = "%s proposed to %s." % [p.display, tgt.display if tgt != null else "someone"]
+		"sign_lease":
+			text = "%s signed a year's lease." % p.display
+		"take_job":
+			text = "%s took the job." % p.display
 	# a Remnant is a walk-on; a walk-on who Decides is Struck at the next Slack
-	pending[p.id] = "struck" if p.walkon or player_id == p.id else "taken"
+	# the protagonist's own body is simply taken; anyone else the player is wearing is a Remnant and gets Struck
+	pending[p.id] = "taken" if p.id == "player" else ("struck" if p.walkon or player_id == p.id else "taken")
 	log_event("decision", p.id, text)
 	return {"ok": true, "decision": true, "text": text + " It cannot be unsaid."}
 

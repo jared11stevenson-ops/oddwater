@@ -13,6 +13,30 @@ You wake in a stranger's body in a small town. Nobody notices. Every morning it'
 
 The game's job is to make the second path *discoverable by curiosity alone* and *completely optional*.
 
+## 1b. Day 1: your own body, your own voice
+
+**The player starts as a character they create** (name, pronouns, how they talk, what they say when stalling) and plays a normal, short day in their own body. They are led to believe this is the game: you are this person. Then, at 4:12 a.m., they wake up as someone else.
+
+- **Your voice never changes.** In every body, the lines you choose to say as yourself come out in the voice you made. Narration about "you" always uses your name and pronouns.
+- **Two ways to answer anyone while you're wearing them:** `[As <host>]` keeps your cover (free of suspicion now, but it wears your sense of self down: **Drift**), or `[You]` speaks as yourself (it holds your sense of self but costs a raised eyebrow in proportion to how unlike the host you sound). Dull players drift into being the host. Sharp players spend cover deliberately.
+- **Day 1 is a tutorial in your own body:** a real breakfast, neighbours, a Notebook and a camera, a Decision you make that evening, and a very quiet night.
+
+**Foreshadowing on Day 1: present, never named.** Nine fair-play beats, each innocent on its own, guarded by a test that no give-away word ever appears:
+
+| Beat | How it shows up |
+|---|---|
+| A big decision | You make one tonight. So did everyone you will become: each host's home holds a trace of theirs |
+| "Visiting" | People who decide big things are then "visiting". The diner counts three since July |
+| The clock | The Town Hall clock stops at 4:12. Only people who can't sleep hear it |
+| Restless people | A deputy writes down who is about to do something big, "usually a week before" |
+| The weeks before Founders' Day | "A lot of folks rush in the last weeks of summer... slowly" |
+| Same time tomorrow | A phrase on every calendar, nobody says goodbye |
+| The Notebook | Your own handwriting: WRITE IT DOWN. You always think you'll remember. (It matters later) |
+| Pets | Your stray cat is perfectly normal. Later, every host's pet reacts to you like a stranger |
+| The ribbon | At 3 a.m. there is a red ribbon on your door that wasn't there at dusk. Later hosts' doors have one too |
+
+A player who puts these together by Day 5 has solved the Rule: the swapper takes whoever has just decided to change their life, and it marks them first.
+
 ## 2. The five verbs
 
 | Verb | What it is | Why it's fun |

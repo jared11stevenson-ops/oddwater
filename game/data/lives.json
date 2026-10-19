@@ -1,6 +1,23 @@
 [
  {
   "day": 1,
+  "id": "player",
+  "name": "You",
+  "role": "Newcomer",
+  "age": 30,
+  "decision": "(your own: chosen on Day 1)",
+  "pet": "",
+  "pet_reaction": "",
+  "bleed": "",
+  "proof_tool": "any",
+  "resonance": "",
+  "habits": [],
+  "decision_time": "11:58 p.m.",
+  "priority": 115,
+  "style": "self"
+ },
+ {
+  "day": 2,
   "id": "mags",
   "name": "Mags Pell",
   "role": "Dentist",
@@ -16,10 +33,11 @@
    "calls people friend"
   ],
   "decision_time": "9:47 p.m.",
-  "priority": 100
+  "priority": 100,
+  "style": "wry"
  },
  {
-  "day": 2,
+  "day": 3,
   "id": "jo",
   "name": "Jo Brask",
   "role": "Drummer",
@@ -35,10 +53,11 @@
    "makes pancakes at 3pm"
   ],
   "decision_time": "11:58 p.m.",
-  "priority": 85
+  "priority": 85,
+  "style": "warm"
  },
  {
-  "day": 3,
+  "day": 4,
   "id": "tobi",
   "name": "Tobi Okafor-Marsh",
   "role": "Nine-year-old",
@@ -54,10 +73,11 @@
    "corrects adults"
   ],
   "decision_time": "supper, 6:30 p.m.",
-  "priority": 70
+  "priority": 70,
+  "style": "blunt"
  },
  {
-  "day": 4,
+  "day": 5,
   "id": "delphine",
   "name": "Delphine Pruitt",
   "role": "Mayor",
@@ -73,10 +93,11 @@
    "remembers every child's name"
   ],
   "decision_time": "Thursday night, 10:15 p.m.",
-  "priority": 55
+  "priority": 55,
+  "style": "dry"
  },
  {
-  "day": 5,
+  "day": 6,
   "id": "vern",
   "name": "Vern Castellano",
   "role": "Radio host",
@@ -92,10 +113,11 @@
    "records alphabetised"
   ],
   "decision_time": "10:02 p.m.",
-  "priority": 40
+  "priority": 40,
+  "style": "warm"
  },
  {
-  "day": 6,
+  "day": 7,
   "id": "gus",
   "name": "Gus Tamm",
   "role": "Launch captain",
@@ -111,10 +133,11 @@
    "calls passengers ballast"
   ],
   "decision_time": "11:30 p.m.",
-  "priority": 25
+  "priority": 25,
+  "style": "blunt"
  },
  {
-  "day": 7,
+  "day": 8,
   "id": "priya",
   "name": "Priya Nandakumar",
   "role": "Librarian",
@@ -130,10 +153,11 @@
    "taped glasses"
   ],
   "decision_time": "12:03 a.m.",
-  "priority": 10
+  "priority": 10,
+  "style": "dry"
  },
  {
-  "day": 8,
+  "day": 9,
   "id": "marcus",
   "name": "Marcus Dellacroix",
   "role": "Funeral director",
@@ -149,10 +173,11 @@
    "dry humour"
   ],
   "decision_time": "9:15 p.m.",
-  "priority": -5
+  "priority": -5,
+  "style": "dry"
  },
  {
-  "day": 9,
+  "day": 10,
   "id": "billie",
   "name": "Billie Achterberg",
   "role": "Diner cook",
@@ -168,10 +193,11 @@
    "fast sarcasm"
   ],
   "decision_time": "closing, 10:40 p.m.",
-  "priority": -20
+  "priority": -20,
+  "style": "blunt"
  },
  {
-  "day": 10,
+  "day": 11,
   "id": "inez",
   "name": "Inez Calloway",
   "role": "Teacher",
@@ -187,10 +213,11 @@
    "use your words"
   ],
   "decision_time": "8:20 p.m.",
-  "priority": -35
+  "priority": -35,
+  "style": "warm"
  },
  {
-  "day": 11,
+  "day": 12,
   "id": "dottie",
   "name": "Dottie Fenn",
   "role": "Pet groomer",
@@ -206,10 +233,11 @@
    "treats in pockets"
   ],
   "decision_time": "7:05 p.m.",
-  "priority": -50
+  "priority": -50,
+  "style": "warm"
  },
  {
-  "day": 12,
+  "day": 13,
   "id": "oren",
   "name": "Oren Haldane",
   "role": "Dam operator",
@@ -225,10 +253,11 @@
    "checks gauges"
   ],
   "decision_time": "11:11 p.m.",
-  "priority": -65
+  "priority": -65,
+  "style": "dry"
  },
  {
-  "day": 13,
+  "day": 14,
   "id": "ellis",
   "name": "Ellis Ware",
   "role": "Pastor",
@@ -244,10 +273,11 @@
    "one-beat pause"
   ],
   "decision_time": "10:30 p.m.",
-  "priority": -80
+  "priority": -80,
+  "style": "wry"
  },
  {
-  "day": 14,
+  "day": 15,
   "id": "prop_room",
   "name": "The Prop Room",
   "role": "Nobody",
@@ -260,6 +290,7 @@
   "resonance": "Wren Aldous, 9",
   "habits": [],
   "decision_time": "never",
-  "priority": 0
+  "priority": 0,
+  "style": "dry"
  }
 ]

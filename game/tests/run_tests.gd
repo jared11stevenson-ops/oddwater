@@ -42,13 +42,13 @@ func test_data() -> void:
 		per[s["layer"]] = int(per.get(s["layer"], 0)) + 1
 	ok(per == {"L1": 6, "L2": 8, "L3": 10, "L4": 8, "L5": 4, "O": 4}, "layer counts %s" % per)
 	var lives: Array = Data.load_json("lives.json")
-	ok(lives.size() == 14, "13 lives + prop room")
+	ok(lives.size() == 15, "tutorial + 13 lives + prop room")
 	var days := {}
 	var tools := {"any": true, "map": true, "board": true, "roll": true}
 	for l in lives:
 		days[l["day"]] = true
 		tools[l["proof_tool"]] = true
-	ok(days.size() == 14, "unique days 1..14")
+	ok(days.size() == 15, "unique days 1..15")
 	for s in seals:
 		ok(tools.has(s["tool"]), "seal %s tool %s exists" % [s["id"], s["tool"]])
 	# every ability references a real layer and is attainable
@@ -126,7 +126,7 @@ func play_day(g: RefCounted) -> void:
 
 func test_day_loop() -> void:
 	print("day loop")
-	var g := GameState.new()
+	var g := GameState.new(true)
 	ok(g.day == 1 and g.phase == GameState.Phase.WAKE, "starts Day 1 WAKE")
 	ok(g.current_life()["id"] == "mags", "Day 1 is Mags")
 	ok(g.board.tools_available["dental_overlay"], "dental overlay on Day 1")
@@ -142,7 +142,7 @@ func test_day_loop() -> void:
 
 func test_remnants_and_overlap() -> void:
 	print("remnants")
-	var g := GameState.new()
+	var g := GameState.new(true)
 	g.notes.add("warmth", 60)
 	g.notes.add("nerve", 40)
 	play_day(g)
@@ -150,13 +150,13 @@ func test_remnants_and_overlap() -> void:
 	ok(g.remnants.willing("mags"), "warm Mags remnant is willing")
 	ok(g.board.tools_available["dental_overlay"], "Overlap: Mags runs her tool on Day 2")
 	# Shed needs the ability
-	var g2 := GameState.new()
+	var g2 := GameState.new(true)
 	g2.notes.add("warmth", 80)
 	g2.notes.add("nerve", 80)
 	g2.advance(); g2.advance()
 	g2.advance("warmth")
 	ok(g2.remnants.by_life["mags"]["notes"]["nerve"] == 80, "no Shed ability: keep arg ignored")
-	var g3 := GameState.new()
+	var g3 := GameState.new(true)
 	for id in ["S33", "S34", "S35"]:
 		g3.board.seals[id] = 1
 	g3.notes.add("warmth", 80)
@@ -169,15 +169,15 @@ func test_remnants_and_overlap() -> void:
 
 func test_endings() -> void:
 	print("endings")
-	var g := GameState.new()
+	var g := GameState.new(true)
 	for id in ["S37", "S38", "S39", "S40"]:
 		g.board.seals[id] = 1
 	ok(g.ending_for() == "fair_water", "omega seals -> Fair Water")
-	var g2 := GameState.new()
+	var g2 := GameState.new(true)
 	for id in ["S18", "S19", "S29", "S15", "S16", "S17", "S20", "S21", "S22"]:
 		g2.board.seals[id] = 1
 	ok(g2.ending_for() == "low_water", "Plug seals -> Low Water")
-	var g3 := GameState.new()
+	var g3 := GameState.new(true)
 	for id in ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S15", "S16", "S17", "S20", "S21", "S22"]:
 		g3.board.seals[id] = 1
 	ok(g3.ending_for() == "same_time_tomorrow", "L1-L3 strong -> Same Time Tomorrow")
@@ -185,7 +185,7 @@ func test_endings() -> void:
 
 func test_save_roundtrip() -> void:
 	print("save")
-	var g := GameState.new()
+	var g := GameState.new(true)
 	g.notes.add("candor", 33)
 	g.board.add_evidence("LF-004")
 	g.board.seals["S01"] = 1
@@ -193,7 +193,7 @@ func test_save_roundtrip() -> void:
 	g.advance(); g.advance(); g.advance()
 	var path := "user://test_save.json"
 	ok(g.save_to(path), "saved")
-	var h := GameState.new()
+	var h := GameState.new(true)
 	ok(h.load_from(path), "loaded")
 	ok(h.day == g.day and h.phase == g.phase, "day/phase restored")
 	ok(h.board.seals.has("S01") and h.board.evidence.has("LF-004"), "board restored")

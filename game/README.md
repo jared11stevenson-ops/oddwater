@@ -14,7 +14,10 @@ Engine: **Godot 4.7 stable** (GDScript), Mobile renderer. Single-player, offline
 - `scripts/ui/` — presentation: title, Wake & Snoop
 - `tests/` — headless suites
 
-## Status (pass 6): gameplay first
+## Status (pass 7): your own first day
+You create a character, play a normal Day 1 in your own body (breakfast, neighbours, a Notebook, a Decision), then at 4:12 wake up as someone else. Your voice stays yours in every body: each reply is either `[You]` (your own voice) or `[As <host>]` (cover). The tutorial plants nine fair-play clues without naming any (a test enforces both). Day 2 is the first host. Suites: 13 (`./tests/run_all.sh`).
+
+## (pass 6) gameplay first
 Design of record: `02-gdd/03-gameplay-first-design.md` (lore is an idea bank). New: **STEER**. Every night the Cause takes whoever is most ready to change (authored priority + the sim's restlessness). On the Long Night screen you can comfort or unsettle people: two deliberate nudges change tomorrow's host, one never does. The authored order holds when nobody interferes.
 
 ## (pass 5) investigation, psyop and sim

@@ -198,5 +198,30 @@
   "title": "Prompt Book: 1971",
   "text": "\"B. Lindgren -> src. H. Voss. U/S on.\" A tick.",
   "layer": "L4"
+ },
+ "LF-T1": {
+  "title": "Your lease",
+  "text": "Month-to-month. The landlord has circled 'sign for the year?' twice. You've been meaning to.",
+  "layer": "L1"
+ },
+ "LF-T2": {
+  "title": "Voicemail from home",
+  "text": "\"Call me when you've decided, love. Whatever it is. I'll back you.\"",
+  "layer": "L1"
+ },
+ "LF-T3": {
+  "title": "Your notebook",
+  "text": "A new notebook, mostly blank. On the first page, your own handwriting: 'WRITE IT DOWN. You always think you'll remember.'",
+  "layer": "L1"
+ },
+ "LF-T4": {
+  "title": "The calendar",
+  "text": "A town calendar from the diner. FOUNDERS' DAY, 10 Sept, is circled in red by someone else. Under it: 'Same time tomorrow!'",
+  "layer": "L1"
+ },
+ "LF-T5": {
+  "title": "Mr. Okoro's mail",
+  "text": "A neighbour's post, delivered to you by mistake. 'FORWARDING: none.' The postmark is from three weeks ago.",
+  "layer": "L2"
  }
 }

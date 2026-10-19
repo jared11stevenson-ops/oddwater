@@ -84,7 +84,7 @@ func _initialize() -> void:
 	for e in c3.edge_report(w4):
 		ok(e["tell"] != "" and e["level"] >= 55.0, "every report has a behavioural tell")
 	# ---- the host flow in GameState
-	var g := GameState.new()
+	var g := GameState.new(true)
 	ok(g.current_life()["id"] == "mags" and g.host_history == ["mags"], "Day 1 is the authored first host")
 	ok(g.baseline_next_id() == "jo", "authored next is Jo")
 	g.next_host = "tobi"
@@ -95,9 +95,9 @@ func _initialize() -> void:
 	ok(g.current_life()["id"] == "jo", "with no choice, the authored order resumes at the first unused life (Jo)")
 	ok(g.board.tools_available["reply"] and not g.board.tools_available["small_paths"], "tools follow the host, not the day number")
 	g.save_to("user://hosts.json")
-	var h := GameState.new()
+	var h := GameState.new(true)
 	ok(h.load_from("user://hosts.json") and h.host_history == ["mags", "tobi", "jo"] and h.current_life()["id"] == "jo", "the host history is saved")
-	var all := GameState.new()
+	var all := GameState.new(true)
 	for i in 13 * 5: all.advance()
 	ok(all.current_life()["id"] in ["prop_room", "ellis"] or all.day >= 14, "after the lives run out we reach the Prop Room (%s, day %d)" % [all.current_life()["id"], all.day])
 	print("%d checks, %d failed" % [checks, fails])

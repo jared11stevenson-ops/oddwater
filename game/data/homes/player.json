@@ -1,0 +1,164 @@
+{
+ "life": "player",
+ "title": "Day one. 7:45 a.m.",
+ "intro": "Your own house, in a town you've lived in for three weeks. Your own life. A good, ordinary morning.",
+ "items": [
+  {
+   "id": "lease",
+   "label": "The lease, on the table",
+   "kind": "prop",
+   "x": 300,
+   "y": 420,
+   "text": "Month-to-month. The landlord has circled 'sign for the year?' twice. You've been meaning to. You keep meaning to.",
+   "note": [
+    "curiosity",
+    10
+   ],
+   "evidence": "LF-T1",
+   "foreshadow": "decision"
+  },
+  {
+   "id": "phone",
+   "label": "Your phone",
+   "kind": "prop",
+   "x": 700,
+   "y": 300,
+   "text": "A voicemail from home: 'Call me when you've decided, love. Whatever it is. I'll back you.' You decide to not decide until you've had coffee.",
+   "note": [
+    "warmth",
+    10
+   ],
+   "evidence": "LF-T2",
+   "foreshadow": "decision"
+  },
+  {
+   "id": "notebook",
+   "label": "Your notebook",
+   "kind": "prop",
+   "x": 1100,
+   "y": 400,
+   "text": "A new notebook, mostly blank. Page one, in your own hand: 'WRITE IT DOWN. You always think you'll remember.' Good advice. You have a phone camera too: you can photograph anything you want to keep.",
+   "note": [
+    "curiosity",
+    10
+   ],
+   "evidence": "LF-T3",
+   "foreshadow": "notebook"
+  },
+  {
+   "id": "calendar",
+   "label": "Calendar from the diner",
+   "kind": "prop",
+   "x": 1500,
+   "y": 300,
+   "text": "FOUNDERS' DAY, 10 Sept, circled in red by someone who isn't you. Under it: 'Same time tomorrow!' You aren't sure what the town does on Founders' Day. Everyone has been strangely vague about it.",
+   "note": [
+    "curiosity",
+    10
+   ],
+   "evidence": "LF-T4",
+   "foreshadow": "same_time"
+  },
+  {
+   "id": "mail",
+   "label": "A neighbour's mail",
+   "kind": "prop",
+   "x": 300,
+   "y": 700,
+   "text": "A letter for a Mr. Okoro, delivered to you by mistake. 'FORWARDING: none.' The postmark is three weeks old. His house, next door, has had its curtains drawn all month.",
+   "note": [
+    "curiosity",
+    10
+   ],
+   "evidence": "LF-T5",
+   "foreshadow": "visiting"
+  },
+  {
+   "id": "cat",
+   "label": "A stray cat",
+   "kind": "role",
+   "x": 760,
+   "y": 700,
+   "text": "A grey stray has made itself at home on your porch. It rubs against your legs, purring, completely unbothered. You've never had a pet. It's decided you're staff.",
+   "note": [
+    "warmth",
+    10
+   ],
+   "foreshadow": "pets_know"
+  },
+  {
+   "id": "window",
+   "label": "The window",
+   "kind": "role",
+   "x": 1100,
+   "y": 720,
+   "text": "The lake, very still, very blue. Someone waves at it from the road, as someone does every morning. You've started doing it too, without noticing when you started.",
+   "note": [
+    "curiosity",
+    5
+   ],
+   "foreshadow": "wave"
+  },
+  {
+   "id": "clock",
+   "label": "The kitchen clock",
+   "kind": "role",
+   "x": 1500,
+   "y": 640,
+   "text": "An hour wrong. Every clock in town is an hour wrong. The landlord says it's 'Mercy Time'. Nobody has ever been able to tell you why.",
+   "note": [
+    "curiosity",
+    5
+   ],
+   "foreshadow": "clock"
+  },
+  {
+   "id": "boxes",
+   "label": "Unpacked boxes",
+   "kind": "decoy",
+   "x": 380,
+   "y": 900,
+   "text": "Three of them. 'KITCHEN?' 'BOOKS' and 'MISC (SCARY)'. You open MISC (SCARY). It is mostly cables.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "plant",
+   "label": "A dying houseplant",
+   "kind": "decoy",
+   "x": 760,
+   "y": 950,
+   "text": "A gift from your mum. It has been dying since the day you got it. You have named it Optimism.",
+   "note": [
+    "warmth",
+    3
+   ]
+  },
+  {
+   "id": "mirror",
+   "label": "Mirror",
+   "kind": "mirror",
+   "x": 1560,
+   "y": 860,
+   "text": "Yours. Familiar. A bit tired. The coffee is on its way.",
+   "note": [
+    "curiosity",
+    3
+   ]
+  },
+  {
+   "id": "kettle",
+   "label": "Kettle",
+   "kind": "decoy",
+   "x": 1100,
+   "y": 950,
+   "text": "It's slow. It has always been slow. You use the wait to not think about the lease.",
+   "note": [
+    "warmth",
+    2
+   ]
+  }
+ ]
+}

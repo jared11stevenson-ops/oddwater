@@ -17,6 +17,9 @@ const FreeUI = preload("res://scripts/ui/free_ui.gd")
 const SimWorld = preload("res://scripts/sim/sim_world.gd")
 const Cause = preload("res://scripts/sim/cause.gd")
 const DuskUI = preload("res://scripts/ui/dusk_ui.gd")
+const CreatorUI = preload("res://scripts/ui/creator_ui.gd")
+const TutorialUI = preload("res://scripts/ui/tutorial_ui.gd")
+const Persona = preload("res://scripts/core/persona.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
 const POST := preload("res://shaders/page_post.gdshader")
 
@@ -110,19 +113,29 @@ func _title() -> void:
 	_clear()
 	_bg(Color("f1dfc0"))
 	_text("UNDERSTUDY\n\nEvery morning someone in Little Mercy vanishes.\nEvery morning you wake up as them.", Vector2(300, 300), 48)
-	_button("Wake up", Vector2(300, 700), _briefing, 360.0)
+	_button("Begin", Vector2(300, 700), _creator, 360.0)
 
 
-## The Briefing: the goal the player is handed. It is a role. (See 02-gdd/02-investigation-psyop-sim-charter.md.)
-func _briefing() -> void:
-	if briefed:
-		start_day()
-		return
-	briefed = true
+## Make your character. This is who you are in every body.
+func _creator() -> void:
 	_clear()
-	_bg(Color("0e0d1a"))
-	_text("A CALM VOICE, IN YOUR HEAD:\n\n\"You are an investigator from outside. People have been disappearing from Little Mercy, and you came to find out why. Something has put you into other people's bodies, one a day. Your own body is somewhere in this town.\n\nFind it. Find out what is happening. Stop it.\n\nYou are very close. Nobody must notice.\"", Vector2(240, 220), 38, Color("b8d8e8"))
-	_button("Open your eyes", Vector2(240, 800), start_day)
+	_bg(Color("f1dfc0"))
+	var c := CreatorUI.new()
+	ui.add_child(c)
+	c.setup()
+	c.finished.connect(func(r):
+		state.persona = Persona.make(r["name"], r["pronoun"], r["archetype"], r["catch"])
+		sim.people["player"].display = state.persona.name
+		_intro())
+
+
+## Day one, in your own life. Nothing is wrong yet.
+func _intro() -> void:
+	_clear()
+	_bg(Color("f1dfc0"))
+	var p: RefCounted = state.persona
+	_text(p.inner("{you}, you moved to Little Mercy three weeks ago: a small town on a lake, a rented house, a new start. Everyone here is kind, and slightly vague about everything.\n\nToday is an ordinary day. Have breakfast. Meet the neighbours. Make up your mind about something you've been putting off."), Vector2(240, 260), 40)
+	_button("Start the day", Vector2(240, 760), start_day)
 
 
 func start_day() -> void:
@@ -137,7 +150,14 @@ func start_day() -> void:
 		state.hush_dawn()   # overnight, quietly, the Hush edits your case file
 	snoop = Snoop.new()
 	ui.add_child(snoop)
-	snoop.setup(state, day_def()["home"], 1.0, state.pick_hint())
+	var hint: Dictionary = {}
+	if life["id"] == "player":
+		hint = {}
+	elif state.host_history.size() == 2:
+		hint = {"voice": "self", "text": state.persona.inner("That's not my hand. That's not my... okay. Okay, {you}. Look around. Don't say anything stupid. Don't say anything at all, if you can help it.")}
+	else:
+		hint = state.pick_hint()
+	snoop.setup(state, day_def()["home"], 1.0, hint)
 	snoop.finished.connect(_perform)
 
 
@@ -179,6 +199,8 @@ func _next_step() -> void:
 					_next_step()
 		"free_time":
 			_free()
+		"tutorial":
+			_tutorial(s)
 		"event":
 			if s["kind"] == "hymn":
 				_hymn()
@@ -230,6 +252,15 @@ func _eavesdrop(step: Dictionary) -> void:
 	ui.add_child(e)
 	e.setup(state, step["map"])
 	e.finished.connect(func(_r): _next_step())
+
+
+func _tutorial(step: Dictionary) -> void:
+	_clear()
+	_bg(Color("efe4c8"))
+	var tu := TutorialUI.new()
+	ui.add_child(tu)
+	tu.setup(state, sim, step["kind"])
+	tu.finished.connect(func(_r): _next_step())
 
 
 func _free() -> void:
@@ -315,8 +346,11 @@ func _step_off() -> void:
 	state.advance()   # STEP_OFF -> NIGHT (Remnant forms)
 	_clear()
 	_bg(Color("2b2a3a"))
-	var r: Dictionary = state.remnants.by_life[life["id"]]["notes"]
-	_text("Dusk. You step out of %s's life.\n\nThey stay behind, and they're now a little:\n%s\n\nSomeone tied a red ribbon on your door. Who?" % [life["name"].split(" ")[0], _describe(r)], Vector2(260, 220), 40, Color("f6ecd2"))
+	if life["id"] == "player":
+		_text(state.persona.inner("Dusk. A good day, {you}. A real one. You made up your mind about something, and it feels like lighter luggage. The Gazette is on the doormat."), Vector2(260, 260), 40, Color("f6ecd2"))
+	else:
+		var r: Dictionary = state.remnants.by_life.get(life["id"], {}).get("notes", {})
+		_text("Dusk. You step out of %s's life.\n\nThey stay behind, and they're now a little:\n%s" % [life["name"].split(" ")[0], _describe(r)], Vector2(260, 220), 40, Color("f6ecd2"))
 	_button("Read the Gazette", Vector2(260, 800), _report, 620.0)
 
 
@@ -332,6 +366,9 @@ func _report() -> void:
 
 
 func _night() -> void:
+	if day_def()["night"] == "":
+		_night_event()
+		return
 	_clear()
 	_bg(Color("1b1a2e"))
 	snoop = Snoop.new()
@@ -342,6 +379,9 @@ func _night() -> void:
 
 func _night_event() -> void:
 	var ev: Dictionary = day_def().get("night_event", {})
+	if ev.get("type", "") == "prelude":
+		_slack([], true)
+		return
 	if ev.get("type", "") == "reply" and state.board.evidence.has(ev["if_evidence"]):
 		_clear()
 		_bg(Color("0e0d1a"))
@@ -384,10 +424,10 @@ func _dusk_watch() -> void:
 	var d := DuskUI.new()
 	ui.add_child(d)
 	d.setup(state, sim, cause, eligible_hosts())
-	d.finished.connect(func(_r): _slack())
+	d.finished.connect(func(r): _slack([], false, r.get("watched", false)))
 
 
-func _slack() -> void:
+func _slack(_unused: Array = [], prelude: bool = false, watched: bool = false) -> void:
 	_clear()
 	_bg(Color("14121c"))
 	state.advance()   # NIGHT -> SLACK
@@ -396,7 +436,13 @@ func _slack() -> void:
 	var next_life: Dictionary = state.life_by_id(state.next_host if state.next_host != "" else state.baseline_next_id())
 	var s := SlackUI.new()
 	ui.add_child(s)
+	if prelude:
+		s.setup_lines(_prelude_lines(next_life))
+		s.finished.connect(_new_day)
+		return
 	var extra: Array = []
+	if watched:
+		extra.append("You stayed up and watched the street. At 3:10 a.m. a red ribbon was tied on %s's door. Nobody was holding it." % next_life["name"])
 	var se: Dictionary = day_def().get("slack_extra", {})
 	if not se.is_empty():
 		extra = se.get("hymn_aired" if state.flags.get("hymn_aired", false) else "hymn_declined", [])
@@ -426,3 +472,16 @@ func _describe(n: Dictionary) -> String:
 		if absi(v) >= 8:
 			out.append("  %s (%+d)" % [words[k][1 if v > 0 else 0], v])
 	return "\n".join(out) if not out.is_empty() else "  unremarkable. A quiet day."
+
+
+## The tutorial night: every beat here is something a sharp player can use later. None of it is explained.
+func _prelude_lines(next_life: Dictionary) -> Array:
+	var p: RefCounted = state.persona
+	var what: String = state.flags.get("tutorial_decision_text", "You decide.")
+	return [
+		p.inner("11:58 p.m. %s It's the first sure thing you've done in months. You sleep like someone who has put something down." % what),
+		"3:10 a.m. You wake for no reason. The room is very still. Out of the window the street is empty and blue, and the lake is making no sound at all.",
+		"There is a red ribbon on your front door. It wasn't there at dusk. You know, because you locked up, and you looked.",
+		"4:11. Down the hill the Town Hall clock reaches 4:12, and stops. You can hear it stop. Nothing moves. Not the lake, not the cat, not you.",
+		"A minute. You count it: sixty. Sixty-one. Then a sound like a bell heard through a wall. Then nothing.",
+		p.inner("Then: coffee. Not yours. Somebody else's kettle, somebody else's ceiling, somebody else's hands. And {you}, lying very still, hoping it's a dream.")]

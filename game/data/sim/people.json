@@ -1,5 +1,26 @@
 [
  {
+  "id": "player",
+  "name": "You",
+  "home": "player_home",
+  "work": "player_home",
+  "job": "freelancer",
+  "wake": 8,
+  "work_start": 10,
+  "work_end": 16,
+  "faction": "",
+  "walkon": false,
+  "secret": "",
+  "money": 900,
+  "traits": {
+   "sociable": 0.5,
+   "honest": 0.7,
+   "bold": 0.5,
+   "pious": 0.2,
+   "thrift": 0.5
+  }
+ },
+ {
   "id": "mags",
   "name": "Mags Pell",
   "home": "mags_home",

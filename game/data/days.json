@@ -162,5 +162,42 @@
     "Somewhere in town, someone who was waiting for it does not get what they were waiting for, and goes on waiting."
    ]
   }
+ },
+ "0": {
+  "life": "player",
+  "home": "homes/player.json",
+  "night": "",
+  "night_board": false,
+  "perform": [
+   {
+    "type": "convo",
+    "file": "day00.json",
+    "id": "billie"
+   },
+   {
+    "type": "convo",
+    "file": "day00.json",
+    "id": "silas"
+   },
+   {
+    "type": "convo",
+    "file": "day00.json",
+    "id": "cal"
+   },
+   {
+    "type": "tutorial",
+    "kind": "photo"
+   },
+   {
+    "type": "free_time"
+   },
+   {
+    "type": "tutorial",
+    "kind": "decision"
+   }
+  ],
+  "night_event": {
+   "type": "prelude"
+  }
  }
 }

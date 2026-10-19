@@ -31,6 +31,12 @@ static func build() -> Theme:
 	t.set_color("font_disabled_color", "Button", INK.lightened(0.5))
 	t.set_color("font_color", "Label", INK)
 	t.set_constant("outline_size", "Button", 0)
+	var field := _box(PAPER.lightened(0.3), INK, 4)
+	field.shadow_size = 0
+	t.set_stylebox("normal", "LineEdit", field)
+	t.set_stylebox("focus", "LineEdit", _box(PAPER.lightened(0.4), MARIGOLD.darkened(0.1), 6))
+	t.set_color("font_color", "LineEdit", INK)
+	t.set_color("caret_color", "LineEdit", INK)
 	var bar_bg := _box(PAPER.darkened(0.25), INK, 3)
 	var bar_fill := _box(MARIGOLD, INK, 3)
 	bar_bg.shadow_size = 0

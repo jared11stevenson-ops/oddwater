@@ -1,0 +1,80 @@
+{
+ "archetypes": {
+  "dry": {
+   "label": "Dry",
+   "sample": "\"Fine. It's fine. Everything's fine. I'm sure of it.\"",
+   "prefix": [
+    "Right. ",
+    "Well. ",
+    "Sure. "
+   ]
+  },
+  "warm": {
+   "label": "Warm",
+   "sample": "\"Hey. You okay? Sit down. Tell me.\"",
+   "prefix": [
+    "Hey, ",
+    "Oh, ",
+    "Listen, "
+   ]
+  },
+  "blunt": {
+   "label": "Blunt",
+   "sample": "\"No. That doesn't add up, and you know it.\"",
+   "prefix": [
+    "Look, ",
+    "No. ",
+    "Okay, "
+   ]
+  },
+  "wry": {
+   "label": "Wry",
+   "sample": "\"Well, that's one way to ruin a Tuesday.\"",
+   "prefix": [
+    "Ah. ",
+    "Well, ",
+    "Honestly? "
+   ]
+  }
+ },
+ "distance": {
+  "dry|dry": 0,
+  "warm|warm": 0,
+  "blunt|blunt": 0,
+  "wry|wry": 0,
+  "dry|wry": 0.3,
+  "blunt|dry": 0.4,
+  "warm|wry": 0.5,
+  "blunt|wry": 0.6,
+  "dry|warm": 0.7,
+  "blunt|warm": 0.8
+ },
+ "pronouns": [
+  {
+   "id": "they",
+   "subj": "they",
+   "obj": "them",
+   "poss": "their"
+  },
+  {
+   "id": "she",
+   "subj": "she",
+   "obj": "her",
+   "poss": "her"
+  },
+  {
+   "id": "he",
+   "subj": "he",
+   "obj": "him",
+   "poss": "his"
+  }
+ ],
+ "catchphrases": [
+  "Let's not make it weird.",
+  "One thing at a time.",
+  "Noted.",
+  "I've got a bad feeling about this and a good feeling about lunch."
+ ],
+ "self_suspicion_base": 2,
+ "self_suspicion_per_distance": 10
+}

@@ -1,0 +1,242 @@
+{
+ "billie": {
+  "npc": "billie",
+  "who": "Billie",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Billie",
+    "text": "Morning, newcomer. The usual? Eggs, no questions, and a coffee that tastes like it means it.",
+    "aside": "The Pink Heron. A calendar on the wall has Founders' Day circled in red.",
+    "choices": [
+     {
+      "text": "\"The usual. And what's the gossip?\"",
+      "next": "n1",
+      "notes": {
+       "curiosity": 10
+      }
+     },
+     {
+      "text": "\"Just the coffee. I'm thinking about something.\"",
+      "next": "n2",
+      "notes": {
+       "candor": 8
+      }
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Billie",
+    "text": "Gossip. Hm. Mr. Okoro next door to you decided to retire to the coast last week. Now he's 'visiting'. That's the third 'visiting' since July. Funny town. People get an idea and then they're away.",
+    "choices": [
+     {
+      "text": "\"Away where?\"",
+      "next": "n3",
+      "notes": {
+       "curiosity": 10
+      }
+     },
+     {
+      "text": "\"Maybe he's just enjoying himself.\"",
+      "next": "n3",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ],
+    "foreshadow": "visiting"
+   },
+   "n2": {
+    "speaker": "Billie",
+    "text": "Big thing or little thing? ...Doesn't matter. In this town, when somebody's got a Big Thing on, I put an extra egg on the plate. For luck.",
+    "choices": [
+     {
+      "text": "(Take the extra egg.)",
+      "next": "n3",
+      "notes": {
+       "warmth": 8
+      }
+     }
+    ],
+    "foreshadow": "decision"
+   },
+   "n3": {
+    "speaker": "Billie",
+    "text": "Ah, don't mind me. I'm just a diner. People tell me things, then they stop coming in, and I tell everyone it's their loss.",
+    "choices": [
+     {
+      "text": "(Laugh. Don't quite mean it.)",
+      "next": "end",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "end": {
+    "speaker": "",
+    "text": "Billie slides the plate across, and, as you leave, waves at the lake out the window. You wave too. You're not sure when that started.",
+    "end": true
+   }
+  }
+ },
+ "silas": {
+  "npc": "silas",
+  "who": "Silas",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Silas",
+    "text": "Don't touch the middle one. The middle one is the real one.",
+    "aside": "The clock shop. Fifty clocks. Every one an hour out, and every one very certain.",
+    "choices": [
+     {
+      "text": "\"Which one's the real time?\"",
+      "next": "n1",
+      "notes": {
+       "curiosity": 10
+      }
+     },
+     {
+      "text": "\"I just need my watch fixed.\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Silas",
+    "text": "None of them. They're all Mercy Time. You'll get used to it. And you'll hear the Town Hall one stop, if you're ever awake at 4:12. It takes its minute. Most don't hear it. The people who do hear it are people who can't sleep. People with something on their mind.",
+    "choices": [
+     {
+      "text": "\"What happens in that minute?\"",
+      "next": "n3",
+      "notes": {
+       "curiosity": 15,
+       "nerve": 5
+      }
+     },
+     {
+      "text": "\"I sleep like a log.\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 5
+      }
+     }
+    ],
+    "foreshadow": "clock"
+   },
+   "n2": {
+    "speaker": "Silas",
+    "text": "Good. Keep it that way. Sleeping is the best thing to do in this town, particularly before big days.",
+    "choices": [
+     {
+      "text": "(Pay. Take the watch.)",
+      "next": "end"
+     }
+    ]
+   },
+   "n3": {
+    "speaker": "Silas",
+    "text": "Nothing, as far as anyone has ever been able to prove. Everything goes quiet. A great many people have stood at that window, trying to prove something.",
+    "choices": [
+     {
+      "text": "(Make a note of that.)",
+      "next": "end",
+      "notes": {
+       "curiosity": 10
+      }
+     }
+    ],
+    "foreshadow": "restless"
+   },
+   "end": {
+    "speaker": "",
+    "text": "He doesn't wave goodbye. Nobody here does. 'Same time tomorrow,' he says, and goes back to a clock that was already right.",
+    "end": true
+   }
+  }
+ },
+ "cal": {
+  "npc": "cal",
+  "who": "Cal",
+  "start": "n0",
+  "nodes": {
+   "n0": {
+    "speaker": "Cal",
+    "text": "You're the new one, right? Cal Reyes. Deputy, notary, and amateur worrier. Don't mind the notebook.",
+    "aside": "A deputy with a notebook that is a size too thick for his pocket.",
+    "choices": [
+     {
+      "text": "\"What's in the notebook?\"",
+      "next": "n1",
+      "notes": {
+       "curiosity": 10
+      }
+     },
+     {
+      "text": "\"I'm settling in. Slowly.\"",
+      "next": "n2",
+      "notes": {
+       "warmth": 8
+      }
+     }
+    ]
+   },
+   "n1": {
+    "speaker": "Cal",
+    "text": "Habit. Old cop's habit. I write down who's about to do something big. Quit a job. Buy a ticket. Propose. Usually, it's a week before they do it. Sometimes it's a night.",
+    "choices": [
+     {
+      "text": "\"And then?\"",
+      "next": "n3",
+      "notes": {
+       "curiosity": 15
+      }
+     },
+     {
+      "text": "\"Do I go in the notebook?\"",
+      "next": "n3",
+      "notes": {
+       "candor": 8,
+       "nerve": 5
+      }
+     }
+    ],
+    "foreshadow": "restless"
+   },
+   "n2": {
+    "speaker": "Cal",
+    "text": "Slowly's best. Take your time. Don't rush into anything. A lot of folks round here rush in the last weeks of summer, and... well. Slowly.",
+    "choices": [
+     {
+      "text": "(Nod.)",
+      "next": "end"
+     }
+    ],
+    "foreshadow": "thin_weeks"
+   },
+   "n3": {
+    "speaker": "Cal",
+    "text": "...I don't finish that sentence. I stopped finishing it a few years ago. You'll notice nobody does, round here. Let's talk about the weather.",
+    "choices": [
+     {
+      "text": "(Let him change the subject. Remember it.)",
+      "next": "end",
+      "notes": {
+       "curiosity": 10
+      }
+     }
+    ],
+    "foreshadow": "visiting"
+   },
+   "end": {
+    "speaker": "",
+    "text": "Cal writes something very small in the notebook as you leave. You can't read it. You wave at the lake together, without discussing it.",
+    "end": true
+   }
+  }
+ }
+}

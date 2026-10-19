@@ -45,7 +45,7 @@ func _initialize() -> void:
 	ok(r.letters() + r.def["next_nights"] == "FAIRWATER", "tonight plus the playlist sheet: FAIRWATER")
 	ok(not r.choose(9, 0) and not r.choose(0, 9), "bad slot or option ignored")
 	# --- hymn
-	var g := GameState.new()
+	var g := GameState.new(true)
 	var mood0 := g.town_mood
 	g.apply_hymn(false)
 	ok(g.flags["hymn_decided"] and not g.flags["hymn_aired"] and g.town_mood == mood0, "declining changes nothing in the town")
@@ -54,10 +54,10 @@ func _initialize() -> void:
 	ok(g.suspicion.get_s("silas") == 10, "the Awakened watch you")
 	var path := "user://flags.json"
 	ok(g.save_to(path), "save")
-	var h := GameState.new()
+	var h := GameState.new(true)
 	ok(h.load_from(path) and h.flags.get("hymn_aired", false), "flags survive a save")
 	# --- seals: the vault needs the vault key AND the cards tied together
-	var d := GameState.new()
+	var d := GameState.new(true)
 	for i in 3: for j in 5: d.advance()   # Day 4
 	ok(d.day == 4 and d.current_life()["id"] == "delphine", "Day 4 is Delphine")
 	d.board.add_evidence("LF-035"); d.board.add_evidence("LF-034"); d.board.add_evidence("LF-011")
@@ -66,7 +66,7 @@ func _initialize() -> void:
 	ok(not d.board.try_link_test("S17", 4), "untied cards do not prove it")
 	d.board.link("LF-035", "LF-034"); d.board.link("LF-035", "LF-011")
 	ok(d.board.try_link_test("S17", 4) and d.board.try_link_test("S16", 4), "tied: S17 (falsified census) and S16 (913 = 701 + 212)")
-	var e := GameState.new()
+	var e := GameState.new(true)
 	for i in 4: for j in 5: e.advance()   # Day 5
 	ok(e.current_life()["id"] == "vern" and e.board.tools_available["reel"], "Day 5 gives the Reel")
 	print("%d checks, %d failed" % [checks, fails])

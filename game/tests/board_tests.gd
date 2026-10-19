@@ -19,7 +19,7 @@ func _initialize() -> void:
 		if not (ev[id].has("title") and ev[id].has("text")):
 			fragments_ok = false
 	ok(fragments_ok, "every evidence entry has a title and text")
-	var g := GameState.new()
+	var g := GameState.new(true)
 	var b: RefCounted = g.board
 	# S23 on Day 1: needs the ledger pinned (single card), and the dental overlay tool (Day 1)
 	ok(not b.testable().has("S23"), "not testable before finding the ledger")
@@ -37,7 +37,7 @@ func _initialize() -> void:
 	b.link("LF-055", "LF-056")
 	ok(b.try_link_test("S25", 1), "linked: sealed")
 	# three-card chain
-	var c := GameState.new().board
+	var c := GameState.new(true).board
 	ok(c.links_connect(["a"]) and c.links_connect([]), "trivial sets connect")
 	for id in ["LF-004", "LF-033", "LF-008"]:
 		c.add_evidence(id); c.pin(id, "what")
@@ -46,7 +46,7 @@ func _initialize() -> void:
 	c.link("LF-033", "LF-008")
 	ok(c.links_connect(["LF-004", "LF-033", "LF-008"]), "a chain connects all three")
 	# a tool on the wrong day blocks the test
-	var d := GameState.new()
+	var d := GameState.new(true)
 	d.board.add_evidence("LF-043"); d.board.pin("LF-043", "what")
 	for i in 5: d.advance()
 	ok(d.day == 2 and not d.board.try_link_test("S23", 2), "on Day 2 the dental overlay is gone: S23 must wait")

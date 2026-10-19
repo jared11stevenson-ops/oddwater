@@ -17,7 +17,7 @@ func _init(m: Control, t: SceneTree, careful_play: bool = true) -> void:
 
 func screen() -> Control:
 	for c in main.ui.get_children():
-		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option", "do_action", "night_do"]:
+		for method in ["interact", "pick", "flag_tooth", "tap_lane", "listen_spot", "tie_selected", "next_line", "choose_option", "pick_option", "do_action", "night_do", "take_photo", "decide_option"]:
 			if c.has_method(method):
 				return c
 	return null
@@ -94,6 +94,15 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 			if not cs.is_empty():
 				s.do_action("socialize", cs[0])
 			s.finish(); log.append("free")
+		elif s.has_method("take_photo"):
+			if s.mode == "photo":
+				var ids: Array = main.state.board.evidence.keys()
+				ids.sort()
+				if careful and not ids.is_empty():
+					s.take_photo(ids[0])
+			else:
+				s.decide_option(0)
+			s.finish(); log.append("tutorial:" + s.mode)
 		elif s.has_method("night_do"):
 			if steer_to != "":
 				var guard := 0

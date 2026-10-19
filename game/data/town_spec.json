@@ -526,6 +526,16 @@
    "x": -276,
    "span": 1,
    "owner": "ottoline"
+  },
+  {
+   "id": "player_home",
+   "name": "Your rented house",
+   "kind": "home",
+   "street": "orchard_lane",
+   "side": 1,
+   "x": -40,
+   "span": 1,
+   "owner": "player"
   }
  ]
 }

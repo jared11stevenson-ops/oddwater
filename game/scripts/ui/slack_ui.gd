@@ -37,6 +37,14 @@ func setup(next_life: Dictionary, decision_time: String, extra: Array = []) -> v
 	btn.grab_focus()
 
 
+## Use a fully authored sequence (the tutorial night) instead of the usual Take report.
+func setup_lines(custom: Array) -> void:
+	setup({"name": "?", "role": ""}, "", [])
+	lines = custom
+	idx = 0
+	_show()
+
+
 func _show() -> void:
 	label.text = lines[idx]
 	btn.text = "Wake up" if idx == lines.size() - 1 else "..."

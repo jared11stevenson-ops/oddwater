@@ -63,7 +63,8 @@
     "curiosity",
     10
    ],
-   "evidence": "LF-024"
+   "evidence": "LF-024",
+   "decision_artifact": true
   },
   {
    "id": "phone",

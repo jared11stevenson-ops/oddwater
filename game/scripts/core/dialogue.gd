@@ -53,6 +53,23 @@ func _apply(effects: Dictionary) -> void:
 		tells.append(effects["tell"])
 
 
+## How a choice sounds: AS YOURSELF (your own voice, always consistent), IN COVER (as the host would),
+## or neutral. Authored in the data by `in_character`: false = yourself, true = cover.
+func mode_of(c: Dictionary) -> String:
+	if state.current_life()["id"] == "player":
+		return "self"      # in your own body you are always yourself
+	if not c.has("in_character") or c["in_character"] == null:
+		return "neutral"
+	return "cover" if c["in_character"] else "self"
+
+
+## The words the player actually sees for a choice: their own voice on self lines.
+func display_text(c: Dictionary) -> String:
+	if mode_of(c) == "self" and state.persona != null:
+		return state.persona.voice(c["text"])
+	return c["text"]
+
+
 ## Pick the i-th *available* choice. Returns the next node, or {} when the conversation ends.
 func choose(i: int) -> Dictionary:
 	if finished:
@@ -60,6 +77,7 @@ func choose(i: int) -> Dictionary:
 	var cs := choices()
 	if i < 0 or i >= cs.size():
 		return current()
+	_account_mode(cs[i])
 	_apply(cs[i])
 	node_id = cs[i]["next"]
 	# The Honesty Pull: a child can only carry so many fibs. Past the limit the truth falls out.
@@ -125,3 +143,16 @@ func open_claims() -> Array:
 		if not c.is_empty() and c["npc"] == convo["npc"] and state.claims[cid] == "heard":
 			out.append(cid)
 	return out
+
+
+## Speaking as yourself in a host's company risks an eyebrow, in proportion to how different you sound from them.
+## Keeping cover costs nothing now and erodes your sense of self over the day.
+func _account_mode(c: Dictionary) -> void:
+	var m := mode_of(c)
+	if state.current_life()["id"] == "player":
+		return
+	if m == "self":
+		state.self_lines += 1
+		state.suspicion.raise(convo["npc"], state.persona.self_risk(state.current_life().get("style", "dry")))
+	elif m == "cover":
+		state.cover_lines += 1

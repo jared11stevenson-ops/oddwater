@@ -110,7 +110,8 @@
    "note": [
     "candor",
     5
-   ]
+   ],
+   "decision_artifact": true
   },
   {
    "id": "periscope",

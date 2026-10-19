@@ -214,5 +214,29 @@
   "b": "delphine",
   "affinity": 35,
   "trust": 30
+ },
+ {
+  "a": "player",
+  "b": "billie",
+  "affinity": 25,
+  "trust": 20
+ },
+ {
+  "a": "player",
+  "b": "silas",
+  "affinity": 10,
+  "trust": 10
+ },
+ {
+  "a": "player",
+  "b": "cal",
+  "affinity": 20,
+  "trust": 15
+ },
+ {
+  "a": "player",
+  "b": "delphine",
+  "affinity": 15,
+  "trust": 10
  }
 ]

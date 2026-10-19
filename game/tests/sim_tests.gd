@@ -21,7 +21,7 @@ func snapshot(w: RefCounted) -> String:
 func _initialize() -> void:
 	# --- data
 	var w := World.new(7)
-	ok(w.people.size() == 28, "28 simulated people (%d)" % w.people.size())
+	ok(w.people.size() == 29, "29 simulated people incl. the player (%d)" % w.people.size())
 	var town = load("res://scripts/core/town_layout.gd").new()
 	var missing := []
 	for id in w.order:

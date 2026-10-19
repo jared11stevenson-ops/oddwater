@@ -17,7 +17,7 @@ func ok(c: bool, m: String) -> void:
 func _initialize() -> void:
 	var ev: Dictionary = Data.load_json("evidence.json")
 	# every convo is well-formed, every evidence id used anywhere has a card
-	for f in ["day01.json", "day02.json", "day03.json", "day04.json", "day05.json"]:
+	for f in ["day00.json", "day01.json", "day02.json", "day03.json", "day04.json", "day05.json"]:
 		var all: Dictionary = Data.load_json("convos/" + f)
 		for id in all:
 			var nodes: Dictionary = all[id]["nodes"]
@@ -34,7 +34,7 @@ func _initialize() -> void:
 					ok(nodes.has(c["next"]), "%s/%s/%s -> %s" % [f, id, nid, c["next"]])
 					if c.has("evidence"): ok(ev.has(c["evidence"]), "evidence card %s" % c["evidence"])
 			ok(ends, "%s/%s can end" % [f, id])
-	for h in ["jo", "tobi", "grange_night", "playhouse_night", "mags", "practice_night", "delphine", "vern", "town_hall_vault", "wmrc_archive"]:
+	for h in ["jo", "tobi", "grange_night", "playhouse_night", "mags", "practice_night", "delphine", "vern", "town_hall_vault", "wmrc_archive", "player"]:
 		var home: Dictionary = Data.load_json("homes/%s.json" % h)
 		ok(home["items"].size() >= 8, "%s has items" % h)
 		for it in home["items"]:
@@ -45,10 +45,11 @@ func _initialize() -> void:
 	var days: Dictionary = Data.load_json("days.json")
 	for d in days:
 		ok(FileAccess.file_exists("res://data/" + days[d]["home"]), "day %s home exists" % d)
-		ok(FileAccess.file_exists("res://data/" + days[d]["night"]), "day %s night exists" % d)
+		if days[d]["night"] != "":
+			ok(FileAccess.file_exists("res://data/" + days[d]["night"]), "day %s night exists" % d)
 
 	# Honesty Pull: fibs accumulate; at 100 the truth blurts out
-	var g := GameState.new()
+	var g := GameState.new(true)
 	var d := Dialogue.new()
 	d.start(g, "day03.json", "adaeze")
 	d.choose(0)    # "I already ate" (lie 60)
@@ -60,7 +61,7 @@ func _initialize() -> void:
 	ok(d.finished or d.current().get("end", false), "the blurt is followed by the end")
 	ok(g.suspicion.get_s("adaeze") >= 30, "and Adaeze noticed")
 	# an honest child never blurts, and tells the truth for a price in suspicion
-	var h := GameState.new()
+	var h := GameState.new(true)
 	var d2 := Dialogue.new()
 	d2.start(h, "day03.json", "adaeze")
 	d2.choose(2)

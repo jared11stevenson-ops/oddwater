@@ -15,6 +15,7 @@ var edge_box: VBoxContainer
 var people_box: VBoxContainer
 var used: Array = []
 var eligible: Array = []
+var watching := false
 
 
 func setup(game_state: RefCounted, world: RefCounted, the_cause: RefCounted, who_can_be_taken: Array = []) -> void:
@@ -59,6 +60,12 @@ func setup(game_state: RefCounted, world: RefCounted, the_cause: RefCounted, who
 	status.add_theme_font_size_override("font_size", 28)
 	status.add_theme_color_override("font_color", Color("f6ecd2"))
 	add_child(status)
+	var watch := Button.new(); watch.text = "Stay up and watch the street (uses a visit)"
+	watch.position = Vector2(70, 800)
+	watch.custom_minimum_size = Vector2(900, 70)
+	watch.add_theme_font_size_override("font_size", 26)
+	watch.pressed.connect(watch_street)
+	add_child(watch)
 	var done := Button.new(); done.text = "Go to sleep"
 	done.position = Vector2(1500, 950)
 	done.custom_minimum_size = Vector2(340, 90)
@@ -117,5 +124,16 @@ func night_do(action: String, target: String) -> Dictionary:
 	return r
 
 
+## Sit at the window instead of visiting anyone: you will see who gets marked, but only after your last chance to change it.
+func watch_street() -> bool:
+	if budget <= 0 or watching:
+		return false
+	watching = true
+	budget -= 1
+	status.text = "You pull a chair to the window and settle in for the night."
+	_refresh()
+	return true
+
+
 func finish() -> void:
-	finished.emit({"visits": used})
+	finished.emit({"visits": used, "watched": watching})

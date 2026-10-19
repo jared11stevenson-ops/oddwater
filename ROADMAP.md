@@ -20,6 +20,17 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - [ ] Save/load UI and autosave at each dusk
 - [x] Day 1 → Day 2 transition with the Notes card ("what you left behind"); Day 2 home for Jo is the next build
 
+## M1.3 — Your own first day (design: `02-gdd/03-gameplay-first-design.md` §1b)
+- [x] Character creator (name, pronouns, speaking style, catchphrase); persona consistent across every body
+- [x] Dialogue modes: `[You]` (your voice, costs an eyebrow vs the host's style) vs `[As host]` (cover, erodes your self); drift reworked around cover vs self
+- [x] Day 1 tutorial in your own body: home, 3 conversations, photograph, free time, the Decision, the 3 a.m. ribbon-and-clock night; your body is Taken at 4:12, no Remnant
+- [x] Nine fair-play foreshadow beats, tested present and tested un-named
+- [x] Watch the street (Long Night): see the ribbon tied on tomorrow's host's door, too late to change it
+- [ ] Day 1 art pass: your home, neighbours, a real morning (menus now)
+- [ ] The first swap scene (cinematic) and a short "what just happened" beat that doesn't explain
+- [ ] A visible portrait of YOUR character in every UI (so you always know who you are)
+- [ ] Recognise-yourself clues: your own house, notebook and cat, found as another host (your body's trail)
+
 ## M1.4 — Gameplay-first redesign (design: `02-gdd/03-gameplay-first-design.md`, supersedes the lore-led charters)
 - [x] The Cause and STEER: nightly host choice from restlessness plus relative priority; comfort/unsettle night actions; observable tells; authored order holds over 20 seeds, two nudges steer (21 checks); host-by-life flow; Long Night screen
 - [ ] The reactivity layer: conversations read the sim (memories, believed rumours, mood, money) so the town brings up what you did, in any body
@@ -106,3 +117,4 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 - 2026-10-19: Act I complete (Days 1-5): speech, radio, vault, Hymn choice; 11 seals reachable by Day 6 in the robot run. Suites: core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 277, day45 29, town 9653, smoke OK. Fixed dark-on-dark text contrast on radio and night screens. Known: night search screens are a bare scatter of buttons; the Hymn's consequences (mood, suspicion, Slack text) exist but no Awakened NPC behaviour yet.
 - 2026-10-19: M1.5 started: sim kernel, claims, evidence tampering, drift/hints, Briefing, free time, Gazette. Suites (10): core 101, dialogue 48, dental 23, board 13, rhythm 11, day23 278, day45 29, sim 66, investigation 55, town 9653, smoke OK (careful vs careless vs comfortable bots). New runner: `game/tests/run_all.sh` (syntax-checks every script first: a script parse error makes headless runs HANG, not fail).
 - 2026-10-19: Gameplay-first redesign: STEER (the Cause, Long Night). Lore is an idea bank until gameplay is honed. Suites (11): + cause 21. Found: bounded levers are good (two deliberate nudges steer, one never does); priority must be relative to who's left; sim restlessness needed overnight relief to produce observable tells.
+- 2026-10-19: Day 1 is now your own created character in your own body; persona and dialogue modes; tutorial with nine foreshadow beats; all days shifted by one (Day 2 = first host). Suites (13): + persona 23, tutorial 1217; smoke plays tutorial + Act I with careful/careless/comfortable/steering bots. Bug caught by the robot: 'any' proof tool was being switched off.

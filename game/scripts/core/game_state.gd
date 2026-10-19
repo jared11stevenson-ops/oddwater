@@ -6,6 +6,7 @@ const Notes = preload("res://scripts/core/notes.gd")
 const CaseBoard = preload("res://scripts/core/case_board.gd")
 const Suspicion = preload("res://scripts/core/suspicion.gd")
 const Remnants = preload("res://scripts/core/remnants.gd")
+const Persona = preload("res://scripts/core/persona.gd")
 
 enum Phase { WAKE, PERFORM, STEP_OFF, NIGHT, SLACK, ENDED }
 
@@ -31,14 +32,18 @@ var dawn_cracks := 0
 var dawn_photos := 0
 var host_history: Array = []   # who the player has been, day by day (day N is host_history[N-1])
 var next_host := ""          # set at the Slack by the Cause; blank = authored order
+var persona: RefCounted = null   # the player's own character; persistent across every body
+var self_lines := 0             # times the player spoke as themselves (this day)
+var cover_lines := 0            # times they kept their cover as the host (this day)
 var honesty_pull := 0   # a child's fibs build up; at 100 the truth blurts out (resets each day)
 
 
-func _init() -> void:
+func _init(skip_tutorial: bool = false) -> void:
 	tuning = Data.load_json("tuning.json")
 	lives = Data.load_json("lives.json")
 	endings = Data.load_json("endings.json")
-	host_history = [lives[0]["id"]]
+	host_history = ["mags"] if skip_tutorial else [lives[0]["id"]]
+	persona = Persona.new()
 	board = CaseBoard.new()
 	suspicion = Suspicion.new(tuning)
 	remnants = Remnants.new(tuning)
@@ -62,7 +67,7 @@ func current_life() -> Dictionary:
 ## The authored order: the first life not yet hosted, or the Prop Room when they are all used.
 func baseline_next_id() -> String:
 	for l in lives:
-		if l["id"] != "prop_room" and not host_history.has(l["id"]):
+		if l["id"] != "prop_room" and l["id"] != "player" and not host_history.has(l["id"]):
 			return l["id"]
 	return "prop_room"
 
@@ -87,13 +92,17 @@ func cracked_count() -> int:
 func _enter_day() -> void:
 	notes = Notes.new()
 	honesty_pull = 0
+	self_lines = 0
+	cover_lines = 0
 	dawn_seals = board.seals.size()
 	dawn_cracks = cracked_count()
 	dawn_photos = board.notebook.size()
 	var tool_id: String = current_life()["proof_tool"]
 	for l in lives:
-		board.set_tool(l["proof_tool"], false)
+		if l["proof_tool"] != "any":      # 'any' is universal: it is never switched off
+			board.set_tool(l["proof_tool"], false)
 	board.set_tool(tool_id, true)
+	board.set_tool("any", true)
 	# Overlap: Remnants who like you run their old Proof Tool for you.
 	for l in lives:
 		if l["id"] != current_life()["id"] and remnants.willing(l["id"]):
@@ -113,7 +122,8 @@ func advance(keep_note: String = "") -> Phase:
 			phase = Phase.STEP_OFF
 		Phase.STEP_OFF:
 			var keep := keep_note if board.has_ability("shed") else ""
-			remnants.step_off(current_life()["id"], day, notes, keep)
+			if current_life()["id"] != "player":
+				remnants.step_off(current_life()["id"], day, notes, keep)
 			phase = Phase.NIGHT
 		Phase.NIGHT:
 			phase = Phase.SLACK
@@ -142,6 +152,11 @@ func apply_hymn(aired: bool) -> void:
 			suspicion.raise(npc, 10)   # the Awakened are watching you now
 
 
+## The player's sense of self, 0..100. The friendly label is for the UI; this is the real number.
+func identity() -> float:
+	return 100.0 - drift
+
+
 func drift_label() -> String:
 	return "Sharp" if drift < 20.0 else ("Getting comfortable" if drift < 45.0 else ("Settled in" if drift < 70.0 else "At home"))
 
@@ -152,7 +167,9 @@ func close_day(in_mood: float, life_fidelity_bonus: float = 0.0) -> void:
 	var fid := float(notes.get_note("fidelity"))
 	# What keeps you awake is investigative progress today, not temperament.
 	var progress := float(board.seals.size() - dawn_seals) * 4.0 + float(cracked_count() - dawn_cracks) * 3.0 + float(board.notebook.size() - dawn_photos) * 0.8
-	var d := maxf(0.0, fid) / 8.0 + maxf(0.0, in_mood - 50.0) / 12.0 - progress
+	# Wearing someone's life is comforting: every line in cover wears the player's own self down a little;
+	# every line as themselves holds it. Investigative progress holds it too.
+	var d := float(cover_lines) * 0.9 - float(self_lines) * 0.5 + maxf(0.0, in_mood - 50.0) / 12.0 - progress
 	drift = clampf(drift + d, 0.0, 100.0)
 	contentment += maxf(0.0, in_mood - 40.0) * 0.1
 	if fid >= 15.0:
@@ -208,7 +225,7 @@ func ending_for() -> String:
 func to_dict() -> Dictionary:
 	return {"version": 1, "day": day, "phase": int(phase), "notes": notes.to_dict(),
 		"board": board.to_dict(), "suspicion": suspicion.values, "remnants": remnants.by_life,
-		"mood": town_mood, "ending": ending, "flags": flags, "hosts": host_history, "next_host": next_host, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
+		"mood": town_mood, "ending": ending, "flags": flags, "persona": persona.to_dict(), "hosts": host_history, "next_host": next_host, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -222,6 +239,7 @@ func load_dict(d: Dictionary) -> void:
 	ending = d["ending"]
 	flags = d.get("flags", {}).duplicate()
 	claims = d.get("claims", {}).duplicate()
+	persona = Persona.from_dict(d.get("persona", {}))
 	host_history = d.get("hosts", host_history).duplicate()
 	next_host = d.get("next_host", "")
 	drift = float(d.get("drift", 0.0)); contentment = float(d.get("contentment", 0.0)); alignment = float(d.get("alignment", 0.0)); notoriety = float(d.get("notoriety", 0.0))

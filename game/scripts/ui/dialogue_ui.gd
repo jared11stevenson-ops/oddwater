@@ -83,7 +83,12 @@ func _show() -> void:
 		eb.pressed.connect(open_evidence)
 		box.add_child(eb)
 	for i in cs.size():
-		var b := Button.new(); b.text = cs[i]["text"]
+		var b := Button.new()
+		var mode: String = dlg.mode_of(cs[i])
+		var tag := ""
+		if gstate.current_life()["id"] != "player":
+			tag = "[You]  " if mode == "self" else ("[As %s]  " % String(gstate.current_life()["name"]).split(" ")[0] if mode == "cover" else "")
+		b.text = tag + dlg.display_text(cs[i])
 		b.custom_minimum_size = Vector2(1640, 96)   # big target, one-thumb
 		b.add_theme_font_size_override("font_size", 34)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT

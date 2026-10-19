@@ -47,7 +47,7 @@ func _initialize() -> void:
 	ok(p.verdict().contains("exactly who she says"), "clean verdict")
 
 	# Overlay + pins -> Seal S25 on the real board
-	var g := GameState.new()
+	var g := GameState.new(true)
 	g.board.add_evidence("LF-055"); g.board.add_evidence("LF-056")
 	ok(g.board.block_reason("S25").begins_with("needs_pinned"), "S25 needs pinned evidence")
 	g.board.pin("LF-055", "who"); g.board.pin("LF-056", "who")
