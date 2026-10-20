@@ -6,13 +6,13 @@ const Data = preload("res://scripts/core/data.gd")
 
 const TOPICS := [
 	{"id": "chat", "label": "Small talk"},
-	{"id": "ask_day", "label": "\"How's your day?\""},
-	{"id": "compliment", "label": "Pay a compliment"},
-	{"id": "joke", "label": "Tell a joke"},
-	{"id": "gossip", "label": "\"Heard anything?\""},
-	{"id": "confide", "label": "\"What's really going on?\""},
-	{"id": "favor", "label": "Ask to borrow 20"},
-	{"id": "argue", "label": "Pick a fight"}]
+	{"id": "ask_day", "label": "Your day?"},
+	{"id": "compliment", "label": "Compliment"},
+	{"id": "joke", "label": "Joke"},
+	{"id": "gossip", "label": "Any news?"},
+	{"id": "confide", "label": "What's wrong?"},
+	{"id": "favor", "label": "Borrow $20"},
+	{"id": "argue", "label": "Fight"}]
 
 
 static func tier(sim: RefCounted, npc: RefCounted, host_id: String, salt: String) -> String:

@@ -217,3 +217,32 @@ func _tie_classmates() -> void:
 			var j := rng.randi() % kids.size()
 			if j != i and absi(int(kids[i]["age"]) - int(kids[j]["age"])) <= 2 and kids[i]["home"] != kids[j]["home"]:
 				_rel(kids[i]["id"], kids[j]["id"], rng.randf_range(15, 70), rng.randf_range(15, 60))
+
+
+## The authored cast gets the same everyday detail (age, hobby, quirk, haunts) so every resident can be a host and have a face.
+static func decorate(p: RefCounted) -> void:
+	var cfg: Dictionary = Data.load_json("sim/population.json")
+	var h := absi(hash("decorate|" + p.id))
+	if p.age == 0:
+		if "student" in p.job:
+			p.age = 12 + h % 6
+		elif "retired" in p.job:
+			p.age = 68 + h % 14
+		else:
+			p.age = 30 + h % 32
+	if p.group == "":
+		p.group = "child" if p.age < 13 else ("teen" if p.age < 18 else ("elder" if p.age >= 62 else "adult"))
+	var hobbies: Array = cfg["hobbies"].keys()
+	hobbies.sort()
+	if p.hobby == "":
+		p.hobby = hobbies[(h >> 3) % hobbies.size()]
+	if p.quirk == "":
+		p.quirk = cfg["quirks"][(h >> 7) % cfg["quirks"].size()]
+	if p.haunts.is_empty():
+		for pl in cfg["hobbies"][p.hobby]["places"]:
+			p.haunts.append(p.home if pl == "home" else pl)
+		var venues: Array = cfg["social_venues"]
+		for k in 2:
+			var v: String = venues[((h >> (11 + k * 3)) + k) % venues.size()]
+			if not p.haunts.has(v):
+				p.haunts.append(v)

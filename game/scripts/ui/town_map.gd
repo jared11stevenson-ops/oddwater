@@ -4,11 +4,10 @@ extends Control
 
 signal place_tapped(id: String)
 
-const KIND_FILL := {"house": Color("ead9b0"), "home": Color("e3c98f"), "landmark": Color("d49a74"), "park": Color("a9cf93"), "green": Color("cfe0b5")}
+const Base = preload("res://scripts/ui/town_base.gd")
+const Portrait = preload("res://scripts/art/portrait.gd")
 const INK := Color("14121c")
-const WATER := Color("9cc9d2")
-const LAND := Color("f1e6c8")
-const STREET := Color("c9b88f")
+const TINTS := [[6.0, Color("ffeede")], [7.6, Color("ffffff")], [16.8, Color("ffffff")], [18.4, Color("ffdcc0")], [19.8, Color("8d95d6")], [22.0, Color("6169b4")], [24.0, Color("565eaa")]]
 
 var layout: RefCounted
 var game: RefCounted
@@ -22,6 +21,9 @@ var _press := Vector2.ZERO
 var _dragging := false
 var _moved := 0.0
 var _lots_sorted: Array = []
+var base: Control
+var night := 0.0
+var _tokens: Dictionary = {}       # person id -> portrait traits (for the head tokens)
 
 
 func setup(the_game: RefCounted) -> void:
@@ -30,6 +32,14 @@ func setup(the_game: RefCounted) -> void:
 	_lots_sorted = layout.lots.filter(func(l): return l["kind"] != "green")
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	base = Base.new()
+	base.m = self
+	base.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	base.show_behind_parent = true      # the art sits behind the people, labels and windows drawn by this node
+	add_child(base)
+	base.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	resized.connect(redraw_all)
+	update_tint()
 	snapshot()
 	refresh_positions()
 	anim = 1.0
@@ -82,6 +92,8 @@ func refresh_positions() -> void:
 
 func animate_to_now(seconds: float = 0.7) -> void:
 	refresh_positions()
+	update_tint()
+	queue_redraw()
 	anim = 0.0
 	var tw := create_tween()
 	tw.tween_method(func(v: float): anim = v; queue_redraw(), 0.0, 1.0, seconds).set_trans(Tween.TRANS_SINE)
@@ -90,51 +102,67 @@ func animate_to_now(seconds: float = 0.7) -> void:
 func focus_on(id: String) -> void:
 	if cur_pos.has(id):
 		center = cur_pos[id]
-	queue_redraw()
+	redraw_all()
 
 
 func set_zoom(z: float) -> void:
 	zoom = clampf(z, 0.7, 6.0)
+	redraw_all()
+
+
+func redraw_all() -> void:
+	if base != null:
+		base.queue_redraw()
 	queue_redraw()
+
+
+## Light follows the clock: warm dawn, clear day, orange dusk, blue night with lit windows.
+func update_tint() -> void:
+	var h: float = game.sim.hour_now()
+	var col: Color = TINTS[0][1]
+	for i in TINTS.size() - 1:
+		var a: Array = TINTS[i]
+		var b: Array = TINTS[i + 1]
+		if h >= float(a[0]) and h <= float(b[0]):
+			col = (a[1] as Color).lerp(b[1], (h - float(a[0])) / (float(b[0]) - float(a[0])))
+	if h > 24.0:
+		col = TINTS[-1][1]
+	base.modulate = col
+	night = clampf((19.2 - h) / -2.0, 0.0, 1.0) if h >= 19.2 else (clampf((6.8 - h) / 0.8, 0.0, 1.0) if h < 6.8 else 0.0)
+
+
+func _token(id: String) -> Dictionary:
+	if not _tokens.has(id):
+		_tokens[id] = Portrait.traits_for(game.sim.people[id])
+	return _tokens[id]
 
 
 func _draw() -> void:
 	var sc := s()
-	draw_rect(Rect2(Vector2.ZERO, size), LAND)
-	# the lake, north of the shore road
-	var lake_bottom := to_screen(Vector2(0, -122)).y
-	draw_rect(Rect2(0, minf(0.0, lake_bottom - 2000.0), size.x, lake_bottom - minf(0.0, lake_bottom - 2000.0)), WATER)
-	for i in 4:
-		var y := lake_bottom - 22.0 * sc * (i + 1)
-		var pts := PackedVector2Array()
-		for x in range(0, int(size.x) + 24, 24):
-			pts.append(Vector2(x, y + sin(x * 0.03 + i) * 3.0 * sc))
-		if pts.size() > 1:
-			draw_polyline(pts, Color(1, 1, 1, 0.35), maxf(1.0, sc))
-	# streets
-	var spec: Dictionary = layout.spec
-	var streets: Array = spec["streets"]
-	for st in streets:
-		draw_line(to_screen(Vector2(float(st["x0"]), float(st["y"]))), to_screen(Vector2(float(st["x1"]), float(st["y"]))), STREET, 12.0 * sc)
-	var y0: float = float(streets[0]["y"]); var y1: float = float(streets[-1]["y"])
-	for cx in spec["cross_x"]:
-		draw_line(to_screen(Vector2(float(cx), y0)), to_screen(Vector2(float(cx), y1)), STREET, 12.0 * sc)
-	# lots
 	var font := ThemeDB.fallback_font
+	# lit windows after dark
+	if night > 0.05:
+		for l in layout.lots:
+			if l["kind"] == "green" or l["kind"] == "park":
+				continue
+			var h := hash(String(l["id"]))
+			if h % 100 < 78:
+				var c := to_screen(Vector2(float(l["x"]), float(l["y"])))
+				if c.x < -20 or c.y < -20 or c.x > size.x + 20 or c.y > size.y + 20:
+					continue
+				var wsz := Vector2(3.4, 3.0) * sc
+				draw_rect(Rect2(c + Vector2(-5.0, -2.0) * sc, wsz), Color(1.0, 0.82, 0.3, night))
+				if h % 2 == 0:
+					draw_rect(Rect2(c + Vector2(2.5, -2.0) * sc, wsz), Color(1.0, 0.82, 0.3, night))
+	# selection
+	var sel: Dictionary = layout.by_id.get(selected, {})
+	if not sel.is_empty():
+		var tl := to_screen(Vector2(float(sel["x"]) - float(sel["w"]) / 2.0, float(sel["y"]) - float(sel["d"]) / 2.0))
+		draw_rect(Rect2(tl, Vector2(float(sel["w"]), float(sel["d"])) * sc).grow(3.0), Color("f5b82e"), false, 4.0)
+	# place names, big ones first, skipping any that would overlap
 	var label_boxes: Array = []
 	var named: Array = layout.lots.filter(func(x): return x["kind"] == "landmark" or x["kind"] == "park")
-	named.sort_custom(func(a, b): return float(a["w"]) > float(b["w"]))      # big places get their label first
-	for l in layout.lots:
-		var tl := to_screen(Vector2(float(l["x"]) - float(l["w"]) / 2.0, float(l["y"]) - float(l["d"]) / 2.0))
-		var r := Rect2(tl, Vector2(float(l["w"]), float(l["d"])) * sc)
-		if r.end.x < -40 or r.position.x > size.x + 40 or r.end.y < -40 or r.position.y > size.y + 40:
-			continue
-		var kind: String = l["kind"]
-		draw_rect(r, KIND_FILL.get(kind, KIND_FILL["house"]))
-		if kind != "green":
-			draw_rect(r, INK, false, maxf(1.0, 1.4 * minf(sc, 2.0)))
-		if l["id"] == selected:
-			draw_rect(r.grow(3.0), Color("f5b82e"), false, 4.0)
+	named.sort_custom(func(a, b): return float(a["w"]) > float(b["w"]))
 	for l in named:
 		var tl2 := to_screen(Vector2(float(l["x"]) - float(l["w"]) / 2.0, float(l["y"]) - float(l["d"]) / 2.0))
 		var fs := int(clampf(14.0 * sc, 13.0, 26.0))
@@ -151,30 +179,38 @@ func _draw() -> void:
 		if clash and l["id"] != selected:
 			continue
 		label_boxes.append(lr)
+		draw_rect(Rect2(lr.position - Vector2(3, 1), lr.size + Vector2(6, 3)), Color(0.95, 0.91, 0.82, 0.78))
 		draw_string(font, tl2 + Vector2(2, -4), nm2, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, INK)
-	# people
+	# people: small coloured dots from afar, little faces when you zoom in
 	var rad := clampf(2.4 * sc, 3.5, 10.0)
 	var host: String = game.host
+	var heads := sc >= 1.5
 	for id in cur_pos:
-		var a: Vector2 = prev_pos.get(id, cur_pos[id])
-		var w: Vector2 = a.lerp(cur_pos[id], anim)
-		var sp := to_screen(w)
-		if sp.x < -20 or sp.y < -20 or sp.x > size.x + 20 or sp.y > size.y + 20:
-			continue
-		var m: float = game.sim.people[id].mood() / 100.0
-		var col := Color("d95f4a").lerp(Color("5fa35a"), m)
 		if id == host:
 			continue
-		draw_circle(sp, rad, col)
-		draw_arc(sp, rad, 0.0, TAU, 12, INK, 1.0)
+		var a: Vector2 = prev_pos.get(id, cur_pos[id])
+		var sp := to_screen(a.lerp(cur_pos[id], anim))
+		if sp.x < -20 or sp.y < -20 or sp.x > size.x + 20 or sp.y > size.y + 20:
+			continue
+		if night > 0.5 and game.sim.people[id].activity == "sleep":
+			continue          # tucked up indoors: only the lit window shows
+		if heads:
+			Portrait.draw_token(self, sp, clampf(2.6 * sc, 6.0, 13.0), _token(id))
+		else:
+			var mood: float = game.sim.people[id].mood() / 100.0
+			draw_circle(sp, rad, Color("d95f4a").lerp(Color("5fa35a"), mood))
+			draw_arc(sp, rad, 0.0, TAU, 12, INK, 1.0)
 	if cur_pos.has(host):
 		var hp := to_screen((prev_pos.get(host, cur_pos[host]) as Vector2).lerp(cur_pos[host], anim))
-		var pulse := 1.0 + 0.2 * sin(Time.get_ticks_msec() * 0.006)
-		draw_circle(hp, rad * 2.4 * pulse, Color(0.96, 0.72, 0.18, 0.35))
-		draw_circle(hp, rad * 1.7, Color("f5b82e"))
-		draw_arc(hp, rad * 1.7, 0.0, TAU, 20, INK, 2.5)
+		var pulse := 1.0 + 0.12 * sin(Time.get_ticks_msec() * 0.006)
+		draw_circle(hp, rad * 2.6 * pulse, Color(0.96, 0.72, 0.18, 0.3))
+		Portrait.draw_token(self, hp, maxf(rad * 1.9, 9.0), _token(host), true)
 		var nm: String = String(game.sim.people[host].display).split(" ")[0]
-		draw_string(font, hp + Vector2(-20, -rad * 2.6), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK)
+		var tw := font.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		var tag := Rect2(hp + Vector2(-tw / 2.0 - 6.0, -rad * 2.4 - 28.0), Vector2(tw + 12.0, 26.0))
+		draw_rect(tag, Color("f5b82e"))
+		draw_rect(tag, INK, false, 2.0)
+		draw_string(font, tag.position + Vector2(6, 20), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, INK)
 
 
 func _process(_d: float) -> void:
@@ -202,12 +238,12 @@ func _gui_input(e: InputEvent) -> void:
 		var mm := e as InputEventMouseMotion
 		_moved += mm.relative.length()
 		center -= mm.relative / s()
-		queue_redraw()
+		redraw_all()
 	elif e is InputEventMagnifyGesture:
 		set_zoom(zoom * (e as InputEventMagnifyGesture).factor)
 	elif e is InputEventPanGesture:
 		center += (e as InputEventPanGesture).delta * 6.0 / s()
-		queue_redraw()
+		redraw_all()
 
 
 ## Nearest built lot to a screen point, with a generous finger-sized tolerance.

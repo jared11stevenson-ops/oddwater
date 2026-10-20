@@ -15,7 +15,8 @@ The product comes first as a Sims-like town you play from inside: a town 2x Sout
 - [ ] Sims depth: multi-step travel visible on the map, per-person daily schedule view, houses with rooms/objects, cooking/shopping/bills, jobs and promotions, relationships with stages (friend/crush/partner/rival), births/ageing/deaths over time, weather, town events (festival, market day)
 - [ ] The swap, perfected: a first-swap sequence that feels good, a persistent "you" (name, voice) across bodies, host handover animation, per-host goals/wishes (Sims-style) with rewards, a journal of every life
 - [ ] Performance: profile the town on a mid-range phone; spatial hashing for interactions; ~400 residents
-- [ ] Art: portraits and silhouettes for residents, buildings with character, day/night lighting on the map, audio
+- [x] Art pass 1 (see `03-art/00-art-direction.md`): procedural portraits for every resident, inked map with roofs/shadows/lake wash, day-night light and lit windows, print pass, Bangers + Lora UI as a printed page, speech balloons (22 checks)
+- [ ] Art pass 2: distinct landmark silhouettes, walk animation on twos, interiors, weather, audio, event lettering
 - [ ] Then, later: re-introduce the story layers (Cause, Case Board, lore) on top of the sim
 
 ## M0 — Foundations (done)

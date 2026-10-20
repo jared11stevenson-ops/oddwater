@@ -45,6 +45,7 @@ func _init(seed: int = 1961, everyday: bool = false) -> void:
 		var names: Array = []
 		for id in order:
 			names.append(people[id].display)
+			Population.decorate(people[id])
 		var gen: Dictionary = Population.new().generate(seed, TownLayout.new(), names)
 		for d in gen["people"]:
 			var p2: RefCounted = SimPerson.from_data(d)

@@ -69,3 +69,21 @@ Render a frame: `xvfb-run -a godot --path game --rendering-driver opengl3 --rend
 - The post pass uses `hint_screen_texture` mip blur and one full-screen pass. It's designed to be cheap, but is **unprofiled on device**.
 - Known flaws: the angled brows read angry (need neutral), the lake is a flat disc (needs animated wash and shoreline), characters need proper silhouettes, no real backgrounds or textures yet.
 - Next art passes: (1) neutral-brow face set and 6 body silhouettes, (2) painterly lake and shoreline, (3) one hand-modelled home interior (Mags's bedroom) with the Wake & Snoop camera, (4) comic-panel cutscene framework, (5) wire `hush` and `truth` to `GameState`, (6) device profiling.
+
+
+## Town Sim art pass 1 (2026-10-20)
+
+The sim screen now wears the style. What exists:
+
+| Piece | File | What it does |
+|---|---|---|
+| Resident faces | `scripts/art/portrait.gd` | Procedural, deterministic portrait for every resident: flat spot colour, inked line in three weights, halftone cel shadow, dot eyes + short brow, 8 hair styles, glasses/beards/hats, clothes by job (scrubs, aprons, collars, hoodies), elders grey with lines, expression from mood or from how a conversation is going (happy, content, neutral, sad, tired, cross, surprised). Also a tiny head token for the map. |
+| Map art | `scripts/ui/town_base.gd` | Inked street grid, houses with roofs / ridge / door / chimney / printed halftone shadow, landmarks with awnings and flags, trees, lawns, pageant green with a pond, a lake washed in wide soft blooms with wavering ink shoreline and reeds. Wobbling hand-inked outlines, heavier at the silhouette. |
+| Light | `scripts/ui/town_map.gd` | Tint follows the clock (warm dawn, clear day, orange dusk, blue night). Windows light up after dark; sleeping people disappear indoors. Zoom in and dots become little faces. |
+| Print pass | `shaders/page_post.gdshader` over the map | Paper grain, posterised brightness, soft vignette. |
+| UI as the page | `scripts/ui/town_theme.gd`, `town_sim_ui.gd` | Paper panel, ink borders, Bangers lettering for headings, Lora for reading, comic speech balloons with the speaker's portrait, a printed morning card with the host's face. |
+| Fonts | `assets/fonts/` | Bangers and Lora, both SIL Open Font License (licence files alongside). |
+
+Honest limits: buildings are one template with colour variation; faces share one skeleton; no animation yet (walking is a slide); no `hush`/`truth` wiring in the town screen yet (the story layers are parked); nothing profiled on a phone.
+
+Next art passes: distinct building silhouettes per landmark, interiors, character walk cycles (on twos), a sound-lettering "pop" for events, weather, seasons.
