@@ -92,6 +92,9 @@ func _initialize() -> void:
 	var CaseBot = load("res://tests/case_bot.gd")
 	var bot = CaseBot.new(g.sim, g.case, g.det)
 	var r: Dictionary = bot.solve()
+	hud.show_case("court")
+	await process_frame
+	ok(by_name(hud.box, "Arrest_" + g.case["killer"]) != null, "the court tab offers arrests")
 	hud.show_case("people")
 	ok(by_name(hud.box, "Warrant_" + g.case["killer"]) != null, "the people tab has warrants")
 	hud.show_case("accuse")

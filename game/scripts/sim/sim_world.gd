@@ -120,7 +120,7 @@ func log_event(type: String, who: String, text: String, other: String = "") -> v
 
 
 func alive(p: RefCounted) -> bool:
-	return not p.struck and not p.taken and not p.dead
+	return not p.struck and not p.taken and not p.dead and not p.jailed
 
 
 # ------------------------------------------------------------------ autonomy

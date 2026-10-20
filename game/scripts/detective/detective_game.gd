@@ -8,12 +8,15 @@ const Detective = preload("res://scripts/detective/detective.gd")
 const Cctv = preload("res://scripts/detective/cctv.gd")
 const Prints = preload("res://scripts/detective/prints.gd")
 const Narrator = preload("res://scripts/detective/narrator.gd")
+const Justice = preload("res://scripts/detective/justice.gd")
 
 const DET_SAVE := "user://detective_save.json"
 
 var det: RefCounted
 var case: Dictionary = {}
 var _minutes := 0
+var court: Dictionary = {"custody": ""}     # who is in custody, the trial day, the interview-room state
+var jail: Array = []                         # the convicted (and the wrongly convicted): the Gallery
 var beats_seen: Dictionary = {}
 var pending_beats: Array = []       # narrated interludes waiting to be shown
 var episodes: Array = []            # the told stories of cases you have worked
@@ -193,6 +196,61 @@ func warrant(target: String) -> Dictionary:
 	return r
 
 
+func arrest(target: String) -> Dictionary:
+	var r: Dictionary = Justice.arrest(sim, case, det, court, target)
+	_after_op()
+	return r
+
+
+func interrogate(approach: String) -> Dictionary:
+	var r: Dictionary = Justice.interrogate(sim, case, det, court, approach)
+	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
+	return r
+
+
+func trial_ready() -> bool:
+	return court.get("custody", "") != "" and sim.day >= int(court.get("trial_day", 999))
+
+
+## The trial: the defence attacks, the jury decides, and the verdict is applied to the town.
+func run_trial() -> Dictionary:
+	var t: String = court.get("custody", "")
+	if t == "":
+		return {"verdict": "none", "attacks": [], "confidence": 0}
+	var res: Dictionary = Justice.trial(sim, case, det, t)
+	Justice.conclude(sim, case, det, court, jail, res)
+	var ep: Dictionary = Narrator.episode(sim, case, det, {"verdict": "convicted" if res["verdict"] == "guilty" and not res["wrongful"] else "wrong" if res["verdict"] == "guilty" else "released", "score": int(res["confidence"]), "right_person": t == case["killer"]})
+	if res["verdict"] in ["guilty", "not guilty"]:
+		episodes.append(ep)
+		res["episode"] = ep
+	chronicle.append({"day": sim.day, "text": "Trial of %s: %s." % [CaseEngine.name_of(sim, t), res["verdict"]]})
+	return res
+
+
+func inmate(id: String) -> Dictionary:
+	for i in jail:
+		if i["id"] == id:
+			return i
+	return {}
+
+
+func visit(id: String, topic: String) -> Dictionary:
+	var i: Dictionary = inmate(id)
+	if i.is_empty():
+		return {"text": "They are not here.", "minutes": 0}
+	var r: Dictionary = Justice.visit(sim, case, det, i, topic)
+	r["ticks"] = spend(int(r["minutes"]))
+	return r
+
+
+func appeal(id: String) -> Dictionary:
+	var i: Dictionary = inmate(id)
+	if i.is_empty():
+		return {"ok": false, "text": "They are not here."}
+	return Justice.appeal(sim, case, det, jail, i)
+
+
 ## Name the killer. The judge weighs your notebook; the town reacts.
 func accuse(culprit: String, motive: String, method: String) -> Dictionary:
 	var res: Dictionary = CaseOps.judge(sim, case, det, culprit, motive, method)
@@ -232,6 +290,8 @@ func to_dict() -> Dictionary:
 	d["beats_seen"] = beats_seen.duplicate()
 	d["pending_beats"] = pending_beats.duplicate(true)
 	d["episodes"] = episodes.duplicate(true)
+	d["court"] = court.duplicate(true)
+	d["jail"] = jail.duplicate(true)
 	d["mode"] = "detective"
 	d["seed_v"] = seed_v
 	return d
@@ -245,6 +305,8 @@ func load_dict(d: Dictionary) -> void:
 	beats_seen = d.get("beats_seen", {}).duplicate()
 	pending_beats = d.get("pending_beats", []).duplicate(true)
 	episodes = d.get("episodes", []).duplicate(true)
+	court = d.get("court", {"custody": ""}).duplicate(true)
+	jail = d.get("jail", []).duplicate(true)
 	seed_v = int(d.get("seed_v", 1961))
 	wishes = []
 

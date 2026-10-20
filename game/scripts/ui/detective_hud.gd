@@ -6,6 +6,7 @@ const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
 const Cctv = preload("res://scripts/detective/cctv.gd")
 const Prints = preload("res://scripts/detective/prints.gd")
+const Justice = preload("res://scripts/detective/justice.gd")
 
 const WINDOWS := [["Evening, 6 pm to midnight", 18.0, 24.0], ["Midnight to 3 am", 24.0, 27.0], ["3 am to 6 am", 27.0, 30.0]]
 var cam_sel := ""
@@ -330,8 +331,8 @@ func show_case(tab_name: String = "") -> void:
 		tab = tab_name
 	var row := HBoxContainer.new()
 	box.add_child(row)
-	for t in [["Case", "case"], ["Notes", "notebook"], ["People", "people"], ["CCTV", "cctv"], ["Accuse", "accuse"]]:
-		var b := _btn(row, t[0], show_case.bind(t[1]), 18, 52)
+	for t in [["Case", "case"], ["Notes", "notebook"], ["People", "people"], ["CCTV", "cctv"], ["Court", "court"], ["Accuse", "accuse"]]:
+		var b := _btn(row, t[0], show_case.bind(t[1]), 16, 52)
 		b.disabled = tab == t[1]
 		b.name = "Tab_" + t[1]
 	match tab:
@@ -339,6 +340,7 @@ func show_case(tab_name: String = "") -> void:
 		"notebook": _tab_notebook()
 		"people": _tab_people()
 		"cctv": _tab_cctv()
+		"court": _tab_court()
 		"accuse": _tab_accuse()
 
 
@@ -490,6 +492,97 @@ func _circle_ask(npc: String, topic: String, about: String) -> void:
 	_learned(r["learned"])
 	_say("%s: %s" % [CaseEngine.first(game.sim, npc), String(r["text"]).substr(0, 90)])
 	_circle(about)
+
+
+# ------------------------------------------------------------------ custody, trial and the jail
+func _tab_court() -> void:
+	var t: String = game.court.get("custody", "")
+	if t == "":
+		_lbl(box, "No one in custody. Arrest needs probable cause: real evidence of more than one kind.", 22)
+		for sid in game.suspects():
+			var b := _btn(box, "Arrest %s" % CaseEngine.name_of(game.sim, sid), _arrest.bind(sid), 22, 54)
+			b.name = "Arrest_" + sid
+	else:
+		var q: RefCounted = game.sim.people[t]
+		_head(box, "IN CUSTODY: %s" % String(q.display).to_upper(), 28)
+		var ss: Dictionary = game.court["sess"]
+		_lbl(box, "Trial on day %d (today is day %d).  Sessions: %d   Rapport: %d   Fatigue: %d" % [game.court["trial_day"], game.sim.day, ss["sessions"], int(ss["rapport"]), int(ss["fatigue"])], 20, VIOLET)
+		for a in [["Build rapport", "rapport"], ["Lay out the evidence", "evidence"], ["Apply pressure", "pressure"]]:
+			var ib := _btn(box, a[0], _interrogate.bind(a[1]), 22, 54)
+			ib.name = "Int_" + a[1]
+		var tb := _btn(box, "Go to trial", _trial, 26, 62)
+		tb.disabled = not game.trial_ready()
+		tb.name = "Trial"
+		if result_text != "":
+			_lbl(box, result_text, 22)
+	_head(box, "THE JAIL", 30)
+	if game.jail.is_empty():
+		_lbl(box, "Empty. Everyone you put here will be kept in the Gallery.", 22)
+	var open: bool = Justice.visiting_hours(world.hour())
+	for i in game.jail:
+		var p: RefCounted = game.sim.people[i["id"]]
+		var vb := _btn(box, "%s  (%s)" % [p.display, i["type"]], _visit.bind(i["id"]), 22, 54)
+		vb.disabled = not open
+		vb.name = "Visit_" + i["id"]
+	if not game.jail.is_empty() and not open:
+		_lbl(box, "Visiting hours are 10 am to 4 pm.", 20, VIOLET)
+
+
+func _arrest(sid: String) -> void:
+	var r: Dictionary = game.arrest(sid)
+	result_text = r["text"]
+	_say(r["text"])
+	show_case("court")
+
+
+func _interrogate(approach: String) -> void:
+	var r: Dictionary = game.interrogate(approach)
+	result_text = r["text"]
+	_learned(r["learned"])
+	show_case("court")
+
+
+func _trial() -> void:
+	var r: Dictionary = game.run_trial()
+	var lines: Array = r["attacks"].map(func(a): return "%s  (%+d)" % [a["text"], int(a["delta"])])
+	var body := "\n\n".join(lines) + "\n\nThe jury is out. When it returns, the room is silent.\n\nVERDICT: %s  (confidence %d)" % [String(r["verdict"]).to_upper(), int(r["confidence"])]
+	if r.get("wrongful", false):
+		body += "\n\nYou have a bad feeling about this one."
+	close_panel()
+	world.refresh_markers()
+	_card("THE TRIAL", "", body, "Continue", func(): _close_card(), null)
+	_typewriter()
+
+
+func _visit(id: String) -> void:
+	_clear_panel()
+	var p: RefCounted = game.sim.people[id]
+	_head(box, p.display, 34)
+	_lbl(box, "Across the glass. Rapport %d." % int(game.inmate(id)["rapport"]), 22, VIOLET)
+	if result_text != "":
+		_lbl(box, result_text, 22)
+	for a in [["Talk", "talk"], ["About the crime", "crime"], ["About the town", "town"], ["What they are like", "profile"]]:
+		var b := _btn(box, a[0], _visit_do.bind(id, a[1]), 22, 54)
+		b.name = "VT_" + a[1]
+	var ab := _btn(box, "Appeal their conviction", _appeal.bind(id), 22, 54)
+	ab.name = "Appeal"
+	_btn(box, "Back", show_case.bind("court"), 26, 56)
+
+
+func _visit_do(id: String, topic: String) -> void:
+	var r: Dictionary = game.visit(id, topic)
+	result_text = r["text"]
+	_visit(id)
+
+
+func _appeal(id: String) -> void:
+	var r: Dictionary = game.appeal(id)
+	result_text = r["text"]
+	_say(r["text"])
+	if r["ok"]:
+		show_case("court")
+	else:
+		_visit(id)
 
 
 # ------------------------------------------------------------------ the cameras
