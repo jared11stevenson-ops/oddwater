@@ -129,6 +129,8 @@ func interact(id: String) -> bool:
 		state.notes.add(n[0], int(n[1]))
 		if it.has("evidence"):
 			state.board.add_evidence(it["evidence"])
+		if it.get("decision_artifact", false):
+			state.casefile.found_trace(home["life"])
 		if it["kind"] == "pet":
 			state.suspicion.calm("pet_" + home["life"], 10)
 		(get_node(id) as Button).modulate = Color(0.7, 1.0, 0.7)

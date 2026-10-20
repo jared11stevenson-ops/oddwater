@@ -17,6 +17,7 @@ var grid: GridContainer
 var film_label: Label
 var objective: Label
 var last_card := ""
+var pattern_panel: PanelContainer
 
 
 func setup(game_state: RefCounted) -> void:
@@ -27,6 +28,7 @@ func setup(game_state: RefCounted) -> void:
 	title.text = "THE CASE BOARD"
 	title.position = Vector2(70, 36)
 	title.add_theme_font_size_override("font_size", 46)
+	title.add_theme_color_override("font_color", Color("14121c"))
 	add_child(title)
 	var help := Label.new()
 	help.text = "Pick a card, pin it to a question. Pick two pinned cards, then tie them together."
@@ -53,12 +55,12 @@ func setup(game_state: RefCounted) -> void:
 	add_child(row)
 	for q in QUESTIONS:
 		var b := Button.new(); b.text = "Pin: " + q.capitalize() + "?"
-		b.custom_minimum_size = Vector2(240, 84)
+		b.custom_minimum_size = Vector2(200, 84)
 		b.add_theme_font_size_override("font_size", 28)
 		b.pressed.connect(pin_selected.bind(q))
 		row.add_child(b)
 	var shot := Button.new(); shot.text = "Photograph"
-	shot.custom_minimum_size = Vector2(260, 84)
+	shot.custom_minimum_size = Vector2(220, 84)
 	shot.add_theme_font_size_override("font_size", 28)
 	shot.pressed.connect(photograph_selected)
 	row.add_child(shot)
@@ -66,10 +68,22 @@ func setup(game_state: RefCounted) -> void:
 	film_label.add_theme_font_size_override("font_size", 26)
 	row.add_child(film_label)
 	var tie := Button.new(); tie.text = "Tie together"
-	tie.custom_minimum_size = Vector2(260, 84)
+	tie.custom_minimum_size = Vector2(220, 84)
 	tie.add_theme_font_size_override("font_size", 28)
 	tie.pressed.connect(tie_selected)
 	row.add_child(tie)
+	var pat := Button.new(); pat.text = "Pattern"
+	pat.custom_minimum_size = Vector2(180, 84)
+	pat.add_theme_font_size_override("font_size", 28)
+	pat.pressed.connect(toggle_pattern)
+	row.add_child(pat)
+	pattern_panel = PanelContainer.new()
+	var psb := StyleBoxFlat.new()
+	psb.bg_color = Color("14121c"); psb.border_color = Color("f5b82e"); psb.set_border_width_all(4); psb.set_content_margin_all(24)
+	pattern_panel.add_theme_stylebox_override("panel", psb)
+	pattern_panel.position = Vector2(70, 170)
+	pattern_panel.visible = false
+	add_child(pattern_panel)
 	info = Label.new()
 	info.position = Vector2(70, 700)
 	info.custom_minimum_size = Vector2(1780, 0)
@@ -215,3 +229,40 @@ func test_seal(sid: String) -> bool:
 		info.text = "The strings don't hold yet. Something isn't joined up."
 	_refresh()
 	return sealed
+
+
+## The Pattern: everyone who has been taken, and what you know about each. Read it like a detective reads a victim list.
+func toggle_pattern() -> void:
+	pattern_panel.visible = not pattern_panel.visible
+	if not pattern_panel.visible:
+		return
+	for c in pattern_panel.get_children():
+		c.queue_free()
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	pattern_panel.add_child(v)
+	var name_of := func(id): return state.life_by_id(id).get("name", id)
+	_plabel(v, "THE PATTERN", 34, Color("f5b82e"))
+	if state.casefile.log.is_empty():
+		_plabel(v, state.casefile.grid_text(name_of), 24, Color("f6ecd2"))
+		return
+	var g := GridContainer.new()
+	g.columns = 5
+	g.add_theme_constant_override("h_separation", 36)
+	for h in ["Day", "Who was taken", "The night before", "What their home told you", "Ribbon"]:
+		_plabel(g, h, 22, Color("b8b0d8"))
+	for r in state.casefile.rows(name_of):
+		for k in ["day", "who", "edge", "trace", "ribbon"]:
+			_plabel(g, str(r[k]), 24, Color("f6ecd2"))
+	v.add_child(g)
+	var tail: String = state.casefile.grid_text(name_of)
+	_plabel(v, tail.substr(tail.rfind("Predictions")), 24, Color("7fd0d8"))
+
+
+func _plabel(parent: Control, t: String, size: int, color: Color) -> Label:
+	var l := Label.new()
+	l.text = t
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	parent.add_child(l)
+	return l

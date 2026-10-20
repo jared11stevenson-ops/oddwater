@@ -34,7 +34,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 ## M1.4 — Gameplay-first redesign (design: `02-gdd/03-gameplay-first-design.md`, supersedes the lore-led charters)
 - [x] The Cause and STEER: nightly host choice from restlessness plus relative priority; comfort/unsettle night actions; observable tells; authored order holds over 20 seeds, two nudges steer (21 checks); host-by-life flow; Long Night screen
 - [x] The reactivity layer (`core/reactions.gd`, `data/reactions.json`, 14 checks): people open by bringing up what the host did to them or in front of them (theft, insult, gift), rumours they believe, gossip, friends who are gone, mood and money; suspicion shifts with it. A different body is not blamed for the theft, but the rumour follows
-- [ ] Case file: Pattern grid (host history x restlessness / last visitor / place), timeline, access chain, theory; predict tomorrow's host twice to prove the Rule
+- [x] Case file, part 1 (`core/casefile.gd`, 16 checks + smoke): Pattern grid on the Board (who was taken, on the edge the night before?, decision found in their home?, ribbon seen?); guess tomorrow's host on the Long Night; two EARNED hits (the person was visibly on the edge) prove the Rule and unlock a forecast of the Cause's order; saved
+- [ ] Case file, part 2: per-victim timeline, access chain, theory/accusation
 - [ ] Night visits to past lives and the end-of-run Reckoning (long-arc payoff for the sandbox player)
 - [ ] Body search: access chain and the Visit; the body's condition worsens as a clue
 - [ ] Confrontation puzzle that uses the sim; endings: Long Day / Home / Case Closed / Cost / Settled

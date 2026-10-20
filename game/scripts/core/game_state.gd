@@ -7,6 +7,7 @@ const CaseBoard = preload("res://scripts/core/case_board.gd")
 const Suspicion = preload("res://scripts/core/suspicion.gd")
 const Remnants = preload("res://scripts/core/remnants.gd")
 const Persona = preload("res://scripts/core/persona.gd")
+const Casefile = preload("res://scripts/core/casefile.gd")
 
 enum Phase { WAKE, PERFORM, STEP_OFF, NIGHT, SLACK, ENDED }
 
@@ -32,6 +33,7 @@ var dawn_cracks := 0
 var dawn_photos := 0
 var host_history: Array = []   # who the player has been, day by day (day N is host_history[N-1])
 var next_host := ""          # set at the Slack by the Cause; blank = authored order
+var casefile: RefCounted = null   # the Pattern grid and the proof of the Rule
 var persona: RefCounted = null   # the player's own character; persistent across every body
 var self_lines := 0             # times the player spoke as themselves (this day)
 var cover_lines := 0            # times they kept their cover as the host (this day)
@@ -44,6 +46,7 @@ func _init(skip_tutorial: bool = false) -> void:
 	endings = Data.load_json("endings.json")
 	host_history = ["mags"] if skip_tutorial else [lives[0]["id"]]
 	persona = Persona.new()
+	casefile = Casefile.new()
 	board = CaseBoard.new()
 	suspicion = Suspicion.new(tuning)
 	remnants = Remnants.new(tuning)
@@ -225,7 +228,7 @@ func ending_for() -> String:
 func to_dict() -> Dictionary:
 	return {"version": 1, "day": day, "phase": int(phase), "notes": notes.to_dict(),
 		"board": board.to_dict(), "suspicion": suspicion.values, "remnants": remnants.by_life,
-		"mood": town_mood, "ending": ending, "flags": flags, "persona": persona.to_dict(), "hosts": host_history, "next_host": next_host, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
+		"mood": town_mood, "ending": ending, "flags": flags, "persona": persona.to_dict(), "hosts": host_history, "casefile": casefile.to_dict(), "next_host": next_host, "claims": claims, "drift": drift, "contentment": contentment, "alignment": alignment, "notoriety": notoriety}
 
 
 func load_dict(d: Dictionary) -> void:
@@ -241,6 +244,7 @@ func load_dict(d: Dictionary) -> void:
 	claims = d.get("claims", {}).duplicate()
 	persona = Persona.from_dict(d.get("persona", {}))
 	host_history = d.get("hosts", host_history).duplicate()
+	casefile = Casefile.from_dict(d.get("casefile", {}))
 	next_host = d.get("next_host", "")
 	drift = float(d.get("drift", 0.0)); contentment = float(d.get("contentment", 0.0)); alignment = float(d.get("alignment", 0.0)); notoriety = float(d.get("notoriety", 0.0))
 	_enter_day_tools_only()

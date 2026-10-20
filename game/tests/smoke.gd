@@ -48,6 +48,10 @@ func _initialize() -> void:
 	check(s.flags.get("hymn_aired", false), "the hymn was aired (first button)")
 	check(s.host_history.slice(0, 6) == ["player", "mags", "jo", "tobi", "delphine", "vern"], "unsteered, the authored order holds: %s" % [s.host_history])
 	check(s.claims.values().has("cracked"), "the careful detective cracked a claim: %s" % [s.claims])
+	check(s.casefile.log.size() >= 6, "the Pattern logged every host: %d" % s.casefile.log.size())
+	check(s.casefile.predictions.size() >= 3, "the careful detective made predictions: %s" % [s.casefile.predictions])
+	check(s.casefile.traces.size() >= 3, "and found the decision traces in the hosts' homes: %s" % [s.casefile.traces.keys()])
+	print("casefile: hits=%d of %d, proven=%s" % [s.casefile.hits(), s.casefile.predictions.size(), s.casefile.rule_proven])
 	# ---- the same days again, carelessly
 	var r2: Array = await fresh(false)
 	var main2: Control = r2[0]

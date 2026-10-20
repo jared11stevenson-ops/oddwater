@@ -16,6 +16,8 @@ var people_box: VBoxContainer
 var used: Array = []
 var eligible: Array = []
 var watching := false
+var predict_label: Label
+var predict_box: HFlowContainer
 
 
 func setup(game_state: RefCounted, world: RefCounted, the_cause: RefCounted, who_can_be_taken: Array = []) -> void:
@@ -24,6 +26,7 @@ func setup(game_state: RefCounted, world: RefCounted, the_cause: RefCounted, who
 	sim = world
 	cause = the_cause
 	budget = int(cause.cfg["night_actions"])
+	state.casefile.open_night(cause.edge_report(sim, eligible))
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var title := Label.new()
 	title.text = "THE LONG NIGHT"
@@ -66,6 +69,20 @@ func setup(game_state: RefCounted, world: RefCounted, the_cause: RefCounted, who
 	watch.add_theme_font_size_override("font_size", 26)
 	watch.pressed.connect(watch_street)
 	add_child(watch)
+	predict_label = Label.new()
+	predict_label.position = Vector2(70, 500)
+	predict_label.custom_minimum_size = Vector2(880, 0)
+	predict_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	predict_label.add_theme_font_size_override("font_size", 24)
+	predict_label.add_theme_color_override("font_color", Color("7fd0d8"))
+	add_child(predict_label)
+	predict_box = HFlowContainer.new()
+	predict_box.position = Vector2(70, 660)
+	predict_box.custom_minimum_size = Vector2(880, 0)
+	predict_box.add_theme_constant_override("h_separation", 8)
+	predict_box.add_theme_constant_override("v_separation", 8)
+	add_child(predict_box)
+	_refresh_predict()
 	var done := Button.new(); done.text = "Go to sleep"
 	done.position = Vector2(1500, 950)
 	done.custom_minimum_size = Vector2(340, 90)
@@ -137,3 +154,34 @@ func watch_street() -> bool:
 
 func finish() -> void:
 	finished.emit({"visits": used, "watched": watching})
+
+
+func _name_of(id: String) -> String:
+	return sim.people[id].display if sim.people.has(id) else id
+
+
+## Who will it be? One guess a night, free. Two right and the Rule is proven.
+func _refresh_predict() -> void:
+	for c in predict_box.get_children():
+		c.queue_free()
+	var fc: Array = state.casefile.forecast(cause, sim, eligible, _name_of)
+	var head := "Who will it be tomorrow? Your guess: %s." % (_name_of(state.casefile.guess_for_tonight) if state.casefile.guess_for_tonight != "" else "none yet")
+	head += "  (Right so far: %d. %s)" % [state.casefile.hits(), "THE RULE IS PROVEN" if state.casefile.rule_proven else "Two right proves the Rule"]
+	if not fc.is_empty():
+		head += "\nThe Rule says the order tonight is: " + ", ".join(fc) + "."
+	predict_label.text = head
+	for id in eligible:
+		if cause.used.has(id) or not sim.alive(sim.people[id]):
+			continue
+		var b := Button.new(); b.text = _name_of(id)
+		b.custom_minimum_size = Vector2(170, 54)
+		b.add_theme_font_size_override("font_size", 22)
+		b.toggle_mode = true
+		b.button_pressed = state.casefile.guess_for_tonight == id
+		b.pressed.connect(predict.bind(id))
+		predict_box.add_child(b)
+
+
+func predict(id: String) -> void:
+	state.casefile.predict(id)
+	_refresh_predict()

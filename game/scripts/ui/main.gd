@@ -434,6 +434,11 @@ func _slack(_unused: Array = [], prelude: bool = false, watched: bool = false) -
 	var gone: Array = sim.slack()
 	state.next_host = cause.pick(sim, eligible_hosts())
 	var next_life: Dictionary = state.life_by_id(state.next_host if state.next_host != "" else state.baseline_next_id())
+	if prelude:
+		state.casefile.open_night(cause.edge_report(sim, eligible_hosts()))   # no Long Night on Day 1: the town still had its edges
+	var verdict: Dictionary = state.casefile.resolve(state.day, next_life["id"])
+	if watched:
+		state.casefile.saw_ribbon(next_life["id"])
 	var s := SlackUI.new()
 	ui.add_child(s)
 	if prelude:
@@ -446,6 +451,10 @@ func _slack(_unused: Array = [], prelude: bool = false, watched: bool = false) -
 	var se: Dictionary = day_def().get("slack_extra", {})
 	if not se.is_empty():
 		extra = se.get("hymn_aired" if state.flags.get("hymn_aired", false) else "hymn_declined", [])
+	if verdict["had_guess"]:
+		extra.append("You guessed %s." % ("right. It was %s." % next_life["name"] if verdict["hit"] else "wrong. It was %s." % next_life["name"]))
+	if verdict["proved_now"]:
+		extra.append("You can read the Rule now. The Long Night will show you who is next, and what would change it.")
 	for id in gone:
 		extra.append("%s is gone. By morning the Gazette will say they have relocated." % sim.people[id].display)
 	s.setup(next_life, next_life["decision_time"], extra)

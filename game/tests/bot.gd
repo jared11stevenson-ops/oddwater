@@ -104,6 +104,12 @@ func play_until_day(day: int, max_steps: int = 400) -> bool:
 				s.decide_option(0)
 			s.finish(); log.append("tutorial:" + s.mode)
 		elif s.has_method("night_do"):
+			if careful and steer_to == "" and s.has_method("predict"):
+				var edges: Array = main.cause.edge_report(main.sim, main.eligible_hosts())
+				if not edges.is_empty():
+					s.predict(edges[0]["id"])      # a careful detective bets on whoever looks most on the edge
+				elif main.eligible_hosts().has(main.state.baseline_next_id()):
+					s.predict(main.state.baseline_next_id())   # nobody looks on the edge: bet on the usual order
 			if steer_to != "":
 				var guard := 0
 				while guard < 6 and s.budget > 0:
