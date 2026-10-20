@@ -351,8 +351,13 @@ func _build_vignette() -> void:
 
 
 ## The quality knob: 0 low, 1 medium, 2 high. Scales the 3D render, the shadows and the weather particles.
-func set_quality(q: int) -> void:
-	quality = clampi(q, 0, QUALITY.size() - 1)
+func set_quality(q: Variant) -> void:
+	var qi := 1
+	if q is String:
+		qi = {"low": 0, "med": 1, "medium": 1, "high": 2}.get(String(q), 1)
+	else:
+		qi = int(q)
+	quality = clampi(qi, 0, QUALITY.size() - 1)
 	var cfg: Dictionary = QUALITY[quality]
 	if is_inside_tree() and get_viewport() != null:
 		get_viewport().scaling_3d_scale = float(cfg["scale"])

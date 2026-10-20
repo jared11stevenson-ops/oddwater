@@ -204,7 +204,7 @@ func set_hour(h: float) -> void:
 		sun.light_color = lcol
 	else:
 		sun.rotation_degrees = Vector3(-maxf(moon_elev, 12.0), az + 340.0, 0.0)
-		sun.light_energy = (0.35 + 0.2 * (1.0 - float(_w["grey"]))) * moon_up
+		sun.light_energy = (0.18 + 0.12 * (1.0 - float(_w["grey"]))) * moon_up * float(_w["light"])
 		sun.light_color = Color("8fa0e8")
 	if not use_sun and elev > -1.0:
 		sun.light_energy = 0.0
