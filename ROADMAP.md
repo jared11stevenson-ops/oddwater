@@ -4,6 +4,20 @@ The hourly autonomous build takes the **first unchecked item** below, ships one 
 
 Legend: `[ ]` todo · `[x]` done · `[~]` partly done (see note)
 
+## PRIORITY NOW — the Town Sim (no lore until the sim is great; direction from the user, 2026-10-20)
+The product comes first as a Sims-like town you play from inside: a town 2x South Park's size, every resident a possible body-swap host, every resident living a similar-but-different life. The lore/story layers are parked; they return "way later". Design of record: `02-gdd/04-town-sim.md`.
+- [x] Everyday population: ~217 residents in households (singles, couples, families, roommates, elders), ages, jobs at the real workplaces, days off, hobbies, haunts, quirks, relationships (`sim/population.gd`, 20 checks)
+- [x] Weekdays and weekends; shift-based work and school; haunts and hobbies drive where people spend their free time
+- [x] Body swap for ANY resident: briefing on waking (`sim/brief.gd`), the Cause in open mode (restlessness + noise + cooldown), steering with Calm/Scare visits, the Lives report (`sim/town_game.gd`, 31 checks)
+- [x] Talking (`sim/talk.gd`): 8 topics, answers shaped by relationship, mood, needs, job, hobby; reactions to what you did in earlier bodies
+- [x] Town screen (`ui/town_sim_ui.gd`, `ui/town_map.gd`): live map (pan/zoom/tap, people walk between places), time, needs, actions, people here, big moves, night, morning card; 1280x720 phone-sized canvas (43 UI robot checks)
+- [ ] Persistence: save/load the whole town and your host history; autosave at each night
+- [ ] Sims depth: multi-step travel visible on the map, per-person daily schedule view, houses with rooms/objects, cooking/shopping/bills, jobs and promotions, relationships with stages (friend/crush/partner/rival), births/ageing/deaths over time, weather, town events (festival, market day)
+- [ ] The swap, perfected: a first-swap sequence that feels good, a persistent "you" (name, voice) across bodies, host handover animation, per-host goals/wishes (Sims-style) with rewards, a journal of every life
+- [ ] Performance: profile the town on a mid-range phone; spatial hashing for interactions; ~400 residents
+- [ ] Art: portraits and silhouettes for residents, buildings with character, day/night lighting on the map, audio
+- [ ] Then, later: re-introduce the story layers (Cause, Case Board, lore) on top of the sim
+
 ## M0 — Foundations (done)
 - [x] Lore bible, cast, relationship web (`01-lore-bible/`)
 - [x] Lore–loop charter, 40 Seals, abilities, core systems spec (`02-gdd/`)

@@ -6,6 +6,7 @@ const GameState = preload("res://scripts/core/game_state.gd")
 const Data = preload("res://scripts/core/data.gd")
 const Snoop = preload("res://scripts/ui/snoop.gd")
 const DialogueUI = preload("res://scripts/ui/dialogue_ui.gd")
+const TownSimUI = preload("res://scripts/ui/town_sim_ui.gd")
 const DentalUI = preload("res://scripts/ui/dental_ui.gd")
 const RhythmUI = preload("res://scripts/ui/rhythm_ui.gd")
 const EavesdropUI = preload("res://scripts/ui/eavesdrop_ui.gd")
@@ -111,9 +112,26 @@ func eligible_hosts() -> Array:
 # ---------------------------------------------------------------- title / wake
 func _title() -> void:
 	_clear()
+	get_window().content_scale_size = Vector2i(1920, 1080)
 	_bg(Color("f1dfc0"))
-	_text("UNDERSTUDY\n\nEvery morning someone in Little Mercy vanishes.\nEvery morning you wake up as them.", Vector2(300, 300), 48)
-	_button("Begin", Vector2(300, 700), _creator, 360.0)
+	_text("UNDERSTUDY\n\nA town full of people, each living their own life.\nTomorrow you'll be living one of them.", Vector2(300, 260), 48)
+	var b1 := _button("Town sim", Vector2(300, 640), _town_sim, 520.0)
+	b1.name = "TownSimButton"
+	var b2 := _button("Story (early)", Vector2(300, 780), _creator, 520.0)
+	b2.name = "StoryButton"
+	b1.grab_focus()
+
+
+## The living town: a phone-sized canvas (1280x720 base), every resident a possible host.
+func _town_sim(seed_value: int = 1961) -> Control:
+	_clear()
+	get_window().content_scale_size = Vector2i(1280, 720)
+	var t := TownSimUI.new()
+	ui.add_child(t)
+	t.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	t.start(seed_value)
+	t.back_to_menu.connect(_title)
+	return t
 
 
 ## Make your character. This is who you are in every body.

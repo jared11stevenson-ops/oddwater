@@ -95,3 +95,21 @@ func edge_report(sim: RefCounted, eligible: Array = []) -> Array:
 			out.append({"id": id, "name": p.display, "tell": tell, "level": r})
 	out.sort_custom(func(a, b): return a["level"] > b["level"])
 	return out
+
+
+# ---------------------------------------------------------------- open mode: every resident is a possible host
+## Whoever is most ready to change, with a little seeded noise so no two towns repeat, and a pull toward people
+## you haven't been for a while. No authored order: just the town. `exclude` = hosted recently.
+func ranking_open(sim: RefCounted, exclude: Array = [], days_since: Dictionary = {}) -> Array:
+	var out: Array = []
+	for id in sim.order:
+		var p: RefCounted = sim.people[id]
+		if not sim.alive(p) or exclude.has(id) or id == "player":
+			continue
+		var r := RandomNumberGenerator.new()
+		r.seed = hash("host|%d|%d|%s" % [sim.seed_base, sim.day, id])
+		var sc: float = (float(p.needs["restless"]) - 50.0) * float(cfg["restless_weight"]) + r.randf_range(-6.0, 6.0)
+		sc += minf(float(days_since.get(id, 10)), 10.0) * 0.5
+		out.append({"id": id, "score": sc})
+	out.sort_custom(func(a, b): return a["score"] > b["score"])
+	return out

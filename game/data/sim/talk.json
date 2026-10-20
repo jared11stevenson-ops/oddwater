@@ -1,0 +1,64 @@
+{
+ "tiers": ["cold", "neutral", "warm"],
+ "chat": {
+  "warm": ["Good to see you! Honestly, you're the best part of my day.", "Hey, you! Come on, sit a minute.", "There you are. I was just thinking about you."],
+  "neutral": ["Hm? Oh, hello.", "Morning. Or whatever it is.", "Hi. Can't talk long, but hi."],
+  "cold": ["Yes? What is it?", "I'm busy.", "...Hi."]
+ },
+ "hobby_chat": {
+  "fishing": "The water's been {fishing_mood} lately. I keep meaning to go out.",
+  "gardening": "My tomatoes are doing something strange. I think they hate me.",
+  "reading": "I'm halfway through a book that I either love or resent. Hard to tell.",
+  "music": "I've been working on something. It's bad. I'm very proud of it.",
+  "sports": "I ran the green twice this morning. My knees filed a complaint.",
+  "walking": "I walked the long way here. It's a good day for it.",
+  "gaming": "I stayed up way too late. No regrets. Some regrets.",
+  "crafts": "I started another project. Don't ask about the other ones.",
+  "baking": "I made far too much again. Take some. Please. I insist.",
+  "regular": "You know me. Usual stool, usual order. Don't change what works.",
+  "birding": "Did you hear that? ...Sorry. Wren, I think. Maybe a warbler.",
+  "volunteering": "They signed me up for something else. I said yes before I could stop myself."
+ },
+ "job_chat": {
+  "student": "School's... school. Someone threw a chair. Not at me.",
+  "retired": "Retirement is wonderful, except nobody tells you how long the days get.",
+  "unemployed": "Still looking. Something will turn up. It has to.",
+  "other": "Work's work. Same as always, different tedium."
+ },
+ "ask_day": {
+  "warm": ["It's been a good one, actually. {state}", "Honestly? Better now. {state}"],
+  "neutral": ["Fine, I suppose. {state}", "Could be worse. {state}"],
+  "cold": ["Why do you want to know? {state}", "That's my business. {state}"]
+ },
+ "state": {
+  "exhausted": "I'm completely worn out.", "starving": "I haven't eaten properly in ages.", "lonely": "It's been quiet. Too quiet.",
+  "broke": "Money's tight, if I'm honest.", "bored": "I'm so bored I could scream.", "restless": "I can't settle. I keep wanting to just... leave.",
+  "ok": "Nothing to complain about."
+ },
+ "compliment": {
+  "warm": ["Oh, stop it. ...Don't stop it.", "That's kind. I needed that today."],
+  "neutral": ["Thanks. That's nice of you.", "Huh. Well. Thank you."],
+  "cold": ["What do you want?", "Flattery. Right."]
+ },
+ "joke": {
+  "warm": ["Ha! Okay, that one got me.", "Oh no, that's terrible. Tell it again."],
+  "neutral": ["Heh. Okay.", "I see what you did there."],
+  "cold": ["Not funny.", "Is that supposed to be a joke?"]
+ },
+ "gossip": {
+  "warm": ["Okay, you didn't hear this from me: {rumor}", "Lean in. {rumor}"],
+  "neutral": ["Well, I did hear something. {rumor}", "People are saying: {rumor}"],
+  "cold": ["I don't gossip with you.", "Ask someone else."],
+  "none": ["Nothing new. Which is a story in itself.", "Quiet week. Suspiciously quiet."]
+ },
+ "confide": {
+  "warm": ["Can I tell you something? {worry}", "You're the only person I'd say this to. {worry}"],
+  "neutral": ["I shouldn't, but... {worry}"],
+  "cold": ["No. Not with you.", "That's private."]
+ },
+ "favor_yes": ["Of course. Here. Pay me back whenever.", "Don't worry about it. Take it."],
+ "favor_no": ["I wish I could. I really can't.", "Not right now. Sorry.", "Ask me when I trust you more."],
+ "argue": {
+  "any": ["Oh, so we're doing this? Fine.", "Don't you dare speak to me like that.", "You're unbelievable."]
+ }
+}

@@ -22,6 +22,9 @@ var thin_weeks := true
 var player_id := ""
 var pending: Dictionary = {}    # id -> "struck" | "taken" (resolved at the Slack)
 var next_rumor := 1
+var decisions_vanish := true    # story mode: a Decision removes the person at dawn. Town sim: only leaving town does
+var clock := 0                  # live mode: the current tick of the day (0 = 6:00)
+var player_activity := ""       # what the controlled person is doing this tick (live mode); blank = idle relaxing
 var wages := {"mayor": 34.0, "dentist": 48.0, "pastor": 22.0, "radio host": 26.0, "nurse": 32.0, "teacher": 24.0}
 
 
@@ -175,7 +178,13 @@ func step_tick(t: int) -> void:
 		if id != player_id:
 			p.activity = choose_activity(p, t)
 			p.location = place_for(p, p.activity, t)
-		_apply_needs(p, p.activity if id != player_id else "relax")
+		if id == player_id:
+			if float(p.needs["energy"]) < 4.0 and player_activity != "sleep":
+				player_activity = "sleep"          # you can't stay up forever: the body gives out where it stands
+				p.activity = "sleep"
+			_apply_needs(p, player_activity if player_activity != "" else "relax")
+		else:
+			_apply_needs(p, p.activity)
 		if float(p.needs["restless"]) >= 92.0 and not pending.has(id) and _rng(t, id + "edge").randf() < 0.1:
 			log_event("on_the_edge", id, "%s stares at the lake and hasn't moved for an hour." % p.display)
 	_interactions(t)
@@ -267,9 +276,71 @@ func _rumor_fallout() -> void:
 				people[id].bump(subj, -float(ru["severity"]) * 0.06 * b / 100.0 * 10.0, -float(ru["severity"]) * 0.03 * b / 100.0 * 10.0)
 
 
+# ------------------------------------------------------------------ live mode: the day, tick by tick, with someone under your control
+func hour_now() -> float:
+	return hour_of(clock)
+
+
+func day_over() -> bool:
+	return clock >= int(tuning["ticks_per_day"])
+
+
+## Run `n` ticks of the town. The controlled person keeps doing what the player last chose.
+func advance(n: int = 1) -> void:
+	for i in n:
+		if day_over():
+			return
+		step_tick(clock)
+		clock += 1
+	if day_over():
+		_rumor_fallout()
+
+
+## What can the controlled person do right now, where they are? [{act, label, why_not}] (why_not blank = possible).
+func options_for(id: String) -> Array:
+	var p: RefCounted = people.get(id)
+	var out: Array = []
+	if p == null:
+		return out
+	var h := hour_now()
+	var here: String = p.location
+	var at_home: bool = here == p.home
+	var venue: bool = ["pink_heron", "rising_loaf", "low_water"].has(here)
+	var others := _witnesses(p).size()
+	out.append({"act": "work", "label": "Work", "why_not": "" if (p.employed and here == p.work and on_shift(p, h)) else ("not your workplace" if here != p.work else "not your shift")})
+	out.append({"act": "eat", "label": "Eat", "why_not": "" if ((at_home or venue) and (at_home or p.money >= 8.0)) else ("nowhere to eat here" if not (at_home or venue) else "can't afford it")})
+	out.append({"act": "sleep", "label": "Sleep", "why_not": "" if at_home else "go home first"})
+	out.append({"act": "relax", "label": "Relax", "why_not": ""})
+	out.append({"act": "socialize", "label": "Hang out", "why_not": "" if others > 0 else "nobody here"})
+	out.append({"act": "worship", "label": "Pray", "why_not": "" if here == "chapel" else "not at the chapel"})
+	out.append({"act": "errand", "label": "Run an errand", "why_not": ""})
+	return out
+
+
+## Do something for `ticks` half-hours at `place` (the controlled person walks there first). Returns {ok, text}.
+func player_do(act: String, place: String = "", ticks: int = 2) -> Dictionary:
+	var p: RefCounted = people.get(player_id)
+	if p == null or not alive(p):
+		return {"ok": false, "text": "nobody in control"}
+	if place != "":
+		p.location = place
+	for o in options_for(player_id):
+		if o["act"] == act and o["why_not"] != "":
+			return {"ok": false, "text": o["why_not"]}
+	if act == "eat" and p.location != p.home:
+		p.money -= 8.0
+	if act == "work":
+		p.money += ticks * 0.5 * (p.pay if p.pay > 0.0 else float(wages.get(p.job, 20.0)))
+	player_activity = act
+	p.activity = act
+	advance(ticks)
+	return {"ok": true, "text": "%s." % act.capitalize()}
+
+
 # ------------------------------------------------------------------ the player takes over a person
 func take_control(id: String) -> void:
 	player_id = id
+	player_activity = ""
 
 
 func release_control(notes_in: Dictionary = {}) -> void:
@@ -405,9 +476,15 @@ func _decision(p: RefCounted, what: String, tgt: RefCounted) -> Dictionary:
 			text = "%s took the job." % p.display
 	# a Remnant is a walk-on; a walk-on who Decides is Struck at the next Slack
 	# the protagonist's own body is simply taken; anyone else the player is wearing is a Remnant and gets Struck
-	pending[p.id] = "taken" if p.id == "player" else ("struck" if p.walkon or player_id == p.id else "taken")
+	if decisions_vanish:
+		pending[p.id] = "taken" if p.id == "player" else ("struck" if p.walkon or player_id == p.id else "taken")
+	elif what == "leave_town":
+		pending[p.id] = "taken"
+	else:
+		p.needs["restless"] = clampf(float(p.needs["restless"]) - 25.0, 0.0, 100.0)
+		p.needs["purpose"] = clampf(float(p.needs["purpose"]) + 10.0, 0.0, 100.0)
 	log_event("decision", p.id, text)
-	return {"ok": true, "decision": true, "text": text + " It cannot be unsaid."}
+	return {"ok": true, "decision": true, "text": text + (" It cannot be unsaid." if decisions_vanish or what == "leave_town" else "")}
 
 
 # ------------------------------------------------------------------ day cycle
@@ -436,6 +513,7 @@ func slack() -> Array:
 
 func start_day() -> void:
 	events = []
+	clock = 0
 	for id in order:
 		var p: RefCounted = people[id]
 		if alive(p):
