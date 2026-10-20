@@ -382,7 +382,7 @@ func _terrain_tile(x0: float, x1: float, z0: float, z1: float, step: float, nois
 
 
 func _land_color(v: Vector3, n: Vector3) -> Color:
-	var base := Color(GRASS[(int(floorf(v.x / 60.0)) + int(floorf(v.z / 60.0)) + 40) % GRASS.size()]).lerp(Color("74a24c"), 0.5)
+	var base := Color(GRASS[(int(floorf(v.x / 60.0)) + int(floorf(v.z / 60.0)) + 40) % GRASS.size()]).lerp(Color("5f8a46"), 0.65)
 	if v.y < 0.9 and v.z < SHORE_Z + 25.0:
 		return Color("e9d9a6").lerp(base, clampf((v.y + 2.0) / 3.0, 0.0, 1.0)) if v.y > -3.0 else Color("8aa89a")
 	if v.y < -3.0:
@@ -443,7 +443,7 @@ func _strip_z(z0: float, z1: float, x: float, w: float, y: float, h: float, col:
 
 func _streets_and_sidewalks() -> void:
 	var spec: Dictionary = layout.spec
-	var road := Color("5d636e")
+	var road := Color("858b95")
 	var walk := Color("cfc7b6")
 	var kerb := Color("e2dccd")
 	var paint := Color("efe3a8")
@@ -636,7 +636,7 @@ func _house(l: Dictionary) -> void:
 	var sgn := 1.0 if int(l.get("side", 1)) == 1 else -1.0
 	var hx: float = res["door_x"]
 	var door_z: float = res["door_z"]
-	doors[id] = {"door": Vector3(hx, 0.0, sy + sgn * 6.4), "front": Vector3(hx, 0.0, door_z + face * 1.6), "yaw": 0.0 if face < 0.0 else PI, "face": face}
+	doors[id] = {"door": Vector3(hx, 0.0, sy + sgn * 6.4), "front": Vector3(hx, 0.0, door_z + face * (float(res["step"]) + 0.9)), "yaw": 0.0 if face < 0.0 else PI, "face": face}
 
 
 ## Fill the gaps between the lots, and the back-yard strips between streets, so the town reads as lived in.

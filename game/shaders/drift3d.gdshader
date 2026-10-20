@@ -67,6 +67,6 @@ void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float shape = (mode == 1 || mode == 3) ? clamp(1.0 - length(p), 0.0, 1.0) : 1.0;
 	ALBEDO = (mode == 1) ? vec3(0.9, 1.0, 0.45) : col;
-	ALPHA = a * shape;
+	ALPHA = a * shape * smoothstep(1.5, 6.0, -VERTEX.z);
 	if (mode == 1) { EMISSION = vec3(0.7, 1.0, 0.4); }
 }

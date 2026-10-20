@@ -223,6 +223,7 @@ func house(cx: float, cz: float, face: float, lot_w: float, lot_d: float, hsh: i
 		var dw_ = b.ground
 		dw_.box(Vector3(gx, 0.05, gz + face * (gd / 2.0 + 2.6)), Vector3(4.0, 0.1, 5.4), Color("b9b4a8"), 0.4)
 		b.collider(Vector3(gx, 1.5, gz), Vector3(gw2, 3.0, gd))
+		b.ground.box(Vector3(door_x, 0.05, door_z + face * 2.4), Vector3(1.7, 0.1, 4.8), Color("d9ceb6"), 0.4)
 		if r.randf() < 0.55:
 			Scenery.car(D, Vector3(gx, 0.0, gz + face * (gd / 2.0 + 3.2)), 0.0 if face > 0.0 else PI, _col(CARS, r.randi()))
 	else:

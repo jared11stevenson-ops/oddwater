@@ -14,7 +14,7 @@ var _used_names: Dictionary = {}
 var _n := 0
 
 
-func generate(seed_value: int, layout: RefCounted, taken_names: Array = []) -> Dictionary:
+func generate(seed_value: int, layout: RefCounted, taken_names: Array = [], target: int = -1) -> Dictionary:
 	cfg = Data.load_json("sim/population.json")
 	rng.seed = hash("population|%d" % seed_value)
 	for w in cfg["workplaces"]:
@@ -32,9 +32,45 @@ func generate(seed_value: int, layout: RefCounted, taken_names: Array = []) -> D
 				if rng.randf() < 0.15:
 					_rel(m["id"], q["id"], rng.randf_range(5, 25), rng.randf_range(5, 20))
 		prev = members
+	if target > 0:
+		_fit(target)
 	_tie_colleagues()
 	_tie_classmates()
+	var ids := {}
+	for p in people:
+		ids[p["id"]] = true
+	relations = relations.filter(func(r): return ids.has(r["a"]) and ids.has(r["b"]))
 	return {"people": people, "relations": relations}
+
+
+## Make the town exactly `target` everyday residents: shed the last-added extras of crowded houses, or take in a lodger where there is room.
+func _fit(target: int) -> void:
+	var by_home := {}
+	for p in people:
+		by_home[p["home"]] = int(by_home.get(p["home"], 0)) + 1
+	var i := people.size() - 1
+	while people.size() > target and i >= 0:
+		var q: Dictionary = people[i]
+		if int(by_home[q["home"]]) > 1:
+			by_home[q["home"]] = int(by_home[q["home"]]) - 1
+			people.remove_at(i)
+		i -= 1
+	var homes: Array = by_home.keys()
+	homes.sort()
+	var guard := 0
+	while people.size() < target and guard < 500:
+		guard += 1
+		var h: String = homes[rng.randi() % homes.size()]
+		if int(by_home[h]) > 3:
+			continue
+		var mates: Array = people.filter(func(x): return x["home"] == h)
+		var nm := _name()
+		var lodger := _person(h, nm[1], rng.randi_range(22, 45), "adult", nm)
+		lodger["household"] = "roommates"
+		by_home[h] = int(by_home[h]) + 1
+		for m in mates:
+			if m["group"] == "adult":
+				_rel(lodger["id"], m["id"], rng.randf_range(10, 50), rng.randf_range(20, 55))
 
 
 ## One new resident for a house that has room: their own job, hobby, quirk, haunts and temperament, rolled fresh.

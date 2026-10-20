@@ -615,7 +615,7 @@ func refresh_markers() -> void:
 	carm.cell = 1.0e9
 	var sgn := 1.0 if face < 0.0 else -1.0
 	var car_pos := Vector3(f.x - 7.5, 0.0, (d["door"] as Vector3).z - sgn * 3.8)
-	Scenery.car(carm, car_pos, PI / 2.0, Color("23262e"), true)
+	Scenery.car(carm, car_pos, PI / 2.0, Color("3a4252"), true)
 	var car := MeshInstance3D.new()
 	car.mesh = carm.to_mesh()
 	car.material_override = builder.solid_mat

@@ -35,7 +35,13 @@ void fragment() {
 	vec2 hz = normalize(vec2(-wn.z, wn.x) + vec2(0.0001, 0.0));       // along the wall
 	float along = dot(wp.xz, hz);
 	float grain = vnoise(wp.xz * 7.0 + wp.y * 5.0);
-	if (id == 9 && vert) {
+	if (id == 0) {
+		float u = fract(along / 0.2);
+		float picket = step(u, 0.62) * step(wp.y, 0.97);
+		float rail = step(abs(wp.y - 0.26), 0.05) + step(abs(wp.y - 0.66), 0.05);
+		if (picket + rail < 0.5) { discard; }
+		c *= 0.95 + 0.07 * h21(vec2(floor(along / 0.2), 3.0));
+	} else if (id == 9 && vert) {
 		float u = wp.y * 3.4;
 		float f = fract(u);
 		float board = floor(u);

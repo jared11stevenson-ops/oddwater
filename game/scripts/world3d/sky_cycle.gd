@@ -21,10 +21,10 @@ const KEYS := [
 	[24.0, "070b26", "0f1740", "1f2a5a", "6a6fb0", 0.0, "7f90e0", 0.30, 0.55, 0.0014]]
 
 const WEATHER := {
-	"clear": {"cover": 0.2, "dark": 0.0, "fog": 1.0, "light": 1.0, "sat": 1.16, "wet": 0.0, "wind": 0.6, "haze": 0.0, "fogh": 0.0, "calm": 1.0, "grey": 0.0, "amb": 1.0, "vig": 0.22},
+	"clear": {"cover": 0.2, "dark": 0.0, "fog": 1.0, "light": 1.0, "sat": 1.08, "wet": 0.0, "wind": 0.6, "haze": 0.0, "fogh": 0.0, "calm": 1.0, "grey": 0.0, "amb": 1.0, "vig": 0.22},
 	"cloudy": {"cover": 0.72, "dark": 0.35, "fog": 1.5, "light": 0.55, "sat": 0.98, "wet": 0.0, "wind": 0.95, "haze": 0.25, "fogh": 0.004, "calm": 0.6, "grey": 0.55, "amb": 1.1, "vig": 0.3},
 	"rain": {"cover": 1.0, "dark": 0.9, "fog": 2.4, "light": 0.3, "sat": 0.8, "wet": 1.0, "wind": 1.5, "haze": 0.55, "fogh": 0.012, "calm": 0.2, "grey": 0.85, "amb": 1.2, "vig": 0.42},
-	"fog": {"cover": 0.6, "dark": 0.1, "fog": 11.0, "light": 0.45, "sat": 0.72, "wet": 0.3, "wind": 0.15, "haze": 1.0, "fogh": 0.03, "calm": 0.95, "grey": 0.92, "amb": 1.3, "vig": 0.35}}
+	"fog": {"cover": 0.6, "dark": 0.1, "fog": 7.0, "light": 0.45, "sat": 0.72, "wet": 0.3, "wind": 0.15, "haze": 1.0, "fogh": 0.03, "calm": 0.95, "grey": 0.92, "amb": 1.3, "vig": 0.35}}
 
 var sun: DirectionalLight3D
 var env: Environment
@@ -209,7 +209,7 @@ func set_hour(h: float) -> void:
 	if not use_sun and elev > -1.0:
 		sun.light_energy = 0.0
 	# the sun's low energy at dusk keeps the key light's colour; ambient comes from the sky itself
-	env.ambient_light_energy = amb * float(_w["amb"]) * (0.78 + 0.5 * night)
+	env.ambient_light_energy = amb * float(_w["amb"]) * (0.78 + 0.8 * night)
 	env.ambient_light_sky_contribution = 1.0
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env.fog_light_color = hor.lerp(Color.WHITE, 0.08)

@@ -5,6 +5,7 @@ extends RefCounted
 
 const Prose = preload("res://scripts/detective/prose.gd")
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
+const Reputation = preload("res://scripts/detective/reputation.gd")
 const News = preload("res://scripts/detective/news.gd")
 const Data = preload("res://scripts/core/data.gd")
 
@@ -53,7 +54,7 @@ static func begin(sim: RefCounted, seed_v: int, salt: String, used: Array = []) 
 
 
 static func opts(s: Dictionary) -> Dictionary:
-	return {"killer": s["killer"], "signature": s["signature"], "trait": s["trait"], "thread": s["thread"], "avoid": s["avoid"]}
+	return {"killer": s["killer"], "signature": s["signature"], "trait": s["trait"], "thread": s["thread"], "avoid": s["avoid"], "n": (s["kills"] as Array).size()}
 
 
 ## A murder has been generated and executed for `c`; record it. `day` is the day the body is found.
@@ -97,14 +98,14 @@ static func morning(s: Dictionary, det: RefCounted, day: int, fresh: bool) -> Di
 		s["drain_day"] = day
 		var p: float = float(s["pressure"])
 		if p >= 40.0:
-			det.reputation["town"] = int(det.reputation["town"]) - (2 if p >= 70.0 else 1)
+			Reputation.apply(det, "serial_pressure" if p >= 70.0 else "serial_pressure_light", day)
 		if p >= 70.0:
-			det.reputation["sheriff"] = int(det.reputation["sheriff"]) - (4 if p >= 90.0 else 2)
+			Reputation.apply(det, "serial_pressure_siege" if p >= 90.0 else "serial_pressure_sheriff", day)
 	var last: Dictionary = (s["kills"] as Array)[-1]
 	var page: Dictionary
 	if day >= int(s["deadline"]):
 		s["status"] = "failed"
-		det.reputation["sheriff"] = int(det.reputation["sheriff"]) - 30
+		Reputation.apply(det, "serial_failed", day)
 		det.cases_failed += 1
 		page = News.front_page(s, day, "failed")
 	elif fresh:
@@ -121,10 +122,27 @@ static func caught(s: Dictionary, det: RefCounted, day: int) -> Dictionary:
 		return {}
 	s["status"] = "caught"
 	var big := int(s["pressure"]) >= 40
-	det.reputation["sheriff"] = int(det.reputation["sheriff"]) + (25 if (s["kills"] as Array).size() >= 3 else 10)
-	det.reputation["town"] = int(det.reputation["town"]) + (20 if big else 8)
+	Reputation.apply(det, "serial_caught_big" if ((s["kills"] as Array).size() >= 3 and big) else "serial_caught", day)
 	det.gain_xp(300 if (s["kills"] as Array).size() >= 3 else 120)
 	s["pressure"] = 0.0
 	var page: Dictionary = News.front_page(s, day, "caught")
 	(s["news"] as Array).append(page)
 	return page
+
+
+## A killer who got away once comes back: the same hunt resumes with a last, shorter deadline.
+static func resume(s: Dictionary, day: int) -> void:
+	s["status"] = "hunting"
+	s["resumed"] = int(s.get("resumed", 0)) + 1
+	s["third_day"] = day
+	s["deadline"] = day + DEADLINE_DAYS + 2
+	s["pressure"] = 45.0
+	s["next_strike"] = day
+
+
+## A killer who beat the detective and was never caught starts to leave signs. A fresh hunt with the same hand.
+static func adopt(sim: RefCounted, seed_v: int, killer: String, day: int, used: Array) -> Dictionary:
+	var s: Dictionary = begin(sim, seed_v, "adopt%d" % day, used)
+	s["killer"] = killer
+	s["next_strike"] = day
+	return s

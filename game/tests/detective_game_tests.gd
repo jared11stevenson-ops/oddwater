@@ -58,5 +58,6 @@ func _initialize() -> void:
 	var res: Dictionary = g4.accuse(g4.suspects()[0], "money", "blunt")
 	ok(res.has("verdict") and g4.chronicle.size() >= 1, "an accusation gets a verdict")
 	DetectiveGame.delete_save("user://dg_save.json")
+	ok(not FileAccess.file_exists("user://dg_save.json"), "delete_save removes the detective save file")
 	print("detective_game_tests: %d checks, %d failed" % [checks, fails])
 	quit(fails)

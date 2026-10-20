@@ -81,7 +81,7 @@ static func cold_open(sim: RefCounted, c: Dictionary) -> String:
 	var v: RefCounted = sim.people[c["victim"]]
 	var vf: String = CaseEngine.first(sim, c["victim"])
 	var finder: RefCounted = sim.people[c["found_by"]] if sim.people.has(c["found_by"]) else null
-	var ff := CaseEngine.first(sim, c["found_by"]) if finder != null else "A neighbour"
+	var ff := CaseEngine.name_of(sim, c["found_by"]) if finder != null else "A neighbour"
 	var pl: Dictionary = Places.profile(c)
 	var place: String = Brief.place_name(sim, c["scene"], "")
 	var room: String = Places.where_phrase(sim, c)
@@ -162,7 +162,7 @@ static func episode(sim: RefCounted, c: Dictionary, det: RefCounted, res: Dictio
 	var parts: Array = []
 	parts.append(cold_open(sim, c))
 	parts.append("YOU WORKED IT LIKE THIS.\n" + _how(sim, c, det))
-	if res["right_person"]:
+	if res["right_person"] or res["verdict"] in ["cold", "failure", "fled"]:
 		parts.append("THE TRUTH.\n%s killed %s. It was %s: %s. %s went out at about %s and came back before dawn, and told everyone about a night in bed." % [k, v, cb["motives"][c["motive"]]["label"], c["motive_thing"], CaseEngine.first(sim, c["killer"]), _clock(float(c["hour"]) - 0.5)])
 		parts.append("THE DETAIL.\nThe one that didn't fit: %s. %s" % [c["held_back"], _detail_meaning(c)])
 	else:

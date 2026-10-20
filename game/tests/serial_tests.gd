@@ -34,7 +34,7 @@ func _initialize() -> void:
 	ok(Serial.active(s) and c.get("serial", false) and c["killer"] == s["killer"], "a serial killer is on the loose")
 	ok(c["held_back"] == s["signature"] and (s["kills"] as Array).size() == 1, "the signature is the held-back detail; one kill so far")
 	ok(not c["facts"].has("f_kn_saw") and not c["facts"].has("f_argument") and c["relatives"][c["killer"]].is_empty(), "no neighbour saw them go, no quarrel, no family to break")
-	ok(c["clues"]["c_door"]["supports"].is_empty() and c["clues"]["c_desk"].get("thread", false), "a forced window, and the thread that links the dead")
+	ok(c["clues"]["c_door"]["supports"].is_empty() and not c["clues"]["c_desk"].get("thread", false) and not c["clues"].has("c_dropped"), "a forced window, a clean first scene, and the thread that links the dead hidden until the second body")
 	ok(g.news().is_empty() and g.pressure() == 0.0, "no news until three")
 	ok(c["clues"].has("c_unease") and c["clues"].has("c_diary") and not String(c["clues"]["c_unease"]["text"]).contains("{v}"), "every scene has its wrongness and the victim's last pages")
 	g.det.skills["empathy"] = 5

@@ -11,6 +11,13 @@ const Narrator = preload("res://scripts/detective/narrator.gd")
 const Justice = preload("res://scripts/detective/justice.gd")
 const Serial = preload("res://scripts/detective/serial.gd")
 const News = preload("res://scripts/detective/news.gd")
+const Reputation = preload("res://scripts/detective/reputation.gd")
+const Cold = preload("res://scripts/detective/cold.gd")
+const Life = preload("res://scripts/detective/life.gd")
+const Places = preload("res://scripts/detective/places.gd")
+const Prose = preload("res://scripts/detective/prose.gd")
+
+const ACCUSE_LIMIT := 3
 
 const DET_SAVE := "user://detective_save.json"
 
@@ -28,6 +35,10 @@ var _force_serial := false
 var past_signatures: Array = []     # every serial killer leaves a sign of their own
 var newcomers: Array = []           # the residents who have moved in since the story began (their data, so a save brings them back)
 var _arrivals: Array = []
+var haunting: Dictionary = {}       # a killer who got away: {killer, nick, signature, since, cases}
+var repeat_killer := ""             # a killer of a cold case who will strike again
+var business: Array = []            # ordinary town business (small cases), open and closed
+var town_news: Array = []           # front pages that are not about a serial killer (scandals, cold files)
 
 
 ## The town grows: two days after a case is fully solved, someone new moves in.
@@ -39,14 +50,15 @@ func _welcome_newcomer() -> void:
 
 
 ## `force_serial` makes the first murder the work of a serial killer (tests; a rare thing in real play).
-func _init(seed_value: int = 1961, _first_host: String = "", force_serial: bool = false) -> void:
+func _init(seed_value: int = 1961, _first_host: String = "", force_serial: bool = false, skip_prelude: bool = false) -> void:
 	super._init(seed_value, "player")
 	seed_v = seed_value
 	_force_serial = force_serial
 	det = Detective.new()
 	serial = Serial.none()
 	sim.release_control()
-	_prelude(seed_value)
+	if not skip_prelude:
+		_prelude(seed_value)
 	hosts = []
 	wake("player")
 	wishes = []
@@ -130,14 +142,27 @@ func objective() -> String:
 
 
 func _objective_core() -> String:
-	if solved():
-		return "Case closed. Rest, and watch the town."
+	var st: String = case.get("status", "")
 	var v: String = case.get("victim", "")
+	var vn := CaseEngine.name_of(sim, v) if v != "" else "the dead"
+	if st == "solved":
+		return _quiet_objective("Case closed.")
+	if st == "cold":
+		return _quiet_objective("The file on %s has gone cold. Someone is still out there." % vn)
+	if st == "fled":
+		return _quiet_objective("The killer of %s has fled Little Mercy. The file stays open somewhere else." % vn)
+	if st == "failed":
+		return _quiet_objective("Reassigned: the state police have the file on %s. Keep the town's small troubles from becoming large ones." % vn)
+	if court.get("custody", "") != "":
+		var tn := CaseEngine.name_of(sim, court["custody"])
+		if trial_ready():
+			return "%s's trial is today. Make sure everything you have is in order." % tn
+		return "%s is in custody. Question them before the trial on day %d." % [tn, int(court.get("trial_day", 0))]
 	if not det.has("c_body"):
 		return "Examine the crime scene: %s." % place_name(scene_lot())
 	var asked := {}
-	for st in det.statements:
-		asked[st["npc"]] = true
+	for st2 in det.statements:
+		asked[st2["npc"]] = true
 	if not asked.has(case.get("found_by", "")):
 		return "Question %s, who found the body." % CaseEngine.name_of(sim, case["found_by"])
 	var unasked: Array = suspects().filter(func(s): return not asked.has(s))
@@ -147,7 +172,18 @@ func _objective_core() -> String:
 		return "Send %s to the lab." % String(case["item"])
 	if det.known.size() < 8:
 		return "Canvass the neighbours of the scene and of each suspect."
+	if accusations_left() <= 1:
+		return "You have one formal accusation left. Be certain."
+	if Cold.days_open(self) >= 5:
+		return "The trail is cooling (%d days). Evidence is spoiling and witnesses are forgetting. Decide." % Cold.days_open(self)
 	return "Look for what contradicts what you have been told. Then decide."
+
+
+func _quiet_objective(prefix: String) -> String:
+	for b in business:
+		if b["status"] == "open":
+			return "%s Meanwhile: %s" % [prefix, b["title"]]
+	return prefix + " Rest, and watch the town."
 
 
 func spots(lot: String) -> Array:
@@ -284,16 +320,178 @@ func appeal(id: String) -> Dictionary:
 	return Justice.appeal(sim, case, det, jail, i)
 
 
-## Name the killer. The judge weighs your notebook; the town reacts.
+func accusations_left() -> int:
+	return maxi(ACCUSE_LIMIT - int(case.get("accusations", 0)), 0)
+
+
+func can_accuse() -> bool:
+	return case.get("status", "") == "open" and accusations_left() > 0
+
+
+## Name the killer: a formal charge. It runs the one road: judge -> arrest -> interview -> trial -> a cell, with the same reputation ledger
+## as the court tab. A right name on a case that holds goes to trial at once; a wrong name costs more each time, and you only get three.
+## Returns {verdict, text, score, cats, total, episode, left, ...}.
 func accuse(culprit: String, motive: String, method: String) -> Dictionary:
+	if not can_accuse():
+		return {"verdict": "barred", "text": "The Sheriff will not hear another accusation on this file.", "score": 0, "cats": 0, "total": 0, "left": 0}
 	var res: Dictionary = CaseOps.judge(sim, case, det, culprit, motive, method)
-	CaseOps.apply_outcome(sim, case, det, res, culprit)
+	case["accusations"] = int(case.get("accusations", 0)) + 1
+	(case["accused"] as Array).append(culprit)
+	var theory: bool = res["right_motive"] and res["right_method"]
+	match String(res["verdict"]):
+		"convicted":
+			var ch: Dictionary = Justice.formal_charge(sim, case, det, court, jail, culprit, theory, true)
+			var tr: Dictionary = ch["trial"]
+			res["trial"] = tr
+			res["interview"] = ch["interview"]
+			if tr["verdict"] == "guilty":
+				var pk: RefCounted = sim.people[culprit]
+				sim.log_event("arrest", culprit, "%s was arrested for the murder of %s." % [pk.display, CaseEngine.name_of(sim, case["victim"])])
+				res["text"] = Prose.clean(String(res["text"]) + "\n\nCharged, questioned and tried: the jury returns in an hour. Guilty. %s is taken down." % CaseEngine.first(sim, culprit))
+			else:
+				res["verdict"] = "released"
+				res["text"] = "The case reached court and the jury would not convict (confidence %d). %s walks, or is held for a retrial, and knows exactly how close it was." % [int(tr["confidence"]), CaseEngine.name_of(sim, culprit)]
+				CaseOps.apply_outcome(sim, case, det, res, culprit)
+		"released":
+			Justice.formal_charge(sim, case, det, court, jail, culprit, theory, false)
+			CaseOps.apply_outcome(sim, case, det, res, culprit)
+			res["text"] = Prose.clean(String(res["text"]) + " The trial is set for day %d." % int(court.get("trial_day", 0)))
+		"wrong":
+			CaseOps.apply_outcome(sim, case, det, res, culprit)
+			if res.get("case_against", false):
+				var ch2: Dictionary = Justice.formal_charge(sim, case, det, court, jail, culprit, false, true)
+				res["trial"] = ch2["trial"]
+				if ch2["trial"]["verdict"] == "guilty":
+					res["wrongful"] = true
+					res["text"] = String(res["text"]) + " The evidence you gathered was enough for a jury. It was wrong. %s is sentenced." % CaseEngine.first(sim, culprit)
+			town_news.append({"day": int(sim.day), "kind": "scandal", "head": "WRONGFUL ARREST SCANDAL", "body": res.get("scandal", "")})
+			today.append("THE COURIER: %s" % res.get("scandal", ""))
+		_:
+			CaseOps.apply_outcome(sim, case, det, res, culprit)
+	res["left"] = accusations_left()
 	var ep: Dictionary = Narrator.episode(sim, case, det, res)
 	episodes.append(ep)
 	res["episode"] = ep
 	chronicle.append({"day": sim.day, "text": "You accused %s: %s." % [CaseEngine.name_of(sim, culprit), res["verdict"]]})
+	if case.get("status", "") == "open" and accusations_left() == 0 and res["verdict"] != "released":
+		_aftermath("spent")
+		res["aftermath"] = true
 	_check_caught()
 	return res
+
+
+## The cost of an action before you take it: {minutes, ticks (half hours), label, stress, note}.
+func cost_of(action: String, args: Dictionary = {}) -> Dictionary:
+	var mins := 0
+	var note := ""
+	var stress := 0.0
+	match action:
+		"examine": mins = 15; stress = 6.0 if args.get("spot", "") == "body" else 0.0
+		"ask": mins = 6
+		"present": mins = 5
+		"view_camera": mins = 30
+		"calibrate": mins = 10
+		"dust": mins = 20
+		"sample": mins = 10
+		"submit_lab": mins = 15; note = "results tomorrow"
+		"warrant": mins = 30
+		"interrogate": mins = 60; note = "wears on both of you"
+		"visit": mins = 30; note = "10 am to 4 pm"
+		"funeral": mins = 90; note = "the chapel notices who comes"
+		"sermon": mins = 60
+		"follow_up": mins = 15
+		"accuse": mins = 0; note = "%d formal accusations left; a wrong one costs more each time" % accusations_left()
+		"go":
+			mins = int(distance(me().location, String(args.get("place", me().location))) / 450.0) * 30
+	return {"minutes": mins, "ticks": int(ceil(float(mins) / 30.0)), "label": "%d min" % mins, "stress": stress, "note": note}
+
+
+# ------------------------------------------------------------------ ordinary life
+func town_business() -> Array:
+	return business.filter(func(b): return b["status"] == "open")
+
+
+func follow_up(biz_id: String, npc: String) -> Dictionary:
+	for b in business:
+		if b["id"] == biz_id:
+			var r: Dictionary = Life.follow_up(sim, b, npc)
+			r["ticks"] = spend(int(r["minutes"]))
+			return r
+	return {"text": "No such matter.", "minutes": 0}
+
+
+func resolve_business(biz_id: String) -> Dictionary:
+	for b in business:
+		if b["id"] == biz_id and b["status"] == "open":
+			if (b["found"] as Array).size() < int(b["need"]):
+				return {"ok": false, "text": "You do not know enough yet. Talk to the people who were there."}
+			b["status"] = "solved"
+			Reputation.apply(det, "business_solved", int(sim.day))
+			det.gain_xp(25)
+			det.add_stress(-5.0)
+			chronicle.append({"day": sim.day, "text": b["title"] + ": settled."})
+			return {"ok": true, "text": b["solution"]}
+	return {"ok": false, "text": "No such matter."}
+
+
+func funeral_available() -> bool:
+	var d := int(sim.day) - int(case.get("day", 0))
+	return d >= 3 and d <= 6 and not det.funerals.get(case.get("id", ""), false) and sim.people.has(case.get("victim", "")) and sim.people[case["victim"]].dead
+
+
+func attend_funeral() -> Dictionary:
+	if not funeral_available():
+		return {"ok": false, "text": "There is no funeral to attend.", "minutes": 0}
+	det.funerals[case["id"]] = true
+	Reputation.apply(det, "funeral", int(sim.day))
+	det.add_stress(-5.0)
+	var type: String = Justice.TYPES[case["motive"]]
+	var tell: Array = Prose.json("detective/horror.json")["tells"][type]
+	var kn := CaseEngine.first(sim, case["killer"])
+	var text := "The chapel is full and cold. The hymn is one you don't know, and everybody does. At the back, %s stands apart and does not sing. %s" % [kn, String(tell[0]) % kn]
+	var e := {"id": "funeral_" + String(case["id"]), "title": "The funeral", "text": text, "kind": "testimony", "source": "chapel", "supports": [], "day": int(sim.day)}
+	det.learn(e)
+	return {"ok": true, "text": text, "minutes": 90, "ticks": spend(90)}
+
+
+func attend_sermon() -> Dictionary:
+	Reputation.apply(det, "sermon", int(sim.day))
+	det.add_stress(-8.0)
+	var tier := Reputation.chapel_tier(det)
+	var text := "You sit through the sermon. The pastor does not look at you."
+	if tier in ["welcome", "trusted"]:
+		var lore: Array = Justice.LORE
+		var line: String = lore[absi(hash("%s|%d" % [case.get("id", ""), int(sim.day)])) % lore.size()]
+		text = "After the service the pastor presses your hand. \"%s\"" % line
+		det.learn({"id": "sermon_%d" % int(sim.day), "title": "The pastor's counsel", "text": line, "kind": "lore", "source": "chapel", "supports": [], "day": int(sim.day)})
+	return {"ok": true, "text": text, "minutes": 60, "ticks": spend(60)}
+
+
+func paper() -> Array:
+	return town_news
+
+
+## A case ends badly: the state police take it, you are reassigned, and the killer remains in Little Mercy as a thread that will come back.
+func _aftermath(kind: String) -> void:
+	var killer: String = case.get("killer", "")
+	case["status"] = "failed"
+	case["closed_day"] = int(sim.day)
+	if kind == "spent":
+		Reputation.apply(det, "accusations_spent", int(sim.day))
+		today.append("The Sheriff takes the file from you. Three names, three mistakes. The state police have it now.")
+	if int(serial.get("resumed", 0)) >= 1 and kind == "serial":
+		sim.people[killer].taken = true
+		sim.people[killer].location = ""
+		haunting = {}
+		case["status"] = "fled"
+		today.append("THE COURIER: %s HAS VANISHED. The state police say they are 'following leads'. The chapel bell rang once at noon." % String(serial.get("nick", "THE KILLER")).to_upper())
+	else:
+		det.rank = "Deputy"
+		haunting = {"killer": killer, "nick": serial.get("nick", ""), "signature": serial.get("signature", case.get("held_back", "")), "since": int(sim.day), "cases": 0, "kind": kind}
+		today.append("REASSIGNED: you are a deputy again, and the town's small troubles are yours. The killer has not left. You know it the way you know a tooth.")
+	var ep: Dictionary = Narrator.episode(sim, case, det, {"verdict": "failure" if case.get("status") == "failed" else "fled", "score": 0, "right_person": false})
+	episodes.append(ep)
+	chronicle.append({"day": sim.day, "text": "The state police took the case from you."})
 
 
 func suspects() -> Array:
@@ -310,7 +508,9 @@ func dawn() -> String:
 		end_day()
 	_check_caught()
 	var fresh := _night_strike()
+	Cold.tick(self)
 	var id := super.dawn()
+	_ordinary_day()
 	for a in _arrivals:
 		today.append("New neighbour: %s" % a)
 	_arrivals.clear()
@@ -322,12 +522,12 @@ func dawn() -> String:
 		if not page.is_empty():
 			today.append("THE COURIER: %s" % page["head"])
 			if serial["status"] == "failed":
-				chronicle.append({"day": sim.day, "text": "The state police took the serial case from you."})
+				_aftermath("serial")
 		var kills: int = (serial["kills"] as Array).size()
 		if fresh and kills == 2:
 			pending_beats.append({"title": "THE PATTERN", "text": "A second body. A different house, a different family, nothing in common you can name. And on the table, the same thing: %s.\n\nOne is an accident of grief. Two is a hand. You do not say it aloud. Saying it aloud would make it a case about someone who is going to do it again." % String(serial["signature"]).to_lower()})
 		elif fresh and kills == 3:
-			pending_beats.append({"title": "THE THIRD", "text": "By noon the Courier knew. By dusk the whole town knew, and had given the killer a name: %s.\n\nYou have walked into three kitchens now and every one of them smelled of toast. There is a deadline, though nobody will say who set it. Eight days." % String(serial["nick"])})
+			pending_beats.append({"title": "THE THIRD", "text": "By noon the Courier knew. By dusk the whole town knew, and had given the killer a name: %s.\n\nYou have walked into %s now, and every one of them was somebody's ordinary life. There is a deadline, though nobody will say who set it. Eight days." % [String(serial["nick"]), _kill_places()]})
 	_after_op()
 	det.add_stress(-12.0 + (6.0 if Serial.active(serial) and float(serial["pressure"]) >= 70.0 else 0.0))
 	return id
@@ -342,6 +542,31 @@ func _check_caught() -> void:
 			chronicle.append({"day": sim.day, "text": "%s was caught." % String(serial["nick"])})
 
 
+func _kill_places() -> String:
+	var ps: Array = []
+	for k in (serial.get("kills", []) as Array).slice(-3):
+		ps.append(String(k.get("place", "somewhere")))
+	return Prose.list_join(ps)
+
+
+## Quiet days: a front page, a piece of town business now and then.
+func _ordinary_day() -> void:
+	for b in business:
+		if b["status"] == "open" and int(sim.day) > int(b["expires"]):
+			b["status"] = "failed"
+			Reputation.apply(det, "business_failed", int(sim.day))
+	if case.get("status", "") in ["solved", "cold", "failed", "fled"] and not Serial.active(serial):
+		var open_ids: Array = town_business().map(func(b): return b["id"])
+		if open_ids.size() < 2:
+			var b: Dictionary = Life.roll(sim, seed_v, int(sim.day), open_ids)
+			if not b.is_empty():
+				business.append(b)
+				today.append("TOWN BUSINESS: %s. %s" % [b["title"], b["report"]])
+	if not haunting.is_empty() and absi(hash("%d|haunt|%d" % [seed_v, int(sim.day)])) % 100 < 30:
+		today.append("Someone has left a small thing on your step in the night: %s. No note." % String(haunting.get("signature", "a coin")).to_lower())
+		det.add_stress(4.0)
+
+
 ## The night after the day just ended. Returns true when someone new has died.
 func _night_strike() -> bool:
 	var d := int(sim.day)
@@ -351,15 +576,33 @@ func _night_strike() -> bool:
 		_open_case(Serial.opts(serial))
 		Serial.record(sim, serial, case, seed_v, place_name(case["scene"]))
 		return true
-	if case.get("status", "") == "solved":
+	if case.get("status", "") in ["solved", "cold", "failed", "fled"]:
 		if not case.has("closed_day"):
 			case["closed_day"] = d
-		elif d >= int(case["closed_day"]) + 2 and serial.get("status", "none") != "failed":
+		if not case.has("gap"):
+			var gr := RandomNumberGenerator.new()
+			gr.seed = hash("%d|gap|%d" % [seed_v, int(case["closed_day"])])
+			case["gap"] = 2 + gr.randi() % 6          # a quiet stretch of two to seven days
+		if d >= int(case["closed_day"]) + int(case["gap"]):
 			var opt := {}
-			if Serial.rolls(seed_v, "d%d" % d):
+			var ss: String = String(serial.get("status", "none"))
+			if not haunting.is_empty() and int(haunting.get("cases", 0)) >= 2:
+				if ss == "failed":
+					Serial.resume(serial, d)
+				else:
+					serial = Serial.adopt(sim, seed_v, String(haunting["killer"]), d, past_signatures)
+					past_signatures.append(serial["signature"])
+				haunting = {}
+				opt = Serial.opts(serial)
+			elif repeat_killer != "" and sim.alive(sim.people[repeat_killer]):
+				opt = {"force_killer": repeat_killer, "avoid": [case.get("victim", "")]}
+				repeat_killer = ""
+			elif ss in ["none", "caught"] and haunting.is_empty() and Serial.rolls(seed_v, "d%d" % d):
 				serial = Serial.begin(sim, seed_v, "d%d" % d, past_signatures)
 				past_signatures.append(serial["signature"])
 				opt = Serial.opts(serial)
+			if not haunting.is_empty():
+				haunting["cases"] = int(haunting["cases"]) + 1
 			_welcome_newcomer()
 			_open_case(opt)
 			if Serial.active(serial):
@@ -411,6 +654,10 @@ func to_dict() -> Dictionary:
 	d["serial"] = serial.duplicate(true)
 	d["past_signatures"] = past_signatures.duplicate()
 	d["newcomers"] = newcomers.duplicate(true)
+	d["haunting"] = haunting.duplicate(true)
+	d["repeat_killer"] = repeat_killer
+	d["business"] = business.duplicate(true)
+	d["town_news"] = town_news.duplicate(true)
 	return d
 
 
@@ -430,11 +677,20 @@ func load_dict(d: Dictionary) -> void:
 	jail = d.get("jail", []).duplicate(true)
 	seed_v = int(d.get("seed_v", 1961))
 	serial = d.get("serial", Serial.none()).duplicate(true)
+	haunting = d.get("haunting", {}).duplicate(true)
+	repeat_killer = String(d.get("repeat_killer", ""))
+	business = d.get("business", []).duplicate(true)
+	town_news = d.get("town_news", []).duplicate(true)
 	wishes = []
 
 
 func save(path: String = DET_SAVE) -> bool:
 	return super.save(path)
+
+
+static func delete_save(path: String = DET_SAVE) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
 
 
 static func has_detective_save(path: String = DET_SAVE) -> bool:
@@ -448,6 +704,6 @@ static func load_detective(path: String = DET_SAVE) -> RefCounted:
 	var d: Variant = JSON.parse_string(f.get_as_text())
 	if typeof(d) != TYPE_DICTIONARY or int(d.get("version", 0)) != SAVE_VERSION or d.get("mode", "") != "detective":
 		return null
-	var g: RefCounted = load("res://scripts/detective/detective_game.gd").new(int(d["seed"]))
+	var g: RefCounted = load("res://scripts/detective/detective_game.gd").new(int(d["seed"]), "", false, true)
 	g.load_dict(d)
 	return g

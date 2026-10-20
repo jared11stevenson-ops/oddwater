@@ -64,7 +64,7 @@ void sky() {
 	float mdot = dot(d, md);
 	float m_ang = acos(clamp(mdot, -1.0, 1.0));
 	float mvis = night * (1.0 - cover * 0.8);
-	float mdisc = smoothstep(0.052, 0.045, m_ang);
+	float mdisc = smoothstep(0.034, 0.029, m_ang);
 	vec3 mcol = vec3(0.92, 0.93, 0.85);
 	// craters: a few darker blotches inside the disc
 	vec3 ml = d - md * mdot;

@@ -7,6 +7,7 @@ const SimPerson = preload("res://scripts/sim/sim_person.gd")
 const Population = preload("res://scripts/sim/population.gd")
 const TownLayout = preload("res://scripts/core/town_layout.gd")
 
+const TOWN_SIZE := 217     # authored cast plus everyday residents: always exactly this many
 const HAUNTS := ["low_water", "pink_heron", "rising_loaf", "pageant_green", "library"]
 
 var people: Dictionary = {}
@@ -52,7 +53,7 @@ func _init(seed: int = 1961, everyday: bool = false) -> void:
 		for id in order:
 			names.append(people[id].display)
 			Population.decorate(people[id])
-		var gen: Dictionary = Population.new().generate(seed, TownLayout.new(), names)
+		var gen: Dictionary = Population.new().generate(seed, TownLayout.new(), names, TOWN_SIZE - order.size())
 		for d in gen["people"]:
 			var p2: RefCounted = SimPerson.from_data(d)
 			people[p2.id] = p2
@@ -751,7 +752,11 @@ func _history_to_json() -> Dictionary:
 	for d in history:
 		var rows: Array = []
 		for r in history[d]:
-			rows.append(Array(r))
+			var bytes := PackedByteArray()
+			for v in r:
+				bytes.append(int(v) & 255)
+				bytes.append((int(v) >> 8) & 255)
+			rows.append(Marshalls.raw_to_base64(bytes))
 		out[str(d)] = rows
 	return out
 
@@ -762,8 +767,13 @@ func _history_from_json(d: Dictionary) -> Dictionary:
 		var rows: Array = []
 		for r in d[k]:
 			var pr := PackedInt32Array()
-			for v in r:
-				pr.append(int(v))
+			if r is String:
+				var bytes := Marshalls.base64_to_raw(r)
+				for j in range(0, bytes.size() - 1, 2):
+					pr.append(bytes[j] | (bytes[j + 1] << 8))
+			else:
+				for v in r:
+					pr.append(int(v))
 			rows.append(pr)
 		out[int(k)] = rows
 	return out
