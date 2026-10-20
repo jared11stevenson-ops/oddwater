@@ -138,7 +138,9 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 	var trait_k: String = _pick(r, cb["traits"])
 	var item: String = _pick(r, cb["dropped"])
 	var shoes: String = _pick(r, cb["shoes"])
-	var c := {"id": "case_%d" % day, "day": day, "seed": seed_v, "victim": victim, "killer": killer, "motive": motive, "motive_thing": thing,
+	var gloves: bool = r.randf() < 0.3
+	var held: String = _pick(r, cb["held_back"])
+	var c := {"gloves": gloves, "held_back": held, "id": "case_%d" % day, "day": day, "seed": seed_v, "victim": victim, "killer": killer, "motive": motive, "motive_thing": thing,
 		"method": method, "weapon": weapon, "scene": scene, "scene_kind": scene_kind, "hour": hour, "trait": trait_k, "item": item, "shoes": shoes,
 		"trace": trace_for(pk.job), "facts": {}, "clues": {}, "profiles": {}, "suspects": [], "keyholders": [], "weapon_at": {}, "status": "planned"}
 	# ---- the cast around the crime
@@ -150,7 +152,7 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 				finder = id
 				break
 	if finder == "":
-		var hm: Array = housemates
+		var hm: Array = housemates.filter(func(x): return x != killer)
 		var nb: Array = neighbors(sim, scene, 1, used)
 		finder = hm[0] if not hm.is_empty() else (nb[0] if not nb.is_empty() else "")
 	used.append(finder)
@@ -179,6 +181,7 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 	# ---- the suspects' real nights, and what they will say
 	_profiles(sim, c, cb, r, herrings, used)
 	_facts_and_clues(sim, c, cb, r, vn, kn, used)
+	_cameras_prints_family(sim, c, r, vn, kn)
 	return c
 
 
@@ -275,6 +278,7 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 			h3 = id
 	# ---------------- the physical scene
 	_clue(c, "c_body", "The body", "%s lies where they fell. %s. They have been dead some hours." % [vname, String(m["wound"]).capitalize()], scene, "body", {"skill": "forensics", "level": 1}, [_sup("method", c["method"], 3)])
+	_clue(c, "c_odd", "The detail that doesn't fit", "%s. Nothing else in the room is out of place." % c["held_back"], scene, "body", {"skill": "observation", "level": 2}, [], {"held_back": true})
 	_clue(c, "c_time", "Time of death", "Body temperature and stiffness put the death between %s and %s." % [_time(hk - 1.0), _time(hk + 1.0)], scene, "body", {"skill": "forensics", "level": 2}, [_sup("time", "", 2)])
 	var keyholders := [v, k]
 	if not c["found_by"] in keyholders:
@@ -319,7 +323,7 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 	if m["buy"]:
 		_clue(c, "c_receipt", "A purchase", "The ledger at %s: %s bought %s five days ago, paid cash." % [Brief.place_name(sim, m["shop"], ""), kname, c["weapon"]], m["shop"], "records", {"skill": "streetwise", "level": 1}, [_sup("means", k, 2)])
 	else:
-		var owners: Array = sim.order.filter(func(id): return id != k and id != v and sim.people[id].rel.has(k) and sim.alive(sim.people[id]))
+		var owners: Array = sim.order.filter(func(id): return id != k and id != v and id != c["found_by"] and sim.people[id].rel.has(k) and sim.alive(sim.people[id]))
 		if not owners.is_empty():
 			_fact(c, "f_owns", "%s keeps a whole set of those. The set on the mantel is one short. Funny, that." % first(sim, k), "owner", [owners[0]], "free", [_sup("means", k, 2)], k)
 	# ---------------- the lab turns a dropped item into a name
@@ -337,7 +341,7 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 	if not kn.is_empty():
 		_fact(c, "f_kn_saw", "I couldn't sleep. I saw %s go out at about %s and come back at about %s. Didn't think anything of it, until now." % [kname, _time(hk - 0.75), _time(hk + 0.8)], "saw", [kn[0]], "free", [_sup("opportunity", k, 3)], k)
 		_fact(c, "f_lead_kn", "If you want to know who goes where at night on this street, ask %s. Never sleeps." % first(sim, kn[0]), "suspects", sim.order.filter(func(id): return sim.people[id].home == pk.home and id != k and id != v and sim.alive(sim.people[id])).slice(0, 1) + neighbors(sim, pk.home, 1, [kn[0], k, v]), "free", [], k)
-	var ow: Array = sim.order.filter(func(id): return sim.people[id].rel.has(k) and id != k and id != v and sim.alive(sim.people[id])).slice(0, 2)
+	var ow: Array = sim.order.filter(func(id): return sim.people[id].rel.has(k) and id != k and id != v and id != c["found_by"] and sim.alive(sim.people[id])).slice(0, 2)
 	_fact(c, "f_owner", "That's %s's. I'd know it anywhere." % kname, "owner", ow, "free", [_sup("link", k, 2)], k)
 	c["owner_item_knowers"] = ow
 	# a confidant who knows the real reason (rapport needed)
@@ -401,6 +405,64 @@ static func execute(sim: RefCounted, c: Dictionary) -> void:
 	c["status"] = "open"
 
 
+static func discovery_time(c: Dictionary) -> String:
+	return _time(c["found_hour"])
+
+
 static func discovery_text(sim: RefCounted, c: Dictionary) -> String:
 	var f: String = c["found_by"]
 	return "%s found %s dead at %s at about %s this morning. The Sheriff has asked you to take the case." % [name_of(sim, f), name_of(sim, c["victim"]), Brief.place_name(sim, c["scene"], ""), _time(c["found_hour"])]
+
+
+# --------------------------------------------------------------------------- cameras, prints, families
+static func relatives_of(sim: RefCounted, id: String) -> Array:
+	var p: RefCounted = sim.people[id]
+	var out: Array = []
+	for oid in sim.order:
+		var o: RefCounted = sim.people[oid]
+		if oid == id or not sim.alive(o) or o.age < 18:
+			continue
+		if o.home == p.home or p.affinity(oid) >= 70.0:
+			out.append(oid)
+	return out.slice(0, 3)
+
+
+static func _cameras_prints_family(sim: RefCounted, c: Dictionary, r: RandomNumberGenerator, vn: Array, kn: Array) -> void:
+	var k: String = c["killer"]
+	var v: String = c["victim"]
+	# doorbell cameras: one by the killer's street, one by the victim's
+	var cams: Array = []
+	if not kn.is_empty():
+		cams.append({"id": "cam_door_" + kn[0], "lot": sim.people[kn[0]].home, "label": "%s's doorbell camera" % name_of(sim, kn[0]), "quality": "low", "radius": 48.0, "offset": r.randi_range(-12, 12), "owner": kn[0], "kind": "doorbell"})
+	if not vn.is_empty():
+		cams.append({"id": "cam_door_" + vn[0], "lot": sim.people[vn[0]].home, "label": "%s's doorbell camera" % name_of(sim, vn[0]), "quality": "low", "radius": 48.0, "offset": r.randi_range(-12, 12), "owner": vn[0], "kind": "doorbell"})
+	c["cameras"] = cams
+	# latent prints: who touched what. Gloves leave nothing of the killer's.
+	var lat: Array = []
+	var n := 0
+	var sus: Array = c["suspects"]
+	var lookalike := ""
+	for sid in sus:
+		if c["profiles"][sid].get("alibi", "") == "secret":
+			lookalike = sid
+	c["lookalike"] = lookalike
+	var add := func(spot: String, owner: String, q: int) -> void:
+		lat.append({"id": "lp%d" % lat.size(), "spot": spot, "owner": owner, "quality": q})
+	add.call("door", v, 78)
+	add.call("door", c["found_by"], 66)
+	add.call("phone", v, 80)
+	add.call("desk", v, 85)
+	add.call("garden", "unknown", 20)
+	if not c["gloves"]:
+		add.call("door", k, 62)
+		add.call("phone", k, 48)        # a partial: not good enough to be sure
+		add.call("floor", k, 72)
+	for sid in sus:
+		if c["profiles"][sid].get("alibi", "") == "weak":
+			add.call("desk", sid, 70)   # the 8pm visit: a cup on the desk
+	c["latents"] = lat
+	# families: who would cover for whom
+	var rel: Dictionary = {}
+	for sid in sus:
+		rel[sid] = relatives_of(sim, sid)
+	c["relatives"] = rel

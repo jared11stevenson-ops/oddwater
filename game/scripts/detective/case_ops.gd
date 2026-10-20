@@ -7,6 +7,8 @@ const Data = preload("res://scripts/core/data.gd")
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const Brief = preload("res://scripts/sim/brief.gd")
 const Relationship = preload("res://scripts/sim/relationship.gd")
+const Prints = preload("res://scripts/detective/prints.gd")
+const Cctv = preload("res://scripts/detective/cctv.gd")
 
 const SKILL_LABEL := {"observation": "Observation", "empathy": "Empathy", "authority": "Authority", "charm": "Charm", "logic": "Logic",
 	"forensics": "Forensics", "occult": "Occult", "streetwise": "Streetwise"}
@@ -143,6 +145,14 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 					lines.append("(The dead don't answer.)")
 				else:
 					lines.append("\"Home, in bed, like every night. Nobody to vouch for me but the cat.\"")
+			elif c["profiles"].has(about) and c.get("relatives", {}).get(about, []).has(npc):
+				var pr2: Dictionary = c["profiles"][about]
+				if pr2["lie"]:
+					lines.append("\"%s was home with me all night. I'd swear to it.\"" % CaseEngine.first(sim, about))
+					if det.check("empathy", 4) == "pass":
+						lines.append("[Empathy] %s is protecting someone. They believe what they're saying, or need to." % CaseEngine.first(sim, npc))
+				else:
+					lines.append("\"%s told me where they were that night, and it checks out: %s\"" % [CaseEngine.first(sim, about), String(pr2["claim"])])
 			else:
 				var found := false
 				for fid in c["facts"]:
@@ -177,6 +187,20 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 			_facts_for(sim, c, det, npc, "saw", lines, learned)
 			if lines.is_empty():
 				lines.append("\"Asleep by ten. I didn't see or hear a thing.\"")
+		"person":
+			if about != "" and sim.people.has(about):
+				var px: RefCounted = sim.people[about]
+				var rel_word: String = Relationship.describe(sim, npc, about)
+				lines.append("\"%s? %s, a %s. %s.\"" % [CaseEngine.first(sim, about), "My " + rel_word if rel_word in ["partner", "parent", "child", "sibling", "housemate"] else "We're " + rel_word, px.job, _habit(px)])
+				if c.get("relatives", {}).get(about, []).has(npc) and c["profiles"].has(about) and c["profiles"][about]["lie"]:
+					lines.append("\"They're a good person. Whatever you've heard, you've heard it wrong.\"")
+				for fid in c["facts"]:
+					var f2: Dictionary = c["facts"][fid]
+					if f2["topic"] == "suspects" and f2["about"] == about and f2["knowers"].has(npc):
+						lines.append("\"%s\"" % f2["text"])
+						var e3 := _fact_entry(c, f2, sim, npc)
+						if det.learn(e3):
+							learned.append(e3)
 	var text := "\n".join(lines)
 	det.statements.append({"day": int(sim.day), "npc": npc, "topic": topic, "about": about, "text": text})
 	if not learned.is_empty():
@@ -184,6 +208,10 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 	# asking about the dead is hard on the living
 	p.bump("player", -1.0 if topic in ["victim", "suspects"] else 0.0, 0.0)
 	return {"text": text, "learned": learned, "minutes": minutes}
+
+
+static func _habit(p: RefCounted) -> String:
+	return "%s. %s" % [String(p.quirk).capitalize() if p.quirk != "" else "Keeps to routine", ("Spends spare time " + p.hobby) if p.hobby != "" else "Not much of a hobbyist"]
 
 
 static func _opinion(stage: String) -> String:
@@ -240,6 +268,15 @@ static func present(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String
 			learned.append(e2)
 		text = "\"%s\"" % f2["text"]
 		sim.people[npc].bump("player", -4.0, 0.0)
+	elif _cover_cracks(c, npc, entry_id, det):
+		var target: String = _covered(c, npc)
+		var tname := CaseEngine.first(sim, target)
+		var ent := {"id": "cover_" + npc, "title": "%s's cover breaks" % CaseEngine.first(sim, npc), "text": "%s admits it: %s was not home that night. They went out and came back late. They begged you not to say they told you." % [CaseEngine.first(sim, npc), tname],
+			"kind": "testimony", "source": npc, "supports": [{"cat": "opportunity", "about": target, "strength": 2}] if target == k else [], "day": int(sim.day)}
+		if det.learn(ent):
+			learned.append(ent)
+		text = "%s looks at the footage, then at the floor. \"...He went out. I lied. I'm sorry.\"" % CaseEngine.first(sim, npc)
+		sim.people[npc].bump("player", -3.0, 0.0)
 	elif npc == k and entry_id in ["c_phone", "c_door", "f_kn_saw", "f_vn_saw"]:
 		text = "%s's jaw sets. \"Anyone could say that. Anyone could have called from my number.\"" % CaseEngine.first(sim, k)
 		det.add_stress(2.0)
@@ -247,6 +284,27 @@ static func present(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String
 		text = "\"I don't know what you want me to say about that.\""
 	det.statements.append({"day": int(sim.day), "npc": npc, "topic": "present", "about": entry_id, "text": text})
 	return {"text": text, "learned": learned, "minutes": 5}
+
+
+## Does this piece of evidence break a relative's cover for a liar they are protecting?
+static func _covered(c: Dictionary, npc: String) -> String:
+	for sid in c["suspects"]:
+		if c["profiles"][sid]["lie"] and c.get("relatives", {}).get(sid, []).has(npc):
+			return sid
+	return ""
+
+
+static func _cover_cracks(c: Dictionary, npc: String, entry_id: String, det: RefCounted) -> bool:
+	var sid: String = _covered(c, npc)
+	if sid == "":
+		return false
+	if entry_id == "f_h1_seen" and c["profiles"][sid].get("alibi", "") == "secret":
+		return true
+	var e: Dictionary = det.known.get(entry_id, {})
+	for sup in e.get("supports", []):
+		if sup["about"] == sid and sup["cat"] in ["opportunity", "link"] and e.get("kind", "") in ["cctv", "testimony"]:
+			return true
+	return false
 
 
 # =========================================================================== lab, warrants
@@ -265,10 +323,12 @@ static func submit_to_lab(sim: RefCounted, c: Dictionary, det: RefCounted, clue_
 
 ## Results that are ready by `day` become notebook entries.
 static func lab_results(sim: RefCounted, c: Dictionary, det: RefCounted, day: int) -> Array:
-	var out: Array = []
+	var out: Array = Prints.compare_results(sim, c, det, day)
 	var remaining: Array = []
 	for l in det.lab:
-		if int(l["ready_day"]) <= day and c["lab"].has(l["clue"]):
+		if l.get("print", "") != "":
+			remaining.append(l)
+		elif int(l["ready_day"]) <= day and c["lab"].has(l["clue"]):
 			var r: Dictionary = c["lab"][l["clue"]]
 			var e := {"id": "lab_" + l["clue"], "title": "Lab report", "text": r["text"], "kind": "lab", "source": "lab", "supports": r["supports"].duplicate(true), "day": day}
 			if det.learn(e):

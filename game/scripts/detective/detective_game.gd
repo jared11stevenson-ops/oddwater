@@ -5,12 +5,18 @@ extends "res://scripts/sim/town_game.gd"
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
+const Cctv = preload("res://scripts/detective/cctv.gd")
+const Prints = preload("res://scripts/detective/prints.gd")
+const Narrator = preload("res://scripts/detective/narrator.gd")
 
 const DET_SAVE := "user://detective_save.json"
 
 var det: RefCounted
 var case: Dictionary = {}
 var _minutes := 0
+var beats_seen: Dictionary = {}
+var pending_beats: Array = []       # narrated interludes waiting to be shown
+var episodes: Array = []            # the told stories of cases you have worked
 var seed_v := 1961
 
 
@@ -46,6 +52,25 @@ func _prelude(seed_value: int) -> void:
 
 func briefing() -> String:
 	return CaseEngine.discovery_text(sim, case)
+
+
+func opening() -> String:
+	return Narrator.cold_open(sim, case)
+
+
+## After anything you do: has the story reached a moment worth telling?
+func _after_op() -> void:
+	for kind in ["first_scene", "odd_detail", "lie_caught", "footage", "turn"]:
+		if beats_seen.has(kind):
+			continue
+		var b: Dictionary = Narrator.beat(kind, sim, case, det)
+		if not b.is_empty():
+			beats_seen[kind] = true
+			pending_beats.append(b)
+
+
+func take_beat() -> Dictionary:
+	return pending_beats.pop_front() if not pending_beats.is_empty() else {}
 
 
 func scene_lot() -> String:
@@ -97,30 +122,74 @@ func spots(lot: String) -> Array:
 func examine(lot: String, spot: String) -> Dictionary:
 	var r: Dictionary = CaseOps.examine(sim, case, det, lot, spot)
 	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
 	return r
 
 
 func ask(npc: String, topic: String, about: String = "") -> Dictionary:
 	var r: Dictionary = CaseOps.ask(sim, case, det, npc, topic, about)
 	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
 	return r
 
 
 func present(npc: String, entry_id: String) -> Dictionary:
 	var r: Dictionary = CaseOps.present(sim, case, det, npc, entry_id)
 	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
+	return r
+
+
+func cameras() -> Array:
+	return Cctv.cameras(case)
+
+
+func view_camera(cam_id: String, from_h: float, to_h: float) -> Dictionary:
+	var r: Dictionary = Cctv.view(sim, case, det, cam_id, from_h, to_h)
+	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
+	return r
+
+
+func calibrate_camera(cam_id: String) -> Dictionary:
+	var r: Dictionary = Cctv.calibrate(sim, case, det, cam_id)
+	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
+	return r
+
+
+func dust(lot: String, spot: String) -> Dictionary:
+	var r: Dictionary = Prints.dust(sim, case, det, lot, spot)
+	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
+	return r
+
+
+func take_sample(npc: String) -> Dictionary:
+	var r: Dictionary = Prints.take_sample(sim, case, det, npc)
+	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
+	return r
+
+
+func compare_print(print_entry: String, target: String) -> Dictionary:
+	var r: Dictionary = Prints.submit_compare(sim, case, det, print_entry, target)
+	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
 	return r
 
 
 func submit_lab(clue_id: String) -> Dictionary:
 	var r: Dictionary = CaseOps.submit_to_lab(sim, case, det, clue_id)
 	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
 	return r
 
 
 func warrant(target: String) -> Dictionary:
 	var r: Dictionary = CaseOps.request_warrant(sim, case, det, target)
 	r["ticks"] = spend(int(r["minutes"]))
+	_after_op()
 	return r
 
 
@@ -128,6 +197,9 @@ func warrant(target: String) -> Dictionary:
 func accuse(culprit: String, motive: String, method: String) -> Dictionary:
 	var res: Dictionary = CaseOps.judge(sim, case, det, culprit, motive, method)
 	CaseOps.apply_outcome(sim, case, det, res, culprit)
+	var ep: Dictionary = Narrator.episode(sim, case, det, res)
+	episodes.append(ep)
+	res["episode"] = ep
 	chronicle.append({"day": sim.day, "text": "You accused %s: %s." % [CaseEngine.name_of(sim, culprit), res["verdict"]]})
 	return res
 
@@ -146,6 +218,7 @@ func dawn() -> String:
 	var lab_new: Array = CaseOps.lab_results(sim, case, det, int(sim.day))
 	for e in lab_new:
 		today.append("The lab reports: %s" % e["text"])
+	_after_op()
 	det.add_stress(-12.0)
 	return id
 
@@ -156,6 +229,9 @@ func to_dict() -> Dictionary:
 	d["det"] = det.to_dict()
 	d["case"] = case.duplicate(true)
 	d["minutes"] = _minutes
+	d["beats_seen"] = beats_seen.duplicate()
+	d["pending_beats"] = pending_beats.duplicate(true)
+	d["episodes"] = episodes.duplicate(true)
 	d["mode"] = "detective"
 	d["seed_v"] = seed_v
 	return d
@@ -166,6 +242,9 @@ func load_dict(d: Dictionary) -> void:
 	det = Detective.from_dict(d.get("det", {}))
 	case = d.get("case", {}).duplicate(true)
 	_minutes = int(d.get("minutes", 0))
+	beats_seen = d.get("beats_seen", {}).duplicate()
+	pending_beats = d.get("pending_beats", []).duplicate(true)
+	episodes = d.get("episodes", []).duplicate(true)
 	seed_v = int(d.get("seed_v", 1961))
 	wishes = []
 

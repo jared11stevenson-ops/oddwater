@@ -4,6 +4,9 @@ extends RefCounted
 const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
+const Cctv = preload("res://scripts/detective/cctv.gd")
+const Prints = preload("res://scripts/detective/prints.gd")
+const CaseOpsRef = preload("res://tests/case_bot_helpers.gd")
 
 var sim: RefCounted
 var c: Dictionary
@@ -50,6 +53,22 @@ func records_and_sites() -> void:
 			CaseOps.examine(sim, c, det, cl["lot"], "weapon")
 
 
+## Every camera over three windows, clocks checked; every surface dusted; every suspect fingerprinted and compared.
+func surveillance_and_prints() -> void:
+	for cam in Cctv.cameras(c):
+		CaseOpsRef.call_calibrate(sim, c, det, cam["id"])
+		for w in [[18.0, 24.0], [24.0, 27.0], [27.0, 30.0]]:
+			Cctv.view(sim, c, det, cam["id"], w[0], w[1])
+	for spot in ["door", "phone", "desk", "floor", "garden"]:
+		Prints.dust(sim, c, det, c["scene"], spot)
+	for s in c["suspects"] + [c["found_by"], c["victim"]]:
+		Prints.take_sample(sim, c, det, s)
+	for eid in det.order.duplicate():
+		if det.known[eid].get("latent", "") != "":
+			for s in c["suspects"] + [c["found_by"], c["victim"]]:
+				Prints.submit_compare(sim, c, det, eid, s)
+
+
 func lab() -> void:
 	for id in c["clues"]:
 		if det.has(id) and c["clues"][id].get("lab", false):
@@ -72,12 +91,14 @@ func solve() -> Dictionary:
 	canvass(c["scene"], 6)
 	for s in c["suspects"]:
 		canvass(sim.people[s].home, 4)
+	surveillance_and_prints()
 	for pass_i in 2:
 		press_everyone()
 		for s in c["suspects"]:
 			interview(s)
 		records_and_sites()
 	lab()
+	press_everyone()
 	# a detective accuses whoever the notebook points at hardest
 	var best := ""
 	var best_t := -1

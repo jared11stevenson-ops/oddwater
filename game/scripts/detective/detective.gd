@@ -21,6 +21,8 @@ var warrants: Dictionary = {}       # person id -> true
 var lab: Array = []                 # [{clue, ready_day}]
 var lab_done: Array = []
 var told: Dictionary = {}           # "npc|fact" -> true (never repeat the same answer)
+var calibrated: Dictionary = {}     # camera id -> true once its clock has been checked
+var samples: Dictionary = {}        # person id -> true once their fingerprints are on file
 var reputation: Dictionary = {"sheriff": 0, "town": 0, "chapel": 0}
 var cases_solved := 0
 var cases_failed := 0
@@ -93,7 +95,7 @@ func proof_against(id: String) -> Dictionary:
 func to_dict() -> Dictionary:
 	return {"name": name, "skills": skills.duplicate(), "xp": xp, "level": level, "points": points, "stress": stress, "tools": tools.duplicate(),
 		"known": known.duplicate(true), "order": order.duplicate(), "statements": statements.duplicate(true), "warrants": warrants.duplicate(),
-		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed}
+		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed}
 
 
 static func from_dict(d: Dictionary) -> RefCounted:
@@ -113,6 +115,8 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	x.lab = d.get("lab", []).duplicate(true)
 	x.lab_done = d.get("lab_done", []).duplicate()
 	x.told = d.get("told", {}).duplicate()
+	x.calibrated = d.get("calibrated", {}).duplicate()
+	x.samples = d.get("samples", {}).duplicate()
 	x.reputation = d.get("rep", x.reputation).duplicate()
 	x.cases_solved = int(d.get("solved", 0)); x.cases_failed = int(d.get("failed", 0))
 	return x

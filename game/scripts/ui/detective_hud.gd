@@ -4,6 +4,11 @@ extends "res://scripts/ui/town3d_hud.gd"
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
+const Cctv = preload("res://scripts/detective/cctv.gd")
+const Prints = preload("res://scripts/detective/prints.gd")
+
+const WINDOWS := [["Evening, 6 pm to midnight", 18.0, 24.0], ["Midnight to 3 am", 24.0, 27.0], ["3 am to 6 am", 27.0, 30.0]]
+var cam_sel := ""
 
 var obj_label: Label
 var tab := "case"
@@ -80,13 +85,15 @@ func _wake_card() -> void:
 	if game.sim.day == 1 and game.det.order.is_empty():
 		title = "A CALL AT DAWN"
 		sub = "You are the town's only detective."
-		body = game.briefing() + "\n\nThe weather is %s. Everyone in Little Mercy is friendly, and someone here is a killer.\n\nStart at the scene. Look at everything. Talk to everyone. Write it down: your notebook is the one record in this town that cannot be edited." % String(game.sim.weather_today())
+		body = game.opening() + "\n\nStart at the scene. Look at everything. Talk to everyone. Write it down: your notebook is the one record in this town that cannot be edited."
 	else:
 		body = "Another morning. %s" % game.objective()
 		if not game.today.is_empty():
 			body += "\n\n" + "\n".join(game.today)
 		body += "\n\nStress: %d/100." % int(game.det.stress)
 	_card(title, sub, body, "Take the case" if game.det.order.is_empty() else "Start the day", _after_wake, v)
+	if game.det.order.is_empty():
+		_typewriter()
 
 
 # ------------------------------------------------------------------ you, and inside places
@@ -124,6 +131,14 @@ func _inside_panel() -> void:
 	for s in game.spots(lot):
 		var b := _btn(box, s["label"], _spot.bind(lot, s["id"]), 26, 60)
 		b.name = "Spot_" + s["id"]
+	if lot == game.scene_lot() and game.det.tools.has("fingerprint kit"):
+		_lbl(box, "Dust for prints", 24, VIOLET)
+		var shown := {}
+		for lat in game.case["latents"]:
+			if not shown.has(lat["spot"]):
+				shown[lat["spot"]] = true
+				var pb := _btn(box, "Dust: %s" % Prints.SPOT_NAMES.get(lat["spot"], lat["spot"]), _dust.bind(lot, lat["spot"]), 24, 54)
+				pb.name = "Dust_" + lat["spot"]
 	var here: Array = game.people_here()
 	if not here.is_empty():
 		_lbl(box, "Here with you", 24, VIOLET)
@@ -146,10 +161,44 @@ func _spot(lot: String, spot: String) -> void:
 	show_host()
 
 
+func _dust(lot: String, spot: String) -> void:
+	var r: Dictionary = game.dust(lot, spot)
+	result_text = r["text"]
+	_learned(r["learned"])
+	show_host()
+
+
 func _learned(entries: Array) -> void:
-	if entries.is_empty():
+	if not entries.is_empty():
+		_say("Notebook: %s" % ", ".join(entries.map(func(e): return String(e["title"]))))
+	_beats()
+
+
+## The storyteller steps in: an interlude when the story reaches a moment, typed out line by line.
+func _beats() -> void:
+	if card != null or game.pending_beats.is_empty():
 		return
-	_say("Notebook: %s" % ", ".join(entries.map(func(e): return String(e["title"]))))
+	var b: Dictionary = game.take_beat()
+	_card(String(b["title"]), "", String(b["text"]), "Continue", _next_beat, null)
+	_typewriter()
+
+
+func _next_beat() -> void:
+	_close_card()
+	_beats()
+
+
+func _typewriter() -> void:
+	if card == null or card_body == null:
+		return
+	var lbl := card_body
+	lbl.visible_ratio = 0.0
+	var tw := create_tween()
+	tw.tween_property(lbl, "visible_ratio", 1.0, clampf(float(lbl.text.length()) / 55.0, 1.2, 14.0))
+	card.gui_input.connect(func(e):
+		if (e is InputEventMouseButton or e is InputEventScreenTouch) and lbl.visible_ratio < 1.0:
+			tw.kill()
+			lbl.visible_ratio = 1.0)
 
 
 func _sheet_panel() -> void:
@@ -214,6 +263,8 @@ func show_talk(npc: String) -> void:
 		b.name = "Q_" + x[1]
 	var wb := _btn(grid, "Where was...?", _ask_about_menu.bind(npc), 22, 70)
 	wb.name = "Q_about"
+	var tm := _btn(grid, "Tell me about...", _person_menu.bind(npc), 22, 70)
+	tm.name = "Q_person"
 	var sb := _btn(grid, "Show them...", _present_menu.bind(npc), 22, 70)
 	sb.name = "Q_show"
 	var fb := _btn(grid, "Be friendly", _friendly.bind(npc), 22, 70)
@@ -244,6 +295,15 @@ func _ask_about_menu(npc: String) -> void:
 	_btn(box, "Back", show_talk.bind(npc), 28, 60)
 
 
+func _person_menu(npc: String) -> void:
+	_clear_panel()
+	_head(box, "Tell me about...", 36)
+	for sid in game.suspects() + [game.case["victim"]]:
+		if sid != npc:
+			_btn(box, CaseEngine.name_of(game.sim, sid), _q.bind(npc, "person", sid), 26, 62)
+	_btn(box, "Back", show_talk.bind(npc), 28, 60)
+
+
 func _present_menu(npc: String) -> void:
 	_clear_panel()
 	_head(box, "Show them...", 36)
@@ -270,14 +330,15 @@ func show_case(tab_name: String = "") -> void:
 		tab = tab_name
 	var row := HBoxContainer.new()
 	box.add_child(row)
-	for t in [["Case", "case"], ["Notes", "notebook"], ["People", "people"], ["Accuse", "accuse"]]:
-		var b := _btn(row, t[0], show_case.bind(t[1]), 20, 52)
+	for t in [["Case", "case"], ["Notes", "notebook"], ["People", "people"], ["CCTV", "cctv"], ["Accuse", "accuse"]]:
+		var b := _btn(row, t[0], show_case.bind(t[1]), 18, 52)
 		b.disabled = tab == t[1]
 		b.name = "Tab_" + t[1]
 	match tab:
 		"case": _tab_case()
 		"notebook": _tab_notebook()
 		"people": _tab_people()
+		"cctv": _tab_cctv()
 		"accuse": _tab_accuse()
 
 
@@ -299,6 +360,27 @@ func _tab_case() -> void:
 	_lbl(box, "Next: " + game.objective(), 24, RED)
 	if game.solved():
 		_lbl(box, "CASE CLOSED.", 36, Color("3f7a4f"))
+	if not game.episodes.is_empty():
+		var eb := _btn(box, "Episodes (%d)" % game.episodes.size(), _archive, 26, 60)
+		eb.name = "Archive"
+
+
+func _archive() -> void:
+	_clear_panel()
+	_head(box, "EPISODES", 40)
+	for i in game.episodes.size():
+		var ep: Dictionary = game.episodes[i]
+		var b := _btn(box, "%s  (%s)" % [ep["title"], ep["verdict"]], _episode.bind(i), 22, 62)
+		b.name = "Ep_%d" % i
+	_btn(box, "Back", show_case.bind("case"), 28, 60)
+
+
+func _episode(i: int) -> void:
+	_clear_panel()
+	var ep: Dictionary = game.episodes[i]
+	_head(box, String(ep["title"]), 34)
+	_lbl(box, String(ep["text"]), 22)
+	_btn(box, "Back", _archive, 28, 60)
 
 
 func _tab_notebook() -> void:
@@ -324,7 +406,19 @@ func _entry(eid: String) -> void:
 	if e.get("lab", false) and not game.det.has("lab_" + eid):
 		var lb := _btn(box, "Send to the lab", _lab.bind(eid), 28, 64)
 		lb.name = "Lab"
+	if e.get("latent", "") != "":
+		_lbl(box, "Compare with...", 24, VIOLET)
+		for sid in game.suspects() + [game.case["found_by"], game.case["victim"]]:
+			if game.det.samples.get(sid, false):
+				var cb := _btn(box, CaseEngine.name_of(game.sim, sid), _compare.bind(eid, sid), 24, 52)
+				cb.name = "Cmp_" + sid
 	_btn(box, "Back", show_case.bind("notebook"), 28, 60)
+
+
+func _compare(eid: String, sid: String) -> void:
+	var r: Dictionary = game.compare_print(eid, sid)
+	_say(r["text"])
+	_entry(eid)
 
 
 func _lab(eid: String) -> void:
@@ -357,7 +451,84 @@ func _tab_people() -> void:
 		var wr := HBoxContainer.new()
 		box.add_child(wr)
 		_btn(wr, "Warrant", _warrant.bind(sid), 20, 50).name = "Warrant_" + sid
-		_btn(wr, "Go to their house", go.bind(q.home), 20, 50)
+		_btn(wr, "Prints" if not game.det.samples.get(sid, false) else "Prints: on file", _sample.bind(sid), 20, 50).name = "Sample_" + sid
+		var wr2 := HBoxContainer.new()
+		box.add_child(wr2)
+		_btn(wr2, "Their circle", _circle.bind(sid), 20, 50).name = "Circle_" + sid
+		_btn(wr2, "Go to their house", go.bind(q.home), 20, 50)
+
+
+func _sample(sid: String) -> void:
+	var r: Dictionary = game.take_sample(sid)
+	result_text = r["text"]
+	_say(r["text"])
+	show_case("people")
+
+
+## The people around a suspect: family and the closest friends, with a way to go and ask each about them.
+func _circle(sid: String) -> void:
+	_clear_panel()
+	_head(box, "Around %s" % CaseEngine.first(game.sim, sid), 36)
+	var fam: Array = CaseEngine.relatives_of(game.sim, sid)
+	if fam.is_empty():
+		_lbl(box, "No close family or friends in town.", 24)
+	for id in fam:
+		var q: RefCounted = game.sim.people[id]
+		var role: String = load("res://scripts/sim/relationship.gd").describe(game.sim, sid, id)
+		_lbl(box, "%s: %s, %s" % [q.display, role, q.job], 24)
+		var row := HBoxContainer.new()
+		box.add_child(row)
+		_btn(row, "Where was %s?" % CaseEngine.first(game.sim, sid), _circle_ask.bind(id, "alibi", sid), 20, 50)
+		_btn(row, "About them", _circle_ask.bind(id, "person", sid), 20, 50)
+		_btn(row, "Go there", go.bind(q.home), 20, 50)
+	_btn(box, "Back", show_case.bind("people"), 28, 60)
+
+
+func _circle_ask(npc: String, topic: String, about: String) -> void:
+	var r: Dictionary = game.ask(npc, topic, about)
+	last_talk = {"npc": npc, "text": r["text"], "tone": "neutral"}
+	_learned(r["learned"])
+	_say("%s: %s" % [CaseEngine.first(game.sim, npc), String(r["text"]).substr(0, 90)])
+	_circle(about)
+
+
+# ------------------------------------------------------------------ the cameras
+func _tab_cctv() -> void:
+	_lbl(box, "Every camera you can get footage from. Clocks are rarely exact: check one before you trust its times.", 22)
+	for cam in game.cameras():
+		var b := _btn(box, "%s%s" % [cam["label"], "  (face)" if cam["quality"] == "hd" else "  (figures only)"], _pick_cam.bind(cam["id"]), 22, 56)
+		b.name = "Cam_" + cam["id"]
+		b.disabled = cam_sel == cam["id"]
+	if cam_sel != "":
+		var cam: Dictionary = Cctv.camera(game.case, cam_sel)
+		_head(box, cam["label"], 30)
+		var cal := _btn(box, "Check the camera's clock" if not game.det.calibrated.get(cam_sel, false) else "Clock checked", _calibrate.bind(cam_sel), 22, 52)
+		cal.disabled = game.det.calibrated.get(cam_sel, false)
+		cal.name = "Calibrate"
+		for w in WINDOWS:
+			var wb := _btn(box, "Watch: %s" % w[0], _watch.bind(cam_sel, w[1], w[2]), 22, 56)
+			wb.name = "Watch_%d" % int(w[1])
+		if result_text != "":
+			_lbl(box, result_text, 22)
+
+
+func _pick_cam(id: String) -> void:
+	cam_sel = id
+	result_text = ""
+	show_case("cctv")
+
+
+func _calibrate(id: String) -> void:
+	var r: Dictionary = game.calibrate_camera(id)
+	result_text = r["text"]
+	show_case("cctv")
+
+
+func _watch(id: String, a: float, b: float) -> void:
+	var r: Dictionary = game.view_camera(id, a, b)
+	result_text = r["text"]
+	_learned(r["learned"])
+	show_case("cctv")
 
 
 func _warrant(sid: String) -> void:
@@ -409,5 +580,5 @@ func _accuse() -> void:
 		body += "\n\nXP awarded. The Sheriff will remember this."
 	close_panel()
 	world.refresh_markers()
-	_card(verdict_title, "Your accusation: %s" % suspect.display, body, "Continue", func(): _close_card(), suspect)
+	_card(verdict_title, "Your accusation: %s" % suspect.display, body, "Read the episode", func(): _close_card(); _archive(), suspect)
 	sel_culprit = ""; sel_motive = ""; sel_method = ""

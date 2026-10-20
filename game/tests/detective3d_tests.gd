@@ -52,6 +52,21 @@ func _initialize() -> void:
 	for s in g.spots(scene):
 		hud._spot(scene, s["id"])
 	ok(g.det.has("c_body") and g.det.has("c_desk"), "examining teaches: %d entries" % g.det.order.size())
+	ok(hud.card != null and hud.card_body != null, "the storyteller steps in with an interlude")
+	var interludes := 0
+	while hud.card != null and interludes < 8:
+		interludes += 1
+		hud._next_beat()
+	ok(interludes >= 2 and hud.card == null, "interludes play one after another (%d)" % interludes)
+	hud._dust(scene, "door")
+	ok(g.det.order.any(func(e): return String(e).begins_with("print_")), "you can dust for prints")
+	hud.show_case("cctv")
+	hud._pick_cam(g.cameras()[0]["id"])
+	hud._calibrate(g.cameras()[0]["id"])
+	hud._watch(g.cameras()[0]["id"], 24.0, 27.0)
+	ok(g.det.calibrated.get(g.cameras()[0]["id"], false), "you can check a camera's clock and watch its footage")
+	hud._circle(g.suspects()[0])
+	ok(hud.panel.visible, "you can look at the people around a suspect")
 	hud.show_case("notebook")
 	ok(by_name(hud.box, "Entry_c_body") != null, "the notebook lists it")
 	hud._entry("c_dropped") if g.det.has("c_dropped") else null

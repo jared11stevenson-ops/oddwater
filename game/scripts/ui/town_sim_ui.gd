@@ -30,6 +30,7 @@ var top: Label
 var toast: Label
 var news: Label
 var card: Control
+var card_body: Label
 var print_pass: ColorRect
 var dur_i := 1
 var last_talk: Dictionary = {}
@@ -241,7 +242,8 @@ func _card(title: String, subtitle: String, body: String, button: String, cb: Ca
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v.add_child(sc)
 	var t := _lbl(sc, body, 28)
-	t.custom_minimum_size = Vector2(size.x - 440, 0)
+	t.custom_minimum_size = Vector2(size.x - (440 if person != null else 180), 0)
+	card_body = t
 	var bt := _btn(v, button, cb, 36)
 	bt.custom_minimum_size = Vector2(0, 76)
 	bt.name = "CardButton"

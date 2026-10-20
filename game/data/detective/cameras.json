@@ -1,0 +1,50 @@
+[
+ {
+  "id": "cam_town_hall",
+  "lot": "town_hall",
+  "label": "Town Hall steps",
+  "quality": "hd",
+  "radius": 40,
+  "offset": 0
+ },
+ {
+  "id": "cam_post",
+  "lot": "post_office",
+  "label": "Post Office",
+  "quality": "hd",
+  "radius": 35,
+  "offset": 0
+ },
+ {
+  "id": "cam_hardware",
+  "lot": "hardware",
+  "label": "Moss Hardware",
+  "quality": "low",
+  "radius": 30,
+  "offset": 7
+ },
+ {
+  "id": "cam_heron",
+  "lot": "pink_heron",
+  "label": "The Pink Heron",
+  "quality": "low",
+  "radius": 30,
+  "offset": -4
+ },
+ {
+  "id": "cam_marina",
+  "lot": "marina",
+  "label": "The Marina",
+  "quality": "low",
+  "radius": 35,
+  "offset": 11
+ },
+ {
+  "id": "cam_low_water",
+  "lot": "low_water",
+  "label": "The Low Water",
+  "quality": "low",
+  "radius": 30,
+  "offset": -9
+ }
+]
