@@ -62,6 +62,19 @@ func _initialize() -> void:
 	w.npcs.resync(true)
 	for i in 3:
 		await process_frame
+	if w.npcs.visible_count() == 0:     # nobody near that spot: walk to where the town is out and about
+		var best := Vector3(0, 0, 130)
+		var nearest := 1e9
+		for id in w.npcs.agents:
+			var ag: Dictionary = w.npcs.agents[id]
+			if ag["state"] != "inside" and (ag["pos"] as Vector3).distance_to(w.npcs.focus) < nearest:
+				nearest = (ag["pos"] as Vector3).distance_to(w.npcs.focus)
+				best = ag["pos"]
+		w.player.teleport(best, 0.0)
+		w.npcs.focus = best
+		w.npcs.resync(true)
+		for i in 3:
+			await process_frame
 	ok(w.npcs.visible_count() > 0, "there are people about at midday: %d bodies" % w.npcs.visible_count())
 	ok(w.npcs.visible_count() <= w.npcs.MAX_VISIBLE, "the crowd is bounded")
 	# talk to someone
