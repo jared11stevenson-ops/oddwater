@@ -23,6 +23,7 @@ var _moved := 0.0
 var _lots_sorted: Array = []
 var base: Control
 var night := 0.0
+var host_world := Vector2.INF       # 3D mode: where you really are, in town metres (overrides the sim's lot position)
 var _tokens: Dictionary = {}       # person id -> portrait traits (for the head tokens)
 
 
@@ -230,8 +231,8 @@ func _draw() -> void:
 			var mood: float = game.sim.people[id].mood() / 100.0
 			draw_circle(sp, rad, Color("d95f4a").lerp(Color("5fa35a"), mood))
 			draw_arc(sp, rad, 0.0, TAU, 12, INK, 1.0)
-	if cur_pos.has(host):
-		var hp := to_screen((prev_pos.get(host, cur_pos[host]) as Vector2).lerp(cur_pos[host], anim))
+	if cur_pos.has(host) or host_world != Vector2.INF:
+		var hp := to_screen(host_world) if host_world != Vector2.INF else to_screen((prev_pos.get(host, cur_pos[host]) as Vector2).lerp(cur_pos[host], anim))
 		var pulse := 1.0 + 0.12 * sin(Time.get_ticks_msec() * 0.006)
 		draw_circle(hp, rad * 2.6 * pulse, Color(0.96, 0.72, 0.18, 0.3))
 		Portrait.draw_token(self, hp, maxf(rad * 1.9, 9.0), _token(host), true)

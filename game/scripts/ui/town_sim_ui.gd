@@ -197,7 +197,13 @@ func _wake_card() -> void:
 	var b: Dictionary = game.brief()
 	var body: String = Brief.text(game.sim, b)
 	body += "\nToday:\n  " + "\n  ".join(b["plan"])
-	_card("DAY %d" % game.sim.day, "You wake up as %s." % game.me().display, body, "Start the day", func(): _close_card(); show_host(); map.focus_on(game.host), game.me())
+	_card("DAY %d" % game.sim.day, "You wake up as %s." % game.me().display, body, "Start the day", _after_wake, game.me())
+
+
+func _after_wake() -> void:
+	_close_card()
+	show_host()
+	map.focus_on(game.host)
 
 
 ## A printed page over the map: sound-lettering title, the person's face, the facts.
@@ -442,7 +448,12 @@ func show_talk(npc: String) -> void:
 	for tp in Talk.TOPICS:
 		var b := _btn(grid, tp["label"], talk.bind(npc, tp["id"]), 24, 76)
 		b.name = "Topic_" + tp["id"]
-	_btn(box, "Leave", func(): last_talk = {}; show_host(), 30, 64)
+	_btn(box, "Leave", _leave_talk, 30, 64)
+
+
+func _leave_talk() -> void:
+	last_talk = {}
+	show_host()
 
 
 ## A comic speech balloon: white, inked, with a tail toward the speaker above it.

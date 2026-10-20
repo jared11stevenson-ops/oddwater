@@ -36,3 +36,7 @@ Not built yet: per-victim timeline and means/motive/opportunity grid; planted-ev
 - **Shipping target: mobile (iOS/Android). There is no Switch port.** Switch is only the quality and performance standard we hold ourselves to (Switch-class budgets: ~30 fps locked equivalent, tight memory).
 - 4K: the UI is authored at 1920×1080 with `canvas_items` stretch, so it renders crisp at 3840×2160. 3D target budgets are in `02-gdd/01-core-systems-spec.md`.
 - Nothing has been profiled on device yet; frame-rate targets (Switch-class budget; mobile 60 fps) are unverified.
+
+
+## 3D (2026-10-20)
+The game is now 3D (benchmark: Peak; normal-proportion humans). `scripts/world3d/` is the world, `ui/town3d_hud.gd` the screen furniture. Run the robot with `godot --headless --path game -s tests/town3d_tests.gd`. Screenshots need a renderer: `xvfb-run -a godot --path game --rendering-driver opengl3 --rendering-method gl_compatibility ...`.

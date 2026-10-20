@@ -8,6 +8,8 @@ const Snoop = preload("res://scripts/ui/snoop.gd")
 const DialogueUI = preload("res://scripts/ui/dialogue_ui.gd")
 const TownSimUI = preload("res://scripts/ui/town_sim_ui.gd")
 const TownGame = preload("res://scripts/sim/town_game.gd")
+const TownWorld = preload("res://scripts/world3d/town_world.gd")
+const Town3DHUD = preload("res://scripts/ui/town3d_hud.gd")
 const DentalUI = preload("res://scripts/ui/dental_ui.gd")
 const RhythmUI = preload("res://scripts/ui/rhythm_ui.gd")
 const EavesdropUI = preload("res://scripts/ui/eavesdrop_ui.gd")
@@ -36,6 +38,7 @@ var queue: Array = []
 var stage: Control            # backgrounds / world (gets the print pass)
 var ui: Control               # all readable UI sits above the print pass
 var post_mat: ShaderMaterial
+var post_layer: CanvasLayer
 var lenient := 1.0            # accessibility: rhythm timing leniency
 
 
@@ -50,6 +53,7 @@ func _ready() -> void:
 	stage.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(stage)
 	var layer := CanvasLayer.new(); layer.layer = 50; add_child(layer)
+	post_layer = layer
 	var rect := ColorRect.new(); rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	post_mat = ShaderMaterial.new(); post_mat.shader = POST; rect.material = post_mat
@@ -114,20 +118,45 @@ func eligible_hosts() -> Array:
 func _title() -> void:
 	_clear()
 	get_window().content_scale_size = Vector2i(1920, 1080)
+	post_layer.visible = true
 	_bg(Color("f1dfc0"))
-	_text("UNDERSTUDY\n\nA town full of people, each living their own life.\nTomorrow you'll be living one of them.", Vector2(300, 260), 48)
-	var y := 600.0
+	_text("UNDERSTUDY\n\nA town full of people, each living their own life.\nTomorrow you'll be living one of them.", Vector2(300, 220), 48)
+	var y := 520.0
 	var first: Button = null
 	if TownGame.has_save():
-		var bc := _button("Continue", Vector2(300, y), _town_continue, 520.0)
+		var bc := _button("Continue", Vector2(300, y), func(): _town_3d(1961, true), 520.0)
 		bc.name = "ContinueButton"
 		first = bc
-		y += 130.0
-	var b1 := _button("New town", Vector2(300, y), func(): _town_sim(int(Time.get_ticks_usec() % 100000)), 520.0)
+		y += 120.0
+	var b1 := _button("New town", Vector2(300, y), func(): _town_3d(int(Time.get_ticks_usec() % 100000)), 520.0)
 	b1.name = "TownSimButton"
-	var b2 := _button("Story (early)", Vector2(300, y + 130.0), _creator, 520.0)
+	var b3 := _button("Map view (2D)", Vector2(300, y + 120.0), func(): _town_sim(int(Time.get_ticks_usec() % 100000)), 520.0)
+	b3.name = "Map2DButton"
+	var b2 := _button("Story (early)", Vector2(300, y + 240.0), _creator, 520.0)
 	b2.name = "StoryButton"
 	(first if first != null else b1).grab_focus()
+
+
+## The 3D town: walk about as the host. A phone-sized canvas (1280x720 base) for the screen furniture.
+func _town_3d(seed_value: int = 1961, resume: bool = false) -> Control:
+	var loaded: RefCounted = TownGame.load_game() if resume else null
+	_clear()
+	_bg(Color("f1dfc0"))
+	_text("Building the town...", Vector2(300, 460), 56)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_clear()
+	get_window().content_scale_size = Vector2i(1280, 720)
+	post_layer.visible = false
+	var w := TownWorld.new()
+	stage.add_child(w)
+	w.start(seed_value, loaded)
+	var hud := Town3DHUD.new()
+	ui.add_child(hud)
+	hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud.start3d(w)
+	hud.back_to_menu.connect(_title)
+	return hud
 
 
 ## The living town: a phone-sized canvas (1280x720 base), every resident a possible host.

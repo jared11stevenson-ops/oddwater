@@ -20,6 +20,14 @@ The product comes first as a Sims-like town you play from inside: a town 2x Sout
 - [ ] Art pass 2: distinct landmark silhouettes, walk animation on twos, interiors, weather, audio, event lettering
 - [ ] Then, later: re-introduce the story layers (Cause, Case Board, lore) on top of the sim
 
+## PRIORITY NOW — 3D (direction from the user, 2026-10-20)
+The game is **3D**, graphics standard **Peak** (stylised, saturated, soft-lit), characters are **normal humans**. This is the benchmark to get the full game running, not the final look. Design: `03-art/02-3d-direction.md`.
+- [x] 3D pass 1 (`scripts/world3d/`, 27 robot checks): the whole town in 3D (houses, landmarks, park, lake, hills, forest), sky/sun/moon/weather, 217 residents with bodies that walk the streets as the sim directs, you in the host's body (thumb stick, look pad, third-person camera), real-time clock, walk up to doors and people, enter buildings to act, talk, night and morning flow, save/continue
+- [ ] 3D pass 2: interiors (room kits) and enter/leave transitions; sitting, sleeping, eating, working animations
+- [ ] 3D pass 3: character polish (faces, hair, clothes), distinct landmark models, props, vehicles, foliage, clouds, birds
+- [ ] 3D pass 4: device performance (profile on S25), LOD/occlusion, shadow budget, 3D resolution scale, load time
+- [ ] 3D pass 5: the sim in the world: visible daily lives (people actually work, eat, sleep inside), crowd events (market, church), houses with owners' belongings, reactions to what you do in sight of others
+
 ## M0 — Foundations (done)
 - [x] Lore bible, cast, relationship web (`01-lore-bible/`)
 - [x] Lore–loop charter, 40 Seals, abilities, core systems spec (`02-gdd/`)

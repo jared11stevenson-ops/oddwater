@@ -26,6 +26,8 @@ var wishes: Array = []            # today's wishes for whoever you are
 var stats: Dictionary = {}        # what you have done today (feeds the wishes and the day report)
 var wish_points := 0              # lifetime, across every life
 var report: Dictionary = {}       # the last end-of-day report
+var talk_costs_time := true       # the 2D town: a chat takes half an hour. In 3D the world pauses while you talk
+var near: Array = []              # 3D mode: people standing next to you right now count as "here"
 
 
 func _init(seed_value: int = 1961, first_host: String = "") -> void:
@@ -95,7 +97,25 @@ func people_here() -> Array:
 	var out: Array = []
 	for q in sim._witnesses(me()):
 		out.append(q.id)
+	for n in near:
+		if not out.has(n) and n != host:
+			out.append(n)
 	return out
+
+
+## 3D mode: half an hour of town time passes while you walk about. `lot` is the building you are at or next to ("" keeps the last).
+func realtime_tick(lot: String, moving: bool) -> void:
+	if phase != "day" or sim.day_over():
+		return
+	var p := me()
+	if lot != "":
+		p.location = lot
+	var c0: int = sim.clock
+	sim.player_activity = "errand" if moving else "relax"
+	p.activity = sim.player_activity
+	sim.advance(1)
+	_collect()
+	_account(c0)
 
 
 func distance(a: String, b: String) -> float:
@@ -170,7 +190,8 @@ func talk(npc: String, topic: String) -> Dictionary:
 		stats["kind_to"][npc] = true
 	sim.player_activity = "socialize"
 	me().activity = "socialize"
-	sim.advance(1)
+	if talk_costs_time:
+		sim.advance(1)
 	_collect()
 	_account(c0)
 	return r
