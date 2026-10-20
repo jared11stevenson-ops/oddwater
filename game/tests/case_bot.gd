@@ -6,6 +6,7 @@ const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
 const Cctv = preload("res://scripts/detective/cctv.gd")
 const Prints = preload("res://scripts/detective/prints.gd")
+const Confessor = preload("res://scripts/detective/confessor.gd")
 const CaseOpsRef = preload("res://tests/case_bot_helpers.gd")
 
 var sim: RefCounted
@@ -99,6 +100,9 @@ func solve() -> Dictionary:
 		records_and_sites()
 	lab()
 	press_everyone()
+	# anyone who has walked in and confessed is held against the scene before the notebook is weighed
+	for cf in Confessor.list(c):
+		Confessor.test(sim, c, det, cf["id"])
 	# a detective accuses whoever the notebook points at hardest
 	var best := ""
 	var best_t := -1

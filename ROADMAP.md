@@ -27,16 +27,27 @@ You are the lead and only detective of Little Mercy; the town is riddled with st
 - [x] 3. Detective state and `DetectiveGame` (fixed host, a murder already waiting on Day 1, saves; 16 checks)
 - [x] 4. 3D integration (`ui/detective_hud.gd`, 22 robot checks): crime-scene marker (tape and beam), scene examination menu, notebook, interrogation (alibi/victim/who/saw/where was.../show them.../be friendly), lab, warrants, search, people tab, accusation and verdict, your sheet (skills, stress, XP), objective tracker, nights and mornings, continue
 - [~] 4b. Procedure and justice (done: CCTV with doorbell cameras and clock offsets, fingerprints with gloves, partials and false matches, samples and refusals, families who cover for their own and break under footage, 'tell me about...', the storytelling layer: cold open, the detail that didn't fit, interludes, episode archive; plus arrest with probable cause, the interview room (rapport/evidence/pressure) with true and false confessions, the trial (defence attacks, uncleared suspects, unreliable evidence, uncalibrated cameras), the jail and the Gallery with visits, lore from inmates, and appeals for the wrongly convicted; 18 checks. To do: informants, plea deals, more crime types) (`02-gdd/06-procedure-and-justice.md`): CCTV, fingerprints (with gloves, quality and false matches), interrogating neighbours/connections/family (families cover for their own), formal interrogation with held-back details and false confessions, arrest/custody/charge/trial (chain of custody, alternate suspects), the jail and the Gallery of convicted suspects, informants, appeals
-- [ ] 5. Escalation, reputation, more case types; cult case; lake case; the overarching conspiracy
-- [ ] 6. Office and upgrades; interiors for scenes; polish
+- [~] 5. Escalation and reputation (done: one reputation ledger, serial killers with unique signatures, the Courier and a pressure meter with a deadline, the accusation pipeline with three accusations and escalating costs, cold cases, town business, voice banks, newcomers, misdirection, the horror layer, false confessors who the held-back test exposes). To do: cult case; lake case; the overarching conspiracy; more crime types
+- [~] 6. HUD, tutorial and polish (done: objective tracker with costs, notebook, people, lab, jail and the Gallery, the paper, a first-case tutorial overlay, window lights that follow who is home). To do: office and upgrades; interiors for scenes
 
 ## PRIORITY NOW — 3D (direction from the user, 2026-10-20)
 The game is **3D**, graphics standard **Peak** (stylised, saturated, soft-lit), characters are **normal humans**. This is the benchmark to get the full game running, not the final look. Design: `03-art/02-3d-direction.md`.
 - [x] 3D pass 1 (`scripts/world3d/`, 27 robot checks): the whole town in 3D (houses, landmarks, park, lake, hills, forest), sky/sun/moon/weather, 217 residents with bodies that walk the streets as the sim directs, you in the host's body (thumb stick, look pad, third-person camera), real-time clock, walk up to doors and people, enter buildings to act, talk, night and morning flow, save/continue
 - [ ] 3D pass 2: interiors (room kits) and enter/leave transitions; sitting, sleeping, eating, working animations
 - [ ] 3D pass 3: character polish (faces, hair, clothes), distinct landmark models, props, vehicles, foliage, clouds, birds
-- [ ] 3D pass 4: device performance (profile on S25), LOD/occlusion, shadow budget, 3D resolution scale, load time
+- [~] 3D pass 4: device performance. Done: the procedural town is baked into chunked meshes and multimeshes with draw-distance budgets, pooled lamp lights, cheap window lights (a top-down home map repainted each half hour, no per-frame cost), a capped crowd with no per-person process. To do: profile on a real device (S25), occlusion, resolution scale, load time
 - [ ] 3D pass 5: the sim in the world: visible daily lives (people actually work, eat, sleep inside), crowd events (market, church), houses with owners' belongings, reactions to what you do in sight of others
+
+### Detective RPG: status and what remains (2026-10-20)
+Done and tested: serial killers with unique signatures; news and pressure with a deadline; the accusation pipeline (3 accusations); false confessors (wrong details, exposed by the held-back test, a wrongful conviction costs reputation and the killer strikes again); cold cases; town business; voice banks; newcomers; misdirection; the horror layer; the new HUD and tutorial; the procedural 3D town; window lights tied to who is home.
+Remaining, honestly:
+- [ ] Cult and lake case strata and the 1961 conspiracy as real cases (today they are lore lines and one stopped-clock detail)
+- [ ] Informants, plea deals, custody clock, chain-of-custody exclusion, more crime types
+- [ ] Office and upgrades; interiors for crime scenes
+- [ ] Audio and narrated episodes (the cold open and episodes are text only)
+- [ ] Device profiling and a playtest pass for tuning (pressure, confessor frequency, reputation costs)
+- [ ] Art: distinct landmark models, character polish, weather beyond the sky and rain
+Note: the legacy body-swap/Understudy milestones below are parked, not abandoned.
 
 ## M0 — Foundations (done)
 - [x] Lore bible, cast, relationship web (`01-lore-bible/`)
@@ -156,3 +167,4 @@ The game is **3D**, graphics standard **Peak** (stylised, saturated, soft-lit), 
 
 - **Serial killers (done):** rare (~12% of cases), careful (gloves ~88%, no family cover, no neighbour witness, forced window), same sign at every scene, strike every 2-3 nights until caught. After the third death: the Courier front pages, radio, letters, a pressure meter (reputation drain, deadline 8 days, then the state police take over). Catching them resets the meter with a big reputation/XP payoff. See `scripts/detective/serial.gd`, `news.gd`, `tests/serial_tests.gd`.
 - **Serial rarity and a growing town (done):** serial killers are ~1 in 50, each with a unique signature (a lone folded sock, a nine of clubs...) and nickname. Two days after a case is fully solved a new resident moves into the emptiest house with their own job, hobby, quirk and ties (saved with the game).
+- 2026-10-20: False confessors (`detective/confessor.gd`, `data/detective/confessors.json`, `tests/confessor_tests.gd`, 31 checks) exposed by the held-back detail test; fixed trial adjustments being dropped (lambda by value); window lights follow who is home (`window3d.gdshader` home map, 8 new world_polish checks); GDD 05 and 06 and this roadmap brought up to date.

@@ -52,6 +52,14 @@ var _batches: Dictionary = {}    # kind -> Kit.Batch
 var _halos: Kit.Batch
 var _pools: Kit.Batch
 var _hn: FastNoiseLite
+# window lights: a top-down "somebody is home" map the window shader reads (see update_window_lights)
+const HOME_TEXEL := 1.5
+var lit_lots: Dictionary = {}          # lot id -> true while its windows may light (somebody alive is home)
+var _home_img: Image
+var _home_tex: ImageTexture
+var _home_origin := Vector2.ZERO
+var _lot_px: Dictionary = {}           # lot id -> Rect2i of texels
+var _lit_key := ""
 
 
 func build(town_layout: RefCounted) -> void:
@@ -63,6 +71,7 @@ func build(town_layout: RefCounted) -> void:
 	colliders.name = "Colliders"
 	add_child(colliders)
 	_materials()
+	_setup_home_map()
 	body = _merger()
 	detail = _merger()
 	ground = _merger()
@@ -139,6 +148,79 @@ func _materials() -> void:
 
 
 ## Every material the sky keeps in step with the clock and the weather.
+## One small image for the whole town: each lot's footprint is a block of texels, painted lit or dark. Windows look themselves up by world position.
+func _setup_home_map() -> void:
+	var x0 := 1e9
+	var z0 := 1e9
+	var x1 := -1e9
+	var z1 := -1e9
+	for l in layout.lots:
+		var hw: float = float(l["w"]) * 0.5 + 2.0
+		var hd: float = float(l["d"]) * 0.5 + 2.0
+		x0 = minf(x0, float(l["x"]) - hw); x1 = maxf(x1, float(l["x"]) + hw)
+		z0 = minf(z0, float(l["y"]) - hd); z1 = maxf(z1, float(l["y"]) + hd)
+	var w := int(ceil((x1 - x0) / HOME_TEXEL)) + 1
+	var h := int(ceil((z1 - z0) / HOME_TEXEL)) + 1
+	_home_origin = Vector2(x0, z0)
+	_home_img = Image.create(w, h, false, Image.FORMAT_R8)
+	_home_img.fill(Color(0, 0, 0))
+	for l in layout.lots:
+		var hw2: float = float(l["w"]) * 0.5 + (2.0 if String(l["kind"]) == "landmark" else 0.5)
+		var hd2: float = float(l["d"]) * 0.5 + (2.0 if String(l["kind"]) == "landmark" else 0.5)
+		var a := Vector2i(int(floor((float(l["x"]) - hw2 - x0) / HOME_TEXEL)), int(floor((float(l["y"]) - hd2 - z0) / HOME_TEXEL)))
+		var b := Vector2i(int(floor((float(l["x"]) + hw2 - x0) / HOME_TEXEL)), int(floor((float(l["y"]) + hd2 - z0) / HOME_TEXEL)))
+		_lot_px[String(l["id"])] = Rect2i(a, b - a + Vector2i.ONE)
+	_home_tex = ImageTexture.create_from_image(_home_img)
+	window_mat.set_shader_parameter("home_map", _home_tex)
+	window_mat.set_shader_parameter("home_rect", Vector4(x0, z0, 1.0 / (float(w) * HOME_TEXEL), 1.0 / (float(h) * HOME_TEXEL)))
+
+
+## Which lots have somebody alive at home right now: a house when a resident who lives there is in it; a shop, hall or any other place when
+## anyone alive is inside. The dead (and the jailed and the taken) light nothing; a newcomer lights the house they moved into.
+static func occupied_lots(sim: RefCounted, layout: RefCounted) -> Dictionary:
+	var out := {}
+	var kinds := {}
+	for l in layout.lots:
+		kinds[String(l["id"])] = String(l["kind"])
+	for id in sim.order:
+		var p: RefCounted = sim.people[id]
+		if not sim.alive(p):
+			continue
+		var at: String = p.location
+		if at == "" or not kinds.has(at):
+			continue
+		if kinds[at] == "house" and p.home != at:
+			continue            # a guest does not light somebody else's house
+		out[at] = true
+	return out
+
+
+## Repaint only the lots whose state changed; called when the clock moves on (each half hour, and after a time skip), never per frame.
+## Returns how many lots changed.
+func update_window_lights(sim: RefCounted) -> int:
+	if _home_img == null:
+		return 0
+	var now: Dictionary = occupied_lots(sim, layout)
+	var changed := 0
+	for id in _lot_px:
+		var on: bool = now.has(id)
+		if on != lit_lots.has(id):
+			_home_img.fill_rect(_lot_px[id], Color(1, 0, 0) if on else Color(0, 0, 0))
+			changed += 1
+	if changed > 0:
+		lit_lots = now
+		_home_tex.update(_home_img)
+	return changed
+
+
+## Is the window light at this lot allowed on right now (test hook): reads the same texel the shader does.
+func lot_lit_texel(lot: String) -> bool:
+	if not _lot_px.has(lot) or _home_img == null:
+		return false
+	var r: Rect2i = _lot_px[lot]
+	return _home_img.get_pixel(r.position.x + r.size.x / 2, r.position.y + r.size.y / 2).r > 0.5
+
+
 func sky_materials() -> Array:
 	return [window_mat, water_mat, solid_mat, terrain_mat, lamp_mat, foliage_mat, puff_mat, halo_mat, pool_mat]
 

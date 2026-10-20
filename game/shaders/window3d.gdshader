@@ -6,6 +6,10 @@ render_mode cull_disabled;
 uniform float night : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 lit_col : source_color = vec3(1.0, 0.78, 0.4);
 uniform vec3 sky_col : source_color = vec3(0.55, 0.7, 0.85);
+// Who is home: a coarse top-down map of the town, one texel per ~1.5 m, red = somebody alive is home in the lot under this window.
+// home_rect = (min x, min z, 1/size x, 1/size z). The default (white, 1x1) means "everyone is home", the old behaviour.
+uniform sampler2D home_map : filter_nearest, hint_default_white;
+uniform vec4 home_rect = vec4(0.0, 0.0, 0.0, 0.0);
 
 varying vec3 wp;
 varying vec3 vcol;
@@ -28,7 +32,8 @@ void fragment() {
 	float frame = 1.0 - step(0.1, min(e.x, e.y));
 	float cross_ = step(abs(uv.x - 0.5), 0.028) + step(abs(uv.y - 0.5), 0.022);
 	float bar = clamp(frame + cross_ * step(0.45, key), 0.0, 1.0);
-	float on = (thr > 0.04 && night > thr * 0.85) ? 1.0 : 0.0;
+	float home = home_rect.z > 0.0 ? texture(home_map, (wp.xz - home_rect.xy) * home_rect.zw).r : 1.0;
+	float on = (thr > 0.04 && night > thr * 0.85 && home > 0.5) ? 1.0 : 0.0;
 	float tv = step(0.88, h21(vec2(thr * 91.0, key * 13.0)));
 	float flick = tv > 0.5 ? (0.6 + 0.4 * sin(TIME * 7.0 + key * 40.0) * sin(TIME * 3.1 + key * 9.0)) : 1.0;
 	vec3 curt = s2l(vcol);

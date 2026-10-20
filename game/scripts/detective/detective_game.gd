@@ -12,6 +12,7 @@ const Justice = preload("res://scripts/detective/justice.gd")
 const Serial = preload("res://scripts/detective/serial.gd")
 const News = preload("res://scripts/detective/news.gd")
 const Reputation = preload("res://scripts/detective/reputation.gd")
+const Confessor = preload("res://scripts/detective/confessor.gd")
 const Cold = preload("res://scripts/detective/cold.gd")
 const Life = preload("res://scripts/detective/life.gd")
 const Places = preload("res://scripts/detective/places.gd")
@@ -277,6 +278,30 @@ func interrogate(approach: String) -> Dictionary:
 	return r
 
 
+## Hold a confession up against the scene: the hour, the wound, and the one detail that was never printed.
+func check_confession(id: String) -> Dictionary:
+	var r: Dictionary = Confessor.test(sim, case, det, id)
+	r["ticks"] = spend(20)
+	_after_op()
+	return r
+
+
+## Someone convicted on a false confession: the killer, watching, takes the chance (the paper says so).
+func _false_conviction_check() -> void:
+	var t: String = String(case.get("false_conviction", ""))
+	if t == "" or case.get("false_conviction_done", false):
+		return
+	case["false_conviction_done"] = true
+	var nm: String = CaseEngine.name_of(sim, t)
+	if Serial.active(serial):
+		Confessor.convicted_wrongly(serial, int(sim.day))
+	var d: Dictionary = Prose.json("detective/confessors.json")
+	var page := {"day": int(sim.day), "kind": "scandal", "head": "CONVICTED ON HIS OWN WORD", "body": String(d["jailed_news"]).replace("{n}", nm.to_upper())}
+	town_news.append(page)
+	today.append(String(d["jailed_news"]).replace("{n}", nm.to_upper()))
+	chronicle.append({"day": sim.day, "text": "%s was jailed on a false confession." % nm})
+
+
 func trial_ready() -> bool:
 	return court.get("custody", "") != "" and sim.day >= int(court.get("trial_day", 999))
 
@@ -293,6 +318,7 @@ func run_trial() -> Dictionary:
 		episodes.append(ep)
 		res["episode"] = ep
 	chronicle.append({"day": sim.day, "text": "Trial of %s: %s." % [CaseEngine.name_of(sim, t), res["verdict"]]})
+	_false_conviction_check()
 	_check_caught()
 	return res
 
@@ -376,6 +402,7 @@ func accuse(culprit: String, motive: String, method: String) -> Dictionary:
 	if case.get("status", "") == "open" and accusations_left() == 0 and res["verdict"] != "released":
 		_aftermath("spent")
 		res["aftermath"] = true
+	_false_conviction_check()
 	_check_caught()
 	return res
 
@@ -396,6 +423,7 @@ func cost_of(action: String, args: Dictionary = {}) -> Dictionary:
 		"submit_lab": mins = 15; note = "results tomorrow"
 		"warrant": mins = 30
 		"interrogate": mins = 60; note = "wears on both of you"
+		"check_confession": mins = 20; note = "the hour, the wound and the sign"
 		"visit": mins = 30; note = "10 am to 4 pm"
 		"funeral": mins = 90; note = "the chapel notices who comes"
 		"sermon": mins = 60
@@ -523,6 +551,11 @@ func dawn() -> String:
 			today.append("THE COURIER: %s" % page["head"])
 			if serial["status"] == "failed":
 				_aftermath("serial")
+		if not fresh:
+			var conf: Dictionary = Confessor.roll(sim, case, det, serial, court, seed_v, int(sim.day))
+			if not conf.is_empty():
+				today.append(Confessor.headline(sim, serial, String(conf["source"]), int(sim.day)))
+				chronicle.append({"day": sim.day, "text": "%s confessed to the murders." % CaseEngine.name_of(sim, String(conf["source"]))})
 		var kills: int = (serial["kills"] as Array).size()
 		if fresh and kills == 2:
 			pending_beats.append({"title": "THE PATTERN", "text": "A second body. A different house, a different family, nothing in common you can name. And on the table, the same thing: %s.\n\nOne is an accident of grief. Two is a hand. You do not say it aloud. Saying it aloud would make it a case about someone who is going to do it again." % String(serial["signature"]).to_lower()})

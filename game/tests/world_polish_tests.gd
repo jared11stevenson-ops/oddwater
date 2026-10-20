@@ -133,6 +133,43 @@ func _initialize() -> void:
 	var scene := w.get_node_or_null("CrimeScene")
 	ok(scene != null and scene.get_node_or_null("Tape") != null and scene.get_node_or_null("Chalk") != null, "the scene has tape and a chalk outline")
 	ok(scene != null and scene.get_node_or_null("EvidenceMarkers") != null and scene.get_node_or_null("PatrolCar") != null, "evidence markers and a patrol car")
+	# window lights follow who is home: the dead leave their house dark, a newcomer lights theirs
+	var gm: RefCounted = w.game
+	var sm: RefCounted = gm.sim
+	var vic: String = gm.case["victim"]
+	var vhome: String = sm.people[vic].home
+	var home_id := ""
+	for id in sm.order:
+		var pp: RefCounted = sm.people[id]
+		if id != "player" and id != vic and sm.alive(pp) and pp.home != "" and pp.home != vhome and pp.home.begins_with("house_"):
+			pp.location = pp.home
+			home_id = id
+			break
+	var lit_home: String = sm.people[home_id].home
+	w.sky.set_hour(21.5)
+	b.update_window_lights(sm)
+	ok(home_id != "" and b.lot_lit_texel(lit_home) and b.lit_lots.has(lit_home), "a house with somebody home may light its windows at night")
+	ok(sm.people[vic].dead and not b.lot_lit_texel(vhome), "the dead victim's house stays dark")
+	ok(b.update_window_lights(sm) == 0, "nothing changed, nothing repainted (no per-frame cost)")
+	sm.people[home_id].location = "pub"
+	var painted: int = b.update_window_lights(sm)
+	ok(painted >= 1 and not b.lot_lit_texel(lit_home), "when the last resident goes out, the house goes dark (%d lots repainted)" % painted)
+	var empty_lot := ""
+	for l in w.game.layout.lots:
+		if l["kind"] == "house" and not sm.order.any(func(i): return sm.people[i].home == l["id"]):
+			empty_lot = l["id"]
+			break
+	ok(empty_lot == "" or not b.lot_lit_texel(empty_lot), "an empty house is dark")
+	gm._welcome_newcomer()
+	var nc: Dictionary = gm.newcomers[-1]
+	var np: RefCounted = sm.people[nc["id"]]
+	np.location = np.home
+	b.update_window_lights(sm)
+	ok(b.lot_lit_texel(np.home), "a newly moved-in neighbour lights up %s" % np.home)
+	np.dead = true
+	b.update_window_lights(sm)
+	ok(not b.lot_lit_texel(np.home), "and goes dark if they die")
+	ok(b.window_mat.get_shader_parameter("home_map") != null and (b.window_mat.get_shader_parameter("home_rect") as Vector4).z > 0.0, "the window shader has its home map")
 	TownGame.delete_save()
 	print("world_polish_tests: %d checks, %d failed" % [checks, fails])
 	quit(fails)

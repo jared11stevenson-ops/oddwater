@@ -1,0 +1,26 @@
+{
+ "walkins": [
+  "{n} walked into the station at opening time, hat in hand, and asked for you by name. \"It was me,\" {n} said. \"I can't carry it any more.\"",
+  "{n} has been sitting on the station bench since six, reading nothing, waiting. \"I did it,\" {n} tells you. \"You can stop looking.\"",
+  "A note under your door, then {n} on your step: \"I'm the one the paper is calling {nick}. I'd rather you heard it from me.\"",
+  "{n} stops you in the street, loud enough for the whole row to hear, and says it plainly: the dead are {n}'s doing, every one.",
+  "{n} turns up at the Pink Heron, orders a drink for the detective, and confesses over it with a strange, bright calm."],
+ "tales": [
+  "\"I went round at {time}. {weapon} was the way: {method_line}. And I left something, you'll know it. A mark. A calling card.\"",
+  "\"It was {time}, I remember the church clock. I used {weapon}, {method_line}. Then I did the thing with the sign, the way the paper says.\"",
+  "\"Around {time}. {method_line}, with {weapon}. I tidied up after, and I left my little signature. I can't say what, exactly. It's all a blur.\""],
+ "vague_sign": [
+  "ask about the thing left behind and the story blurs: \"A card. Or a coin. Something small. I'd have to think.\"",
+  "press on the sign and {n} grins too widely: \"Well, you'd know, wouldn't you? It was in the papers.\"",
+  "the sign is the one thing {n} cannot describe, and says so, twice, in different words."],
+ "exposed": [
+  "You ask {n} to say what was left at the scene. {n} says: \"{guess}.\" It is wrong, and it is what the Courier printed. You ask about the hour: {n} says {said_time}. The body says {real_time}. {n} wanted to be the one it was about.",
+  "{n} gives {said_time} for the time and {said_method} for the method. The scene says {real_time} and {real_method}. Asked for the one detail that was never printed, {n} looks at the table and has nothing."],
+ "guesses": ["A playing card, I think", "A flower, a white one", "A coin on the eyes", "A candle, lit", "A ribbon, tied in a bow", "A page torn from a hymnbook"],
+ "headlines": [
+  "THE COURIER: {n} CONFESSES TO THE {nick_u} MURDERS. The Sheriff's office would not say whether the detective believes it.",
+  "THE COURIER: A CONFESSION, AT LAST? {n} says it was them. Doubts are being whispered at the Pink Heron.",
+  "THE COURIER: {n} TELLS POLICE 'I DID IT'. The detective has not commented."],
+ "jailed_news": "THE COURIER: {n} CONVICTED ON HIS OWN WORD. The Courier is told the detective has the wrong person. The killing has not stopped.",
+ "strikes_again": "A new body, and on it the very sign that {n}, from a cell, could never describe. You put an innocent person behind that door. The killer watched you do it."
+}

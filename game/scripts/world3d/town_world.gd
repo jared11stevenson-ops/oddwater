@@ -95,6 +95,7 @@ func start_game(the_game: RefCounted) -> void:
 	set_quality(1 if OS.has_feature("mobile") else 2)
 	place_host(true)
 	refresh_markers()
+	builder.update_window_lights(game.sim)
 
 
 func _exit_tree() -> void:
@@ -121,6 +122,7 @@ func place_host(first: bool = false) -> void:
 	game.me().location = game.me().home
 	npcs.focus = player.global_position
 	npcs.resync(true)
+	builder.update_window_lights(game.sim)
 	acc = 0.0
 	_apply_weather()
 	_update_light()
@@ -409,6 +411,7 @@ func _process(delta: float) -> void:
 func _tick() -> void:
 	game.realtime_tick(current_lot(), player.moved_recently > 0.0)
 	npcs.resync()
+	builder.update_window_lights(game.sim)      # once per game tick (half an hour), not per frame
 	ticked.emit()
 	if game.sim.day_over():
 		end_of_day()
@@ -434,6 +437,7 @@ func time_skipped() -> void:
 
 func morning() -> void:
 	place_host()
+	builder.update_window_lights(game.sim)
 
 
 ## The lot you are standing in or right in front of, or "".

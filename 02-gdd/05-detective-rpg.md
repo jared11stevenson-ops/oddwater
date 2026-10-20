@@ -43,3 +43,26 @@ Residents, schedules, relationships, memories, rumours, reactions: the machine t
 4. 3D integration: the case file, scene examination, interviews with alibi/victim/others/press, records, lab, search, accusation and its consequences.
 5. Escalation, reputation, a second case type, the first cult case, the first lake case, the overarching conspiracy.
 6. Office, tools, upgrades; polish; interiors for crime scenes.
+
+
+## What exists now (status, 2026-10-20)
+Everything above in the loop is playable in the 3D town, plus the following layers. The tests (`game/tests/run_all.sh`) prove each one; `case_bot.gd` still solves every generated case and the lazy bot still fails them.
+
+- **Serial killers with unique signatures.** About one case in fifty. Careful (gloves, forced window, no neighbour witness, no family to break), they strike every two to three nights and leave a sign of their own at every scene (a lone folded sock, the nine of clubs, draped mirrors). Each has a nickname. The sign is the held-back detail that separates a true confession from a false one. The thread that links the dead shows only from the second body; the first looks like an ordinary murder with a loud decoy.
+- **News and pressure.** After the third body the Courier prints, the radio talks and a pressure meter (0-100) eats reputation. Eight days to a deadline, then the state police take the case. Catching the killer resets the meter with a large reputation and XP payoff.
+- **The accusation pipeline, three accusations.** Judge, arrest, interview, trial, a cell, all through one road. A wrong name costs more each time (a scandal in the paper, the accused damaged, the real killer alerted). After three the Sheriff takes the file and you are reassigned.
+- **False confessors.** Once a killer is in the paper, the lonely and the attention-starved walk into the station and confess with plausible, wrong details: the wrong hour, the wrong weapon, and no signature. You can arrest them; the held-back test (or the first interview) exposes them. An untested confession can convict, which costs reputation, jails an innocent and lets the killer strike that very night. An untested confession is also the defence's alternative suspect against the real killer.
+- **Cold cases.** An unsolved case rots: boots are thrown away, witnesses forget, samples spoil. After two weeks the file goes cold and the killer runs or comes back.
+- **Town business.** Between murders, small cases (a missing cat, a stolen bicycle, a noise complaint) that earn small standing and show how the town talks.
+- **Voice banks.** Everyone answers in their own voice, keyed by traits, age, work and tie to the dead; no line repeats inside a case while a fresh one exists.
+- **Newcomers.** Two days after a solved case someone moves into the emptiest house, with job, hobby, quirk and ties. They are saved, and their window lights up.
+- **Misdirection.** Decoy suspects, liars who frame, shaky witnesses, lookalike prints, relatives who cover; every case is still provably solvable.
+- **Horror layer.** The wrongness at every scene, the victim's last diary pages, the detective's intrusive thoughts and stress, tells and philosophies in the interview room, the sign left on your step when a killer got away.
+- **New HUD and tutorial.** Objective tracker with costs in minutes, notebook, people, lab, jail and the Gallery, the paper, and a first-case tutorial overlay.
+- **Procedural town and performance.** The 3D town is built from the lot layout, baked into chunked meshes and multimeshes, with a draw-distance budget, pooled lamp lights, and window lights that follow who is home (a small top-down map repainted each half hour; the dead leave their house dark, a newcomer lights theirs).
+
+## Remaining roadmap (honest)
+- Cult and lake case strata, and the overarching 1961 flood conspiracy, are only hinted at (lore lines, the 4:12 case detail). No case is yet *about* them.
+- Office and upgrades (lab, map, informant network); interiors for scenes; more crime types beyond murder.
+- Real-device profiling (nothing has been measured on a phone); audio and narrated episodes.
+- Tuning: pressure curves, confessor frequency and the cost of a wrongful conviction have been set by reasoning and bots, not by playtesters.

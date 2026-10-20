@@ -10,6 +10,7 @@ const Brief = preload("res://scripts/sim/brief.gd")
 const Data = preload("res://scripts/core/data.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
 const Reputation = preload("res://scripts/detective/reputation.gd")
+const Confessor = preload("res://scripts/detective/confessor.gd")
 
 const TYPES := {"grudge": "organised", "money": "calculating", "family": "remorseful", "silence": "secretive", "passion": "volatile"}
 const LORE := [
@@ -62,6 +63,8 @@ static func probable_cause(det: RefCounted, target: String) -> bool:
 static func arrest(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictionary, target: String) -> Dictionary:
 	if st.get("custody", "") != "":
 		return {"ok": false, "text": "You already have someone in custody."}
+	if Confessor.is_false(c, target) and not Confessor.untested(det, target):
+		return {"ok": false, "text": "%s's confession has already failed the held-back test. There is nothing to arrest anyone for." % CaseEngine.name_of(sim, target)}
 	if not probable_cause(det, target):
 		Reputation.apply(det, "failed_arrest", int(sim.day))
 		det.add_stress(8.0)
@@ -105,6 +108,12 @@ static func interrogate(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dic
 			text = _round_text("pressure", int(ss["sessions"]), name)
 	# what the face does, and what a patient killer says back
 	text += "\n\n" + _tell_and_voice(sim, c, det, t, guilty, int(ss["sessions"]), learned)
+	# a confessor who is not the killer: the interview room is where the story meets the scene
+	if Confessor.untested(det, t):
+		var tt: Dictionary = Confessor.test(sim, c, det, t)
+		text += "\n\n" + String(tt["text"])
+		for le in tt["learned"]:
+			learned.append(le)
 	# outcomes
 	if guilty and float(ss["resistance"]) <= 0.0 and not det.has("confession_" + t):
 		var e := {"id": "confession_" + t, "title": "Confession: %s" % CaseEngine.first(sim, t), "kind": "confession",
@@ -168,8 +177,7 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 	var conf := 28.0 + total * 5.0 + cats * 4.0   # three solid categories and six points of proof is a case a jury convicts on (70); judge() asks this same function
 	var attacks: Array = []
 	var add := func(t: String, d: float) -> void:
-		attacks.append({"text": t, "delta": d})
-		conf += d
+		attacks.append({"text": t, "delta": d})      # (a lambda sees conf by value: the deltas are summed after the loop)
 	for eid in det.order:
 		var e: Dictionary = det.known[eid]
 		var about: bool = false
@@ -178,7 +186,9 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 				about = true
 		if not about:
 			continue
-		if e.get("unreliable", false) and e.get("kind", "") == "confession":
+		if e.get("false_confession", false) and not e.get("tested", false):
+			add.call("The prosecution: a signed, voluntary confession, with the hour, the weapon and the wound. The jury looks at the accused and does not look away.", 14.0)
+		elif e.get("unreliable", false) and e.get("kind", "") == "confession":
 			add.call("The defence: \"This confession contains nothing only the killer would know. My client was exhausted and frightened.\"", -30.0)
 		elif e.get("unreliable", false):
 			add.call("The defence: \"A partial print. Seven points. It is 'consistent with' half the town.\"", -8.0)
@@ -195,9 +205,15 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 		var ps: Dictionary = det.proof_against(s)
 		if int(ps["exonerate"]) < 3 and int(ps["opportunity"]) + int(ps["means"]) + int(ps["motive"]) + int(ps["link"]) >= 2:
 			add.call("The defence points across the room: \"%s had a motive and no alibi, and nobody ever ruled them out.\"" % CaseEngine.name_of(sim, s), -5.0)
+	if not Confessor.is_false(c, target):
+		for cf in Confessor.list(c):
+			if Confessor.untested(det, cf["id"]):
+				add.call("The defence: \"%s has confessed in writing. Why is my client in the dock and not them?\"" % CaseEngine.name_of(sim, cf["id"]), -8.0)
 	var look: String = c.get("lookalike", "")
 	if look != "" and det.order.any(func(e): return String(e).begins_with("cmp_") and String(e).ends_with(look) and det.known[e].get("unreliable", false)) and target != look:
 		add.call("The defence: \"A print comparison pointed at someone else entirely. Where was that explored?\"", -6.0)
+	for a in attacks:
+		conf += float(a["delta"])
 	conf = clampf(conf, 0.0, 100.0)
 	var verdict := "guilty" if conf >= 70.0 else ("hung" if conf >= 45.0 else "not guilty")
 	var guilty_truth: bool = target == c["killer"]
@@ -228,6 +244,9 @@ static func conclude(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictio
 				det.cases_failed += 1
 				Reputation.apply(det, "wrongful_conviction", day)
 				det.add_stress(25.0)
+				if Confessor.is_false(c, t):
+					c["false_conviction"] = t
+					Reputation.apply(det, "false_confession_jailed", day)
 		"hung":
 			st["custody"] = t
 			st["trial_day"] = day + 3
