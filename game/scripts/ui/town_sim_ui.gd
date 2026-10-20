@@ -10,6 +10,7 @@ const Brief = preload("res://scripts/sim/brief.gd")
 const Talk = preload("res://scripts/sim/talk.gd")
 const TownTheme = preload("res://scripts/ui/town_theme.gd")
 const Portrait = preload("res://scripts/art/portrait.gd")
+const Relationship = preload("res://scripts/sim/relationship.gd")
 const PRINT = preload("res://shaders/page_post.gdshader")
 
 const INK := Color("14121c")
@@ -35,8 +36,8 @@ var last_talk: Dictionary = {}
 var talk_npc := ""
 
 
-func start(seed_value: int = 1961, first_host: String = "") -> void:
-	game = TownGame.new(seed_value, first_host)
+func start(seed_value: int = 1961, first_host: String = "", loaded: RefCounted = null) -> void:
+	game = loaded if loaded != null else TownGame.new(seed_value, first_host)
 	theme = TownTheme.build()
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new(); bg.color = Color("e8dcc0"); add_child(bg); bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -55,7 +56,7 @@ func start(seed_value: int = 1961, first_host: String = "") -> void:
 	TownTheme.heading(top, 34, PAPER)
 	topbar.add_child(top)
 	top.position = Vector2(16, 12)
-	var menu := _btn(topbar, "Menu", func(): back_to_menu.emit(), 26)
+	var menu := _btn(topbar, "Menu", func(): game.save(); back_to_menu.emit(), 26)
 	menu.name = "MenuBtn"
 	menu.clip_text = false
 	for z in [["+", 1.3], ["-", 0.77]]:
@@ -92,7 +93,12 @@ func start(seed_value: int = 1961, first_host: String = "") -> void:
 	add_child(news)
 	resized.connect(_layout)
 	_layout()
-	_wake_card()
+	if loaded != null:
+		show_host()
+		_say("Welcome back.")
+	else:
+		_wake_card()
+	game.save()
 
 
 func _layout() -> void:
@@ -179,7 +185,9 @@ func _say(t: String) -> void:
 
 
 func _refresh_hud() -> void:
-	top.text = game.now_text() + "   " + ("%d hours left" % int(game.hours_left()) if game.phase == "day" else "night")
+	var wx: String = String(game.sim.weather_today()).capitalize()
+	var ev: String = game.sim.event_today()
+	top.text = game.now_text() + "  ·  " + wx + (" · " + ev if ev != "" else "") + "   " + ("%d hours left" % int(game.hours_left()) if game.phase == "day" else "night")
 	var recent: Array = game.chronicle.slice(-2)
 	news.text = "News: " + (" · ".join(recent.map(func(e): return e["text"])) if not recent.is_empty() else "quiet so far")
 
@@ -263,6 +271,7 @@ func show_host() -> void:
 	if game.phase != "day":
 		_show_night()
 		return
+	_wishes_block()
 	var d := _btn(box, "Each action: %s" % _dur_text(), _cycle_dur, 26, 56)
 	d.name = "DurBtn"
 	_lbl(box, "Do something", 26, VIOLET)
@@ -289,6 +298,30 @@ func show_host() -> void:
 		mb.name = "More_" + m[0]
 	var end := _btn(box, "End the day", end_day, 32, 72)
 	end.name = "EndDay"
+
+
+## Today's wishes: three small things this person would want. Done ones are ticked.
+func _wishes_block() -> void:
+	_lbl(box, "Wishes today  (%d points so far)" % game.wish_points, 24, VIOLET)
+	for w in game.wishes:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		box.add_child(row)
+		var tick := Panel.new()
+		tick.custom_minimum_size = Vector2(26, 26)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = MARIGOLD if w["done"] else Color("fffaf0")
+		sb.border_color = INK; sb.set_border_width_all(3); sb.set_corner_radius_all(5)
+		tick.add_theme_stylebox_override("panel", sb)
+		tick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(tick)
+		var l := Label.new()
+		l.text = w["text"]
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.custom_minimum_size = Vector2(PANEL_W - 120.0, 0)
+		l.add_theme_font_size_override("font_size", 24)
+		l.add_theme_color_override("font_color", Color("6b6558") if w["done"] else INK)
+		row.add_child(l)
 
 
 func _dur_text() -> String:
@@ -325,12 +358,20 @@ func go(place: String) -> Dictionary:
 	return r
 
 
+## The town is put away whenever you stop: night falls, dawn comes, the app is paused or closed.
+func _notification(what: int) -> void:
+	if game != null and what in [NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_WM_CLOSE_REQUEST]:
+		game.save()
+
+
 func end_day() -> void:
 	map.snapshot()
 	game.end_day()
+	game.save()
 	map.animate_to_now(1.2)
 	_say("The day is over.")
 	show_host()
+	_report_card()
 
 
 # ------------------------------------------------------------------ places
@@ -387,7 +428,7 @@ func show_talk(npc: String) -> void:
 	hdr.add_child(hv)
 	_head(hv, q.display, 36).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
 	_lbl(hv, "%d · %s · %s" % [q.age, q.job, q.mood_word()], 22).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
-	_lbl(hv, _feel(q), 22, VIOLET).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
+	_lbl(hv, String(Relationship.describe(game.sim, game.host, npc)).capitalize(), 22, VIOLET).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
 	var line := ""
 	if not last_talk.is_empty() and last_talk.get("npc", "") == npc:
 		line = "\"%s\"" % last_talk["text"]
@@ -518,12 +559,32 @@ func night_do(action: String, target: String) -> Dictionary:
 func next_morning() -> String:
 	map.snapshot()
 	var id: String = game.dawn()
+	game.save()
 	map.animate_to_now(0.2)
 	last_talk = {}
 	_say("")
 	_refresh_hud()
 	_wake_card()
 	return id
+
+
+## The printed end-of-day page: wishes, money, mood, who you grew closer to, what happened.
+func _report_card() -> void:
+	var r: Dictionary = game.report
+	if r.is_empty():
+		return
+	var lines: Array = []
+	lines.append("Wishes: %d of %d came true.  (%d points in all)" % [r["done"], r["wishes"].size(), r["points"]])
+	for w in r["wishes"]:
+		lines.append("   %s  %s" % ["Done:" if w["done"] else "Not today:", w["text"]])
+	lines.append("")
+	lines.append("Money: %s$%d.   Mood: %s (%s)." % ["+" if r["money_delta"] >= 0 else "-", absi(int(r["money_delta"])), r["mood_word"], "better" if r["mood_delta"] > 3.0 else ("worse" if r["mood_delta"] < -3.0 else "much the same")])
+	for mv in r["moves"]:
+		lines.append("%s %s you." % [mv["name"], "warmed to" if mv["delta"] > 0 else "cooled on"])
+	for n in r["news"]:
+		if not String(n).begins_with("Wish came true"):
+			lines.append(n)
+	_card("DAY %d" % r["day"], "That was %s's day." % String(r["name"]).split(" ")[0], "\n".join(lines), "Into the night", func(): _close_card(), game.me())
 
 
 func show_lives() -> void:
@@ -533,5 +594,5 @@ func show_lives() -> void:
 	for r in rep:
 		var tag := "gone" if r["gone"] else "%s" % r["mood_word"]
 		var delta: int = int(r["money_now"]) - int(r["money_then"])
-		_lbl(box, "Day %d  %s  ·  %s  ·  $%d (%s$%d since)" % [r["day"], r["name"], tag, r["money_now"], "+" if delta >= 0 else "-", absi(delta)], 22)
+		_lbl(box, "Day %d  %s  ·  %s  ·  $%d (%s$%d since)  ·  %d wishes" % [r["day"], r["name"], tag, r["money_now"], "+" if delta >= 0 else "-", absi(delta), int(r.get("wishes_done", 0))], 22)
 	_btn(box, "Back", show_host, 30, 64)

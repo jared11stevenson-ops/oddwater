@@ -2,6 +2,7 @@ extends SceneTree
 ## godot --headless --path game -s tests/town_ui_tests.gd : a robot plays the town screen: wake, work, talk, night, swap.
 
 const MainScene = preload("res://scenes/main.tscn")
+const TownGameDelete = preload("res://scripts/sim/town_game.gd")
 var fails := 0
 var checks := 0
 
@@ -72,5 +73,14 @@ func _initialize() -> void:
 		t._close_card(); t.show_host()
 	ok(g.sim.day == 5, "four nights later it is day 5")
 	ok(g.lives_report().size() == 5, "five lives remembered")
+	# continue: leave, come back, you are where you were
+	var host_before: String = g.host
+	var day_before: int = g.sim.day
+	g.save()
+	var t2: Control = main._town_sim(1961, true)
+	await process_frame
+	ok(t2.game.host == host_before and t2.game.sim.day == day_before, "Continue resumes the same host and day")
+	ok(t2.card == null and buttons(t2.box).size() >= 3, "and drops you straight back into the day")
+	TownGameDelete.delete_save()
 	print("town_ui_tests: %d checks, %d failed" % [checks, fails])
 	quit(fails)

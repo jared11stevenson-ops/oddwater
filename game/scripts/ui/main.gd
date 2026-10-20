@@ -7,6 +7,7 @@ const Data = preload("res://scripts/core/data.gd")
 const Snoop = preload("res://scripts/ui/snoop.gd")
 const DialogueUI = preload("res://scripts/ui/dialogue_ui.gd")
 const TownSimUI = preload("res://scripts/ui/town_sim_ui.gd")
+const TownGame = preload("res://scripts/sim/town_game.gd")
 const DentalUI = preload("res://scripts/ui/dental_ui.gd")
 const RhythmUI = preload("res://scripts/ui/rhythm_ui.gd")
 const EavesdropUI = preload("res://scripts/ui/eavesdrop_ui.gd")
@@ -115,21 +116,33 @@ func _title() -> void:
 	get_window().content_scale_size = Vector2i(1920, 1080)
 	_bg(Color("f1dfc0"))
 	_text("UNDERSTUDY\n\nA town full of people, each living their own life.\nTomorrow you'll be living one of them.", Vector2(300, 260), 48)
-	var b1 := _button("Town sim", Vector2(300, 640), _town_sim, 520.0)
+	var y := 600.0
+	var first: Button = null
+	if TownGame.has_save():
+		var bc := _button("Continue", Vector2(300, y), _town_continue, 520.0)
+		bc.name = "ContinueButton"
+		first = bc
+		y += 130.0
+	var b1 := _button("New town", Vector2(300, y), func(): _town_sim(int(Time.get_ticks_usec() % 100000)), 520.0)
 	b1.name = "TownSimButton"
-	var b2 := _button("Story (early)", Vector2(300, 780), _creator, 520.0)
+	var b2 := _button("Story (early)", Vector2(300, y + 130.0), _creator, 520.0)
 	b2.name = "StoryButton"
-	b1.grab_focus()
+	(first if first != null else b1).grab_focus()
 
 
 ## The living town: a phone-sized canvas (1280x720 base), every resident a possible host.
-func _town_sim(seed_value: int = 1961) -> Control:
+func _town_continue() -> Control:
+	return _town_sim(1961, true)
+
+
+func _town_sim(seed_value: int = 1961, resume: bool = false) -> Control:
+	var loaded: RefCounted = TownGame.load_game() if resume else null
 	_clear()
 	get_window().content_scale_size = Vector2i(1280, 720)
 	var t := TownSimUI.new()
 	ui.add_child(t)
 	t.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	t.start(seed_value)
+	t.start(seed_value, "", loaded)
 	t.back_to_menu.connect(_title)
 	return t
 

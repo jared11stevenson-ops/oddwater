@@ -57,6 +57,34 @@ func _init(seed: int = 1961, everyday: bool = false) -> void:
 				people[r["b"]].rel[r["a"]] = {"affinity": float(r["affinity"]), "trust": float(r["trust"])}
 
 
+const WEATHERS := ["clear", "clear", "clear", "clear", "cloudy", "cloudy", "rain", "rain", "fog"]
+const OUTDOORS := ["pageant_green", "launch_quay", "marina"]
+const INDOOR_SOCIAL := ["low_water", "pink_heron", "rising_loaf", "library"]
+
+
+## Deterministic by seed and day, and shared by everyone.
+func weather_today() -> String:
+	var r := RandomNumberGenerator.new()
+	r.seed = hash("weather|%d|%d" % [seed_base, day])
+	return WEATHERS[r.randi() % WEATHERS.size()]
+
+
+func raining() -> bool:
+	return weather_today() == "rain"
+
+
+## What the town is doing today, if anything special.
+func event_today() -> String:
+	match weekday():
+		5: return "Market rained off" if raining() else "Market on the green"
+		6: return "Church bells and a slow morning"
+	return ""
+
+
+func event_active(h: float) -> bool:
+	return (weekday() == 5 and h >= 10.0 and h < 14.0) or (weekday() == 6 and h >= 9.0 and h < 11.0)
+
+
 ## Day 1 is a Monday. 0 = Monday ... 6 = Sunday.
 func weekday() -> int:
 	return (day - 1) % 7
@@ -102,11 +130,15 @@ func choose_activity(p: RefCounted, t: int) -> String:
 		"eat": (100.0 - float(n["hunger"])) * 1.1,
 		"socialize": (100.0 - float(n["social"])) * 0.9 + p.trait_of("sociable") * 25.0,
 		"relax": (100.0 - float(n["fun"])) * 0.7 + (100.0 - float(n["comfort"])) * 0.3,
-		"worship": (p.trait_of("pious") * 30.0 if h >= 17.0 and h < 19.0 else 0.0),
+		"worship": (p.trait_of("pious") * 30.0 if h >= 17.0 and h < 19.0 else 0.0) + (p.trait_of("pious") * 90.0 if weekday() == 6 and h >= 9.0 and h < 11.0 else 0.0),
 		"errand": 8.0}
 	if is_weekend() and not p.days_off.is_empty():
 		scores["socialize"] += 12.0
 		scores["relax"] += 10.0
+	if weekday() == 5 and h >= 10.0 and h < 14.0 and not on_shift(p, h):
+		scores["socialize"] += 28.0 + p.trait_of("sociable") * 25.0       # market day on the green
+	if raining() and p.group != "child":
+		scores["relax"] += 8.0
 	if on_shift(p, h):
 		scores["work"] = 70.0 + (10.0 if float(n["purpose"]) < 40.0 else 0.0)
 		scores["eat"] = (100.0 - float(n["hunger"])) * 1.5 if float(n["hunger"]) < 25.0 else scores["eat"] * 0.6
@@ -135,14 +167,29 @@ func place_for(p: RefCounted, act: String, t: int) -> String:
 				return p.home
 			return ["pink_heron", "rising_loaf", p.home][rng.randi() % 3] if p.money > 15.0 else p.home
 		"socialize":
+			if weekday() == 5 and hour_of(t) >= 10.0 and hour_of(t) < 14.0 and not raining() and rng.randf() < 0.8:
+				return "pageant_green"            # market day
+			var spot: String
 			if not p.haunts.is_empty() and rng.randf() < 0.7:
-				return p.haunts[rng.randi() % p.haunts.size()]
-			return HAUNTS[(rng.randi() + int(p.trait_of("sociable") * 10)) % HAUNTS.size()]
+				spot = p.haunts[rng.randi() % p.haunts.size()]
+			else:
+				spot = HAUNTS[(rng.randi() + int(p.trait_of("sociable") * 10)) % HAUNTS.size()]
+			return _dry(spot, p, rng)
 		"relax":
+			var spot2: String
 			if not p.haunts.is_empty() and rng.randf() < 0.55:
-				return p.haunts[rng.randi() % mini(2, p.haunts.size())]   # the hobby places come first
-			return p.home if rng.randf() < 0.6 else "pageant_green"
+				spot2 = p.haunts[rng.randi() % mini(2, p.haunts.size())]   # the hobby places come first
+			else:
+				spot2 = p.home if rng.randf() < 0.6 else "pageant_green"
+			return _dry(spot2, p, rng)
 	return p.home
+
+
+## In the rain nobody lingers outdoors: they go indoors somewhere instead.
+func _dry(spot: String, p: RefCounted, rng: RandomNumberGenerator) -> String:
+	if raining() and OUTDOORS.has(spot):
+		return p.home if rng.randf() < 0.5 else INDOOR_SOCIAL[rng.randi() % INDOOR_SOCIAL.size()]
+	return spot
 
 
 func _apply_needs(p: RefCounted, act: String) -> void:
@@ -151,6 +198,11 @@ func _apply_needs(p: RefCounted, act: String) -> void:
 		if k == "restless":
 			continue
 		p.needs[k] = clampf(float(p.needs[k]) + float(eff[k]), 0.0, 100.0)
+	if raining():
+		if p.location == p.home:
+			p.needs["comfort"] = clampf(float(p.needs["comfort"]) + 0.5, 0.0, 100.0)      # cosy
+		else:
+			p.needs["fun"] = clampf(float(p.needs["fun"]) - 0.3, 0.0, 100.0)
 	if act != "sleep":   # waking life wears you down
 		p.needs["energy"] = clampf(float(p.needs["energy"]) - 2.2, 0.0, 100.0)
 		p.needs["hunger"] = clampf(float(p.needs["hunger"]) - 3.0, 0.0, 100.0)
@@ -559,11 +611,17 @@ func to_dict() -> Dictionary:
 	var ps := {}
 	for id in order:
 		ps[id] = people[id].to_dict()
-	return {"day": day, "people": ps, "rumors": rumors.duplicate(true), "pending": pending.duplicate(), "next": next_rumor, "seed": seed_base}
+	return {"day": day, "people": ps, "rumors": rumors.duplicate(true), "pending": pending.duplicate(), "next": next_rumor, "seed": seed_base,
+		"clock": clock, "player_id": player_id, "player_activity": player_activity, "events": events.duplicate(true), "tick": tick,
+		"decisions_vanish": decisions_vanish, "thin_weeks": thin_weeks}
 
 
 func load_dict(d: Dictionary) -> void:
 	day = int(d["day"]); rumors = d["rumors"].duplicate(true); pending = d["pending"].duplicate(); next_rumor = int(d["next"]); seed_base = int(d["seed"])
+	clock = int(d.get("clock", 0)); player_id = d.get("player_id", ""); player_activity = d.get("player_activity", ""); tick = int(d.get("tick", 0))
+	events = d.get("events", []).duplicate(true); decisions_vanish = bool(d.get("decisions_vanish", true)); thin_weeks = bool(d.get("thin_weeks", true))
+	for ru in rumors:      # JSON turns ids into floats; keep them integral
+		ru["id"] = int(ru["id"])
 	for id in d["people"]:
 		if people.has(id):
 			people[id].load_dict(d["people"][id])

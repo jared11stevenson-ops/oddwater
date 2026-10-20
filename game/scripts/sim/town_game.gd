@@ -7,6 +7,7 @@ const World = preload("res://scripts/sim/sim_world.gd")
 const Cause = preload("res://scripts/sim/cause.gd")
 const Brief = preload("res://scripts/sim/brief.gd")
 const Talk = preload("res://scripts/sim/talk.gd")
+const Wishes = preload("res://scripts/sim/wishes.gd")
 
 const COOLDOWN_DAYS := 14
 
@@ -21,6 +22,10 @@ var today: Array = []             # what happened to you today (lines)
 var talks_today := 0
 var layout: RefCounted
 var _seen_events := 0
+var wishes: Array = []            # today's wishes for whoever you are
+var stats: Dictionary = {}        # what you have done today (feeds the wishes and the day report)
+var wish_points := 0              # lifetime, across every life
+var report: Dictionary = {}       # the last end-of-day report
 
 
 func _init(seed_value: int = 1961, first_host: String = "") -> void:
@@ -62,6 +67,12 @@ func wake(id: String) -> void:
 	talks_today = 0
 	today = []
 	hosts.append({"day": sim.day, "id": id, "name": p.display, "money": p.money, "mood": p.mood()})
+	var aff: Dictionary = {}
+	for oid in p.rel:
+		aff[oid] = p.affinity(oid)
+	stats = {"ate": 0, "work_ticks": 0, "talked": {}, "kind_to": {}, "gifts": {}, "ticks_at": {}, "outdoor_ticks": 0,
+		"money_start": p.money, "mood_start": p.mood(), "aff_start": aff}
+	wishes = Wishes.generate(sim, id)
 
 
 func me() -> RefCounted:
@@ -96,6 +107,28 @@ func distance(a: String, b: String) -> float:
 
 
 ## Walk somewhere. Distance costs time: every 450 m is half an hour.
+## After anything that passes time: credit the elapsed half-hours to where you are and what you did, then see if a wish came true.
+func _account(clock_before: int, act: String = "") -> void:
+	var dt: int = sim.clock - clock_before
+	var p := me()
+	if dt > 0:
+		stats["ticks_at"][p.location] = int(stats["ticks_at"].get(p.location, 0)) + dt
+		if sim.OUTDOORS.has(p.location):
+			stats["outdoor_ticks"] = int(stats["outdoor_ticks"]) + dt
+		if act == "work":
+			stats["work_ticks"] = int(stats["work_ticks"]) + dt
+		if act == "eat":
+			stats["ate"] = int(stats["ate"]) + 1
+	for w in wishes:
+		if not w["done"] and Wishes.check(sim, host, w, stats):
+			w["done"] = true
+			wish_points += int(w["points"])
+			p.needs["purpose"] = clampf(float(p.needs["purpose"]) + 8.0, 0.0, 100.0)
+			p.needs["fun"] = clampf(float(p.needs["fun"]) + 5.0, 0.0, 100.0)
+			p.needs["restless"] = clampf(float(p.needs["restless"]) - 6.0, 0.0, 100.0)
+			today.append("Wish came true: %s" % w["text"])
+
+
 func go(place: String) -> Dictionary:
 	if phase != "day" or sim.day_over():
 		return {"ok": false, "text": "It's too late to go anywhere."}
@@ -103,19 +136,24 @@ func go(place: String) -> Dictionary:
 	if place == p.location:
 		return {"ok": false, "text": "You're already here."}
 	var ticks := int(distance(p.location, place) / 450.0)
+	var c0: int = sim.clock
 	p.location = place
 	if ticks > 0:
 		sim.player_activity = "errand"
 		p.activity = "errand"
 		sim.advance(ticks)
+	_account(c0)
 	return {"ok": true, "text": "You walk to %s (%d min)." % [place_name(place), ticks * 30], "ticks": ticks}
 
 
 func do(act: String, hours: float = 1.0) -> Dictionary:
 	if phase != "day" or sim.day_over():
 		return {"ok": false, "text": "The day is over."}
+	var c0: int = sim.clock
 	var r: Dictionary = sim.player_do(act, "", int(hours * 2.0))
 	_collect()
+	if r.get("ok", false):
+		_account(c0, act)
 	return r
 
 
@@ -124,12 +162,17 @@ func talk(npc: String, topic: String) -> Dictionary:
 		return {"ok": false, "text": "It's too late."}
 	if not people_here().has(npc):
 		return {"ok": false, "text": "They're not here."}
+	var c0: int = sim.clock
 	var r: Dictionary = Talk.say(sim, host, npc, topic)
 	talks_today += 1
+	stats["talked"][npc] = int(stats["talked"].get(npc, 0)) + 1
+	if topic in ["compliment", "joke", "chat", "ask_day", "confide"] and r.get("tone", "") != "cold":
+		stats["kind_to"][npc] = true
 	sim.player_activity = "socialize"
 	me().activity = "socialize"
 	sim.advance(1)
 	_collect()
+	_account(c0)
 	return r
 
 
@@ -137,6 +180,13 @@ func talk(npc: String, topic: String) -> Dictionary:
 func act(action: String, args: Dictionary = {}) -> Dictionary:
 	var r: Dictionary = sim.player_act(host, action, args)
 	_collect()
+	var tgt: String = args.get("target", "")
+	if tgt != "" and r.get("ok", false):
+		if action in ["gift", "praise"]:
+			stats["kind_to"][tgt] = true
+		if action == "gift":
+			stats["gifts"][tgt] = true
+	_account(sim.clock)
 	return r
 
 
@@ -164,6 +214,27 @@ func end_day() -> void:
 	phase = "night"
 	hosts[-1]["money_end"] = p.money
 	hosts[-1]["mood_end"] = p.mood()
+	_account(sim.clock)
+	report = _make_report()
+	hosts[-1]["wishes_done"] = int(report["done"])
+
+
+func _make_report() -> Dictionary:
+	var p := me()
+	var done := 0
+	for w in wishes:
+		if w["done"]:
+			done += 1
+	# who you grew closer to, who you drove away
+	var moves: Array = []
+	for oid in p.rel:
+		var d: float = float(sim.people[oid].affinity(host)) - float(stats["aff_start"].get(oid, 0.0)) if sim.people.has(oid) else 0.0
+		if absf(d) >= 3.0 and sim.people.has(oid):
+			moves.append({"id": oid, "name": sim.people[oid].display, "delta": d})
+	moves.sort_custom(func(a, b): return absf(a["delta"]) > absf(b["delta"]))
+	return {"host": host, "name": p.display, "day": sim.day, "weather": sim.weather_today(), "wishes": wishes.duplicate(true), "done": done,
+		"money_delta": int(p.money - float(stats["money_start"])), "mood_delta": p.mood() - float(stats["mood_start"]), "mood_word": p.mood_word(),
+		"talks": talks_today, "moves": moves.slice(0, 3), "news": today.duplicate(), "points": wish_points}
 
 
 func night_edges() -> Array:
@@ -205,5 +276,71 @@ func lives_report() -> Array:
 		var gone: bool = not sim.alive(p)
 		out.append({"id": h["id"], "name": h["name"], "day": h["day"], "gone": gone,
 			"money_then": int(float(h.get("money_end", h["money"]))), "money_now": int(p.money),
-			"mood_then": h.get("mood_end", h["mood"]), "mood_now": p.mood(), "mood_word": p.mood_word()})
+			"mood_then": h.get("mood_end", h["mood"]), "mood_now": p.mood(), "mood_word": p.mood_word(), "wishes_done": int(h.get("wishes_done", 0))})
 	return out
+
+
+# ------------------------------------------------------------------ saving: the whole town, and who you have been
+const SAVE_PATH := "user://town_save.json"
+const SAVE_VERSION := 2
+
+
+func to_dict() -> Dictionary:
+	return {"version": SAVE_VERSION, "seed": sim.seed_base, "sim": sim.to_dict(), "host": host, "hosts": hosts.duplicate(true), "phase": phase,
+		"night_budget": night_budget, "chronicle": chronicle.duplicate(true), "talks_today": talks_today, "today": today.duplicate(), "seen": _seen_events,
+		"wishes": wishes.duplicate(true), "stats": stats.duplicate(true), "wish_points": wish_points, "report": report.duplicate(true)}
+
+
+func load_dict(d: Dictionary) -> void:
+	sim.load_dict(d["sim"])
+	host = d["host"]
+	hosts = d["hosts"].duplicate(true)
+	phase = d["phase"]
+	night_budget = int(d["night_budget"])
+	chronicle = d["chronicle"].duplicate(true)
+	talks_today = int(d["talks_today"])
+	today = d["today"].duplicate()
+	_seen_events = int(d["seen"])
+	wishes = d.get("wishes", []).duplicate(true)
+	stats = d.get("stats", stats).duplicate(true)
+	wish_points = int(d.get("wish_points", 0))
+	report = d.get("report", {}).duplicate(true)
+	for h in hosts:
+		h["day"] = int(h["day"])
+	for c in chronicle:
+		c["day"] = int(c["day"])
+
+
+## Write atomically (temp file, then rename) so a crash mid-save never costs the town.
+func save(path: String = SAVE_PATH) -> bool:
+	var tmp := path + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_string(JSON.stringify(to_dict(), "", true, true))      # full float precision: the town must resume exactly
+	f.close()
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+	return DirAccess.rename_absolute(tmp, path) == OK
+
+
+static func has_save(path: String = SAVE_PATH) -> bool:
+	return FileAccess.file_exists(path)
+
+
+## Returns the loaded game, or null if there is no usable save.
+static func load_game(path: String = SAVE_PATH) -> RefCounted:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return null
+	var d: Variant = JSON.parse_string(f.get_as_text())
+	if typeof(d) != TYPE_DICTIONARY or int(d.get("version", 0)) != SAVE_VERSION:
+		return null
+	var g: RefCounted = load("res://scripts/sim/town_game.gd").new(int(d["seed"]), d["host"])
+	g.load_dict(d)
+	return g
+
+
+static func delete_save(path: String = SAVE_PATH) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)

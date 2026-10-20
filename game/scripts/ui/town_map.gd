@@ -127,6 +127,10 @@ func update_tint() -> void:
 			col = (a[1] as Color).lerp(b[1], (h - float(a[0])) / (float(b[0]) - float(a[0])))
 	if h > 24.0:
 		col = TINTS[-1][1]
+	match game.sim.weather_today():
+		"cloudy": col = col * Color(0.93, 0.95, 0.99)
+		"rain": col = col * Color(0.8, 0.86, 0.97)
+		"fog": col = col * Color(0.92, 0.94, 0.97)
 	base.modulate = col
 	night = clampf((19.2 - h) / -2.0, 0.0, 1.0) if h >= 19.2 else (clampf((6.8 - h) / 0.8, 0.0, 1.0) if h < 6.8 else 0.0)
 
@@ -154,6 +158,30 @@ func _draw() -> void:
 				draw_rect(Rect2(c + Vector2(-5.0, -2.0) * sc, wsz), Color(1.0, 0.82, 0.3, night))
 				if h % 2 == 0:
 					draw_rect(Rect2(c + Vector2(2.5, -2.0) * sc, wsz), Color(1.0, 0.82, 0.3, night))
+	# market day on the green
+	var hh: float = game.sim.hour_now()
+	if game.sim.weekday() == 5 and hh >= 9.5 and hh < 14.5 and not game.sim.raining():
+		var green: Dictionary = layout.by_id.get("pageant_green", {})
+		if not green.is_empty():
+			var gc := to_screen(Vector2(float(green["x"]), float(green["y"])))
+			var cols := [Color("e23d3d"), Color("2f8f9d"), Color("f5b82e"), Color("71915a"), Color("c76a8a"), Color("4a3f7a")]
+			for i in 6:
+				var st := gc + Vector2((i % 3 - 1) * 17.0, (i / 3 - 0.5) * 13.0) * sc
+				var rct := Rect2(st - Vector2(6.0, 3.5) * sc, Vector2(12.0, 7.0) * sc)
+				draw_rect(rct, cols[i])
+				for k in 4:
+					draw_rect(Rect2(rct.position + Vector2(k * rct.size.x / 4.0, 0), Vector2(rct.size.x / 8.0, rct.size.y)), Color("f3e9d2"))
+				draw_rect(rct, INK, false, 1.6)
+	# weather in front of the town
+	match game.sim.weather_today():
+		"rain":
+			var tms := Time.get_ticks_msec()
+			for i in 140:
+				var rx := fmod(float(i) * 97.3 + float(tms) * 0.12 * (0.7 + float(i % 5) * 0.1), size.x + 60.0) - 30.0
+				var ry := fmod(float(i) * 53.7 + float(tms) * 0.55 * (0.8 + float(i % 7) * 0.05), size.y + 40.0) - 20.0
+				draw_line(Vector2(rx, ry), Vector2(rx - 4.0, ry + 11.0), Color(0.45, 0.6, 0.75, 0.55), 1.6, true)
+		"fog":
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0.93, 0.95, 0.97, 0.3))
 	# selection
 	var sel: Dictionary = layout.by_id.get(selected, {})
 	if not sel.is_empty():
@@ -190,6 +218,8 @@ func _draw() -> void:
 			continue
 		var a: Vector2 = prev_pos.get(id, cur_pos[id])
 		var sp := to_screen(a.lerp(cur_pos[id], anim))
+		if anim < 1.0 and a != cur_pos[id]:
+			sp.y -= absf(sin(anim * PI * 6.0)) * 3.0           # a walking bob
 		if sp.x < -20 or sp.y < -20 or sp.x > size.x + 20 or sp.y > size.y + 20:
 			continue
 		if night > 0.5 and game.sim.people[id].activity == "sleep":
