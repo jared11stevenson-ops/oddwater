@@ -91,10 +91,12 @@ static func _time(h: float) -> String:
 
 
 # =========================================================================== generate
-static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
+## opts (serial killers): killer, signature (the held-back detail), trait, thread (index into casebook threads), avoid (earlier victims).
+static func generate(sim: RefCounted, seed_v: int, day: int, opts: Dictionary = {}) -> Dictionary:
 	var cb: Dictionary = Data.load_json("detective/casebook.json")
 	var r := _rng(seed_v, "case%d" % day)
 	var adults := _adults(sim)
+	var serial: bool = opts.has("killer")
 	# ---- who, and why: the pair whose real relationship makes a motive plausible
 	var pairs: Array = []
 	for i in 40:
@@ -119,6 +121,12 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 		motive = "silence"
 	elif motive == "grudge" and r.randf() < 0.3:
 		motive = "passion"
+	if serial:
+		killer = opts["killer"]
+		motive = "grudge"
+		var cands: Array = adults.filter(func(id): return id != killer and sim.people[id].home != sim.people[killer].home and not (opts.get("avoid", []) as Array).has(id))
+		cands.sort_custom(func(a, b): return _dist(sim.people[a].home, sim.people[killer].home) > _dist(sim.people[b].home, sim.people[killer].home))
+		victim = cands[r.randi() % mini(cands.size(), 12)]
 	var pv: RefCounted = sim.people[victim]
 	var pk: RefCounted = sim.people[killer]
 	# ---- where: the victim's home if they live alone, otherwise their workplace
@@ -138,8 +146,12 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 	var trait_k: String = _pick(r, cb["traits"])
 	var item: String = _pick(r, cb["dropped"])
 	var shoes: String = _pick(r, cb["shoes"])
-	var gloves: bool = r.randf() < 0.3
+	var gloves: bool = r.randf() < (0.88 if serial else 0.3)
 	var held: String = _pick(r, cb["held_back"])
+	if serial:
+		held = opts["signature"]
+		trait_k = opts["trait"]
+		thing = "the verdict of years ago, and a name that was never forgiven"
 	var c := {"gloves": gloves, "held_back": held, "id": "case_%d" % day, "day": day, "seed": seed_v, "victim": victim, "killer": killer, "motive": motive, "motive_thing": thing,
 		"method": method, "weapon": weapon, "scene": scene, "scene_kind": scene_kind, "hour": hour, "trait": trait_k, "item": item, "shoes": shoes,
 		"trace": trace_for(pk.job), "facts": {}, "clues": {}, "profiles": {}, "suspects": [], "keyholders": [], "weapon_at": {}, "status": "planned"}
@@ -160,7 +172,7 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 	c["found_hour"] = 6.5 + r.randf() * 0.8
 	var vn: Array = neighbors(sim, scene, 2, used)
 	used.append_array(vn)
-	var kn: Array = neighbors(sim, pk.home, 2, used)
+	var kn: Array = [] if serial else neighbors(sim, pk.home, 2, used)
 	used.append_array(kn)
 	# red herrings: three people with their own reasons to be suspicious
 	var herrings: Array = []
@@ -182,7 +194,39 @@ static func generate(sim: RefCounted, seed_v: int, day: int) -> Dictionary:
 	_profiles(sim, c, cb, r, herrings, used)
 	_facts_and_clues(sim, c, cb, r, vn, kn, used)
 	_cameras_prints_family(sim, c, r, vn, kn)
+	if serial:
+		c["serial"] = true
+		c["thread"] = cb["threads"][int(opts.get("thread", 0)) % cb["threads"].size()]
+		_serial_tweaks(sim, c)
 	return c
+
+
+## A serial killer is harder: no family to break, no neighbour who saw them go, a forced window instead of a key, gloves nearly always.
+## What links the victims is one old photograph, and the same strange detail is left at every scene.
+static func _serial_tweaks(sim: RefCounted, c: Dictionary) -> void:
+	var k: String = c["killer"]
+	var v: String = c["victim"]
+	var vname := name_of(sim, v)
+	for fid in ["f_argument", "f_trait_k", "f_kn_saw", "f_lead_kn", "f_confidant"]:
+		c["facts"].erase(fid)
+	for cid in ["c_callrecord"]:
+		c["clues"].erase(cid)
+	c["keyholders"] = [v, c["found_by"]]
+	c["relatives"][k] = []
+	var door: Dictionary = c["clues"]["c_door"]
+	door["title"] = "A forced window"
+	door["text"] = "The back window was jimmied from outside, cleanly. Whoever came did not need a key."
+	door["supports"] = []
+	var desk: Dictionary = c["clues"]["c_desk"]
+	desk["text"] = "In the desk drawer, %s. Every other name on it has a line through it, and %s's is next to last." % [c["thread"]["photo"], vname]
+	desk["supports"] = [_sup("motive", k, 1)]
+	desk["thread"] = true
+	var phone: Dictionary = c["clues"]["c_phone"]
+	phone["text"] = "The phone's memory shows a call at %s from the payphone outside the post office. Nobody answered but the line stayed open a minute." % _time(float(c["hour"]) - 1.5)
+	phone["supports"] = [_sup("time", "", 1)]
+	var ppl: Array = sim.order.filter(func(id): return id != k and id != v and id != c["found_by"] and sim.alive(sim.people[id]) and sim.people[id].age >= 55 and not c["suspects"].has(id))
+	if not ppl.is_empty():
+		_fact(c, "f_thread_motive", c["thread"]["gossip"] + " %s was one of them. So, I think, was %s." % [vname, first(sim, k)], "victim", ppl.slice(0, 2), "rapport", [_sup("motive", k, 3)], k)
 
 
 # --------------------------------------------------------------------------- profiles

@@ -210,6 +210,19 @@
   "silence": "A secret is only heavy for the person carrying it. Put it in someone else's hands, and watch how far they will go to take it back.",
   "passion": "Jealousy dresses itself up as love for so long that, in the end, even the person wearing it forgets the difference."
  },
+ "nicknames": [
+  {"key": "lamp", "name": "The Lamplighter"},
+  {"key": "shoe", "name": "The Cobbler"},
+  {"key": "coin", "name": "The Coin Man"},
+  {"key": "clock", "name": "The Clockstopper"},
+  {"key": "door", "name": "The Locksmith"},
+  {"key": "glass", "name": "The Hostess"}
+ ],
+ "threads": [
+  {"photo": "a framed photograph from years ago: twelve people on the courthouse steps, the jury of a trial everyone has agreed to forget", "gossip": "They all sat on the Harlan jury, years back. We don't talk about the Harlan jury."},
+  {"photo": "a faded photograph of the chapel choir, one face scratched out with a pin", "gossip": "They sang together in the chapel choir, the year the choir was disbanded. Nobody says why."},
+  {"photo": "a photograph of the dam crew the summer the lake rose, a name written on the back and crossed out", "gossip": "They all worked the dam the summer the lake rose. Some of that crew never came back up the ridge."}
+ ],
  "openers": [
   "Little Mercy sits on a ridge above a lake that nobody swims in. It is the kind of town where strangers get waved at, doors go unlocked, and nobody, ever, says goodbye.",
   "There is a particular kind of quiet in a small town after rain. Everyone is home. Everyone is listening. And everyone knows exactly whose light is still on.",

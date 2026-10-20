@@ -7,6 +7,8 @@ const Detective = preload("res://scripts/detective/detective.gd")
 const Cctv = preload("res://scripts/detective/cctv.gd")
 const Prints = preload("res://scripts/detective/prints.gd")
 const Justice = preload("res://scripts/detective/justice.gd")
+const Serial = preload("res://scripts/detective/serial.gd")
+const News = preload("res://scripts/detective/news.gd")
 
 const WINDOWS := [["Evening, 6 pm to midnight", 18.0, 24.0], ["Midnight to 3 am", 24.0, 27.0], ["3 am to 6 am", 27.0, 30.0]]
 var cam_sel := ""
@@ -335,13 +337,54 @@ func show_case(tab_name: String = "") -> void:
 		var b := _btn(row, t[0], show_case.bind(t[1]), 16, 52)
 		b.disabled = tab == t[1]
 		b.name = "Tab_" + t[1]
+	if not game.news().is_empty():
+		var row2 := HBoxContainer.new()
+		box.add_child(row2)
+		var nb := _btn(row2, "News (%d)" % game.news().size(), show_case.bind("news"), 16, 52)
+		nb.disabled = tab == "news"
+		nb.name = "Tab_news"
+		_pressure_bar(row2)
 	match tab:
+		"news": _tab_news()
 		"case": _tab_case()
 		"notebook": _tab_notebook()
 		"people": _tab_people()
 		"cctv": _tab_cctv()
 		"court": _tab_court()
 		"accuse": _tab_accuse()
+
+
+## The town's patience, 0-100, and how many days are left before the state police come.
+func _pressure_bar(parent: Control) -> void:
+	if not Serial.active(game.serial):
+		return
+	var p: float = game.pressure()
+	var bar := ProgressBar.new()
+	bar.min_value = 0.0
+	bar.max_value = 100.0
+	bar.value = p
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(300, 34)
+	bar.name = "PressureBar"
+	parent.add_child(bar)
+	var left: int = Serial.days_left(game.serial, int(game.sim.day))
+	_lbl(parent, " PRESSURE %d  ·  %s  ·  %d days" % [int(p), String(News.stage(p)).to_upper(), left], 18, RED if p >= 70.0 else VIOLET).name = "PressureLabel"
+
+
+func _tab_news() -> void:
+	_head(box, "THE LITTLE MERCY COURIER", 32)
+	var s: Dictionary = game.serial
+	var rl: String = News.radio(s)
+	if rl != "":
+		_lbl(box, rl, 20, VIOLET)
+	var items: Array = game.news()
+	for i in range(items.size() - 1, maxi(items.size() - 4, -1), -1):
+		var p: Dictionary = items[i]
+		_head(box, "%s  (day %d)" % [String(p["head"]), int(p["day"])], 24).custom_minimum_size = Vector2(PANEL_W - 40.0, 0)
+		_lbl(box, String(p["body"]), 20)
+	var lt: String = News.letter(s, int(game.sim.day))
+	if lt != "":
+		_lbl(box, "LETTERS: " + lt, 18, VIOLET)
 
 
 func _tab_case() -> void:

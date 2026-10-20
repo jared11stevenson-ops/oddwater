@@ -78,6 +78,26 @@ func learn(entry: Dictionary) -> bool:
 	return true
 
 
+## A new case begins and the old one stays open: its entries move under a prefix (so the old scene is not mistaken for the new),
+## but what they prove about a person still counts. Fingerprints on file and the notebook stay with you.
+func rollover(prefix: String) -> void:
+	var nk: Dictionary = {}
+	var no: Array = []
+	for eid in order:
+		var e: Dictionary = known[eid].duplicate(true)
+		var nid := "%s:%s" % [prefix, eid]
+		e["id"] = nid
+		e["old_case"] = prefix
+		nk[nid] = e
+		no.append(nid)
+	known = nk
+	order = no
+	lab = []
+	told = {}
+	calibrated = {}
+	warrants = {}
+
+
 func has(id: String) -> bool:
 	return known.has(id)
 

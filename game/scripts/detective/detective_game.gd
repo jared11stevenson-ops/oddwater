@@ -9,6 +9,8 @@ const Cctv = preload("res://scripts/detective/cctv.gd")
 const Prints = preload("res://scripts/detective/prints.gd")
 const Narrator = preload("res://scripts/detective/narrator.gd")
 const Justice = preload("res://scripts/detective/justice.gd")
+const Serial = preload("res://scripts/detective/serial.gd")
+const News = preload("res://scripts/detective/news.gd")
 
 const DET_SAVE := "user://detective_save.json"
 
@@ -21,12 +23,17 @@ var beats_seen: Dictionary = {}
 var pending_beats: Array = []       # narrated interludes waiting to be shown
 var episodes: Array = []            # the told stories of cases you have worked
 var seed_v := 1961
+var serial: Dictionary = {}         # the serial killer, if there is one (see serial.gd)
+var _force_serial := false
 
 
-func _init(seed_value: int = 1961, _first_host: String = "") -> void:
+## `force_serial` makes the first murder the work of a serial killer (tests; a rare thing in real play).
+func _init(seed_value: int = 1961, _first_host: String = "", force_serial: bool = false) -> void:
 	super._init(seed_value, "player")
 	seed_v = seed_value
+	_force_serial = force_serial
 	det = Detective.new()
+	serial = Serial.none()
 	sim.release_control()
 	_prelude(seed_value)
 	hosts = []
@@ -44,10 +51,16 @@ func _prelude(seed_value: int) -> void:
 	sim.day = 0
 	sim.thin_weeks = false
 	sim.start_day()
-	case = CaseEngine.generate(sim, seed_value, 0)
+	var opt := {}
+	if _force_serial or Serial.rolls(seed_value, "start"):
+		serial = Serial.begin(sim, seed_value, "start")
+		opt = Serial.opts(serial)
+	case = CaseEngine.generate(sim, seed_value, 0, opt)
 	CaseEngine.apply_backstory(sim, case)
 	sim.simulate_rest_of_day()
 	CaseEngine.execute(sim, case)
+	if Serial.active(serial):
+		Serial.record(sim, serial, case, seed_value, place_name(case["scene"]))
 	sim.slack()
 	sim.start_day()
 	_seen_events = 0
@@ -98,6 +111,13 @@ func flush_time() -> int:
 
 ## The next sensible thing to do, from what you know. Never gives the answer, only the next thread to pull.
 func objective() -> String:
+	var core := _objective_core()
+	if Serial.active(serial) and Serial.days_left(serial, int(sim.day)) >= 0:
+		return "%s  [%s: %d days. Pressure %d]" % [core, String(serial["nick"]), Serial.days_left(serial, int(sim.day)), int(pressure())]
+	return core
+
+
+func _objective_core() -> String:
 	if solved():
 		return "Case closed. Rest, and watch the town."
 	var v: String = case.get("victim", "")
@@ -225,6 +245,7 @@ func run_trial() -> Dictionary:
 		episodes.append(ep)
 		res["episode"] = ep
 	chronicle.append({"day": sim.day, "text": "Trial of %s: %s." % [CaseEngine.name_of(sim, t), res["verdict"]]})
+	_check_caught()
 	return res
 
 
@@ -259,6 +280,7 @@ func accuse(culprit: String, motive: String, method: String) -> Dictionary:
 	episodes.append(ep)
 	res["episode"] = ep
 	chronicle.append({"day": sim.day, "text": "You accused %s: %s." % [CaseEngine.name_of(sim, culprit), res["verdict"]]})
+	_check_caught()
 	return res
 
 
@@ -270,15 +292,90 @@ func solved() -> bool:
 	return case.get("status", "") == "solved"
 
 
-## Dawn: the lab reports in, and the town is the same town, one day on.
+## Dawn: the night's work is done (a killer may have struck), the lab reports in, and the town is the same town, one day on.
 func dawn() -> String:
+	if phase != "night":
+		end_day()
+	_check_caught()
+	var fresh := _night_strike()
 	var id := super.dawn()
 	var lab_new: Array = CaseOps.lab_results(sim, case, det, int(sim.day))
 	for e in lab_new:
 		today.append("The lab reports: %s" % e["text"])
+	if Serial.active(serial):
+		var page: Dictionary = Serial.morning(serial, det, int(sim.day), fresh)
+		if not page.is_empty():
+			today.append("THE COURIER: %s" % page["head"])
+			if serial["status"] == "failed":
+				chronicle.append({"day": sim.day, "text": "The state police took the serial case from you."})
+		var kills: int = (serial["kills"] as Array).size()
+		if fresh and kills == 2:
+			pending_beats.append({"title": "THE PATTERN", "text": "A second body. A different house, a different family, nothing in common you can name. And on the table, the same thing: %s.\n\nOne is an accident of grief. Two is a hand. You do not say it aloud. Saying it aloud would make it a case about someone who is going to do it again." % String(serial["signature"]).to_lower()})
+		elif fresh and kills == 3:
+			pending_beats.append({"title": "THE THIRD", "text": "By noon the Courier knew. By dusk the whole town knew, and had given the killer a name: %s.\n\nYou have walked into three kitchens now and every one of them smelled of toast. There is a deadline, though nobody will say who set it. Eight days." % String(serial["nick"])})
 	_after_op()
-	det.add_stress(-12.0)
+	det.add_stress(-12.0 + (6.0 if Serial.active(serial) and float(serial["pressure"]) >= 70.0 else 0.0))
 	return id
+
+
+## If the killer you were hunting is now behind bars, the town learns of it.
+func _check_caught() -> void:
+	if Serial.active(serial) and solved() and (sim.people[serial["killer"]].jailed or sim.people[serial["killer"]].taken):
+		var page: Dictionary = Serial.caught(serial, det, int(sim.day))
+		if not page.is_empty():
+			today.append("THE COURIER: %s" % page["head"])
+			chronicle.append({"day": sim.day, "text": "%s was caught." % String(serial["nick"])})
+
+
+## The night after the day just ended. Returns true when someone new has died.
+func _night_strike() -> bool:
+	var d := int(sim.day)
+	if Serial.active(serial):
+		if d < int(serial["next_strike"]):
+			return false
+		_open_case(Serial.opts(serial))
+		Serial.record(sim, serial, case, seed_v, place_name(case["scene"]))
+		return true
+	if case.get("status", "") == "solved":
+		if not case.has("closed_day"):
+			case["closed_day"] = d
+		elif d >= int(case["closed_day"]) + 2 and serial.get("status", "none") != "failed":
+			var opt := {}
+			if Serial.rolls(seed_v, "d%d" % d):
+				serial = Serial.begin(sim, seed_v, "d%d" % d)
+				opt = Serial.opts(serial)
+			_open_case(opt)
+			if Serial.active(serial):
+				Serial.record(sim, serial, case, seed_v, place_name(case["scene"]))
+			return true
+	return false
+
+
+## A new body, a new case file. A serial killer's earlier work stays in your notebook; an ordinary closed case does not.
+func _open_case(opt: Dictionary) -> void:
+	det.rollover(String(case.get("id", "old")))
+	if opt.is_empty():
+		det.known = {}
+		det.order = []
+	for k in beats_seen.keys():
+		if not (k in ["pattern", "third"]):
+			beats_seen.erase(k)
+	if court.get("custody", "") != "":
+		chronicle.append({"day": sim.day, "text": "%s was released: it happened again." % CaseEngine.name_of(sim, court["custody"])})
+		court["custody"] = ""
+	var c: Dictionary = CaseEngine.generate(sim, seed_v, int(sim.day), opt)
+	CaseEngine.apply_backstory(sim, c)
+	CaseEngine.execute(sim, c)
+	case = c
+
+
+## 0-100, how loudly the town is shouting. 0 until a killer has taken three.
+func pressure() -> float:
+	return float(serial.get("pressure", 0.0))
+
+
+func news() -> Array:
+	return serial.get("news", [])
 
 
 # ------------------------------------------------------------------ saving
@@ -294,6 +391,7 @@ func to_dict() -> Dictionary:
 	d["jail"] = jail.duplicate(true)
 	d["mode"] = "detective"
 	d["seed_v"] = seed_v
+	d["serial"] = serial.duplicate(true)
 	return d
 
 
@@ -308,6 +406,7 @@ func load_dict(d: Dictionary) -> void:
 	court = d.get("court", {"custody": ""}).duplicate(true)
 	jail = d.get("jail", []).duplicate(true)
 	seed_v = int(d.get("seed_v", 1961))
+	serial = d.get("serial", Serial.none()).duplicate(true)
 	wishes = []
 
 
