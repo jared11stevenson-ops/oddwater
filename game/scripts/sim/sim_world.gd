@@ -63,7 +63,57 @@ func _init(seed: int = 1961, everyday: bool = false) -> void:
 				people[r["b"]].rel[r["a"]] = {"affinity": float(r["affinity"]), "trust": float(r["trust"])}
 
 
-const WEATHERS := ["clear", "clear", "clear", "clear", "cloudy", "cloudy", "rain", "rain", "fog"]
+## The town grows: someone new moves into the emptiest house, with a life of their own. Returns the new person's data
+## (store it: a saved game must bring the same newcomer back). `n` numbers them from 1.
+func make_newcomer(n: int) -> Dictionary:
+	var best := ""
+	var best_n := 999
+	var houses: Array = TownLayout.new().lots.filter(func(l): return l["kind"] == "house")
+	houses.sort_custom(func(a, b): return a["id"] < b["id"])
+	for h in houses:
+		var live := 0
+		for id in order:
+			if people[id].home == h["id"] and alive(people[id]):
+				live += 1
+		if live < best_n:
+			best_n = live
+			best = h["id"]
+	var names: Array = []
+	for id in order:
+		names.append(people[id].display)
+	var d: Dictionary = Population.new().newcomer(seed_base, best, names, n)
+	var ties: Array = []
+	var rr := RandomNumberGenerator.new()
+	rr.seed = hash("ties|%d|%d" % [seed_base, n])
+	for id in order:
+		var o: RefCounted = people[id]
+		if not alive(o) or id == player_id:
+			continue
+		if o.home == best:
+			ties.append({"id": id, "affinity": rr.randf_range(10, 35), "trust": rr.randf_range(15, 35)})
+		elif d["work"] != "" and o.work == d["work"] and d["work"] != best and rr.randf() < 0.6:
+			ties.append({"id": id, "affinity": rr.randf_range(5, 30), "trust": rr.randf_range(10, 35)})
+	d["ties"] = ties
+	register_resident(d)
+	return d
+
+
+## Add a resident (new, or restored from a save) to the town.
+func register_resident(d: Dictionary) -> void:
+	if people.has(d["id"]):
+		return
+	var p: RefCounted = SimPerson.from_data(d)
+	people[p.id] = p
+	order.append(p.id)
+	for t in d.get("ties", []):
+		if people.has(t["id"]):
+			var rel := {"affinity": float(t["affinity"]), "trust": float(t["trust"])}
+			p.rel[t["id"]] = rel.duplicate()
+			people[t["id"]].rel[p.id] = rel.duplicate()
+	log_event("arrival", p.id, "%s has moved to Little Mercy." % p.display)
+
+
+const WEATHERS :=["clear", "clear", "clear", "clear", "cloudy", "cloudy", "rain", "rain", "fog"]
 const OUTDOORS := ["pageant_green", "launch_quay", "marina"]
 const INDOOR_SOCIAL := ["low_water", "pink_heron", "rising_loaf", "library"]
 

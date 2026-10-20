@@ -210,6 +210,26 @@
   "silence": "A secret is only heavy for the person carrying it. Put it in someone else's hands, and watch how far they will go to take it back.",
   "passion": "Jealousy dresses itself up as love for so long that, in the end, even the person wearing it forgets the difference."
  },
+ "signatures": [
+  {"text": "A single sock, folded, was left on the victim's chest", "nick": "The Odd Sock"},
+  {"text": "The nine of clubs was tucked into the victim's collar", "nick": "The Nine of Clubs"},
+  {"text": "Every mirror in the house was draped with a bedsheet", "nick": "The Mourner"},
+  {"text": "A saucer of milk was set on the doorstep", "nick": "The Milkman"},
+  {"text": "The victim's hands were folded around one white feather", "nick": "The Feather Man"},
+  {"text": "A paper boat was left floating in the bathtub", "nick": "The Shipwright"},
+  {"text": "The victim's hair was braided with red thread", "nick": "The Weaver"},
+  {"text": "A key that fits no lock in the house was placed in the victim's palm", "nick": "The Keeper"},
+  {"text": "A child's crayon drawing of the house was pinned to the door", "nick": "The Artist"},
+  {"text": "Every photograph in the house was turned face down", "nick": "The Turner"},
+  {"text": "A bar of soap, unwrapped, was set in the victim's hand", "nick": "The Washer"},
+  {"text": "The radio was tuned to static and left on low", "nick": "The Operator"},
+  {"text": "A ring of salt was poured around the body", "nick": "The Salter"},
+  {"text": "An orange peel, in one unbroken spiral, lay on the pillow", "nick": "The Peeler"},
+  {"text": "A stub of candle was burning in every window", "nick": "The Candleman"},
+  {"text": "The victim's shoes were lined up on the step, toes pointing at the lake", "nick": "The Ferryman"},
+  {"text": "A single button, not the victim's, was sewn onto their cuff", "nick": "The Tailor"},
+  {"text": "The kettle was on the boil and two cups were laid out", "nick": "The Host"}
+ ],
  "nicknames": [
   {"key": "lamp", "name": "The Lamplighter"},
   {"key": "shoe", "name": "The Cobbler"},

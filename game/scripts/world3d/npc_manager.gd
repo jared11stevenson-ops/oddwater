@@ -27,7 +27,14 @@ func setup(world: RefCounted, town_builder: Node3D, layout_spec: Dictionary) -> 
 	builder = town_builder
 	grid = PathGrid.new(layout_spec)
 	_rng.seed = 4242
+	_ensure_agents()
+
+
+## Residents can move in while the game runs; give each one a body slot.
+func _ensure_agents() -> void:
 	for id in sim.order:
+		if agents.has(id):
+			continue
 		var p: RefCounted = sim.people[id]
 		agents[id] = {"id": id, "pos": _spot(p.home, id, true), "path": [], "speed": 1.4, "state": "inside", "lot": p.home, "human": null,
 			"inside_after": false, "idle": 0.0}
@@ -66,6 +73,7 @@ func _visible_activity(p: RefCounted) -> bool:
 
 ## The sim has just moved everyone: send each resident to where they now are. `snap` skips the walking (after a time skip).
 func resync(snap: bool = false) -> void:
+	_ensure_agents()
 	for id in sim.order:
 		if id == skip_id:
 			continue

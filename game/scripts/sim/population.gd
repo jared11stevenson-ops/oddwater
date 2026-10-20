@@ -37,6 +37,22 @@ func generate(seed_value: int, layout: RefCounted, taken_names: Array = []) -> D
 	return {"people": people, "relations": relations}
 
 
+## One new resident for a house that has room: their own job, hobby, quirk, haunts and temperament, rolled fresh.
+## `n` numbers the newcomers (n001, n002...). Ties to colleagues and housemates are added by the caller, who knows the town.
+func newcomer(seed_value: int, home_id: String, taken_names: Array, n: int) -> Dictionary:
+	cfg = Data.load_json("sim/population.json")
+	rng.seed = hash("newcomer|%d|%d" % [seed_value, n])
+	for w in cfg["workplaces"]:
+		_slots[w["place"]] = 99
+	for nm in taken_names:
+		_used_names[nm] = true
+	var elder := rng.randf() < 0.15
+	var p := _person(home_id, "", rng.randi_range(66, 80) if elder else rng.randi_range(23, 58), "elder" if elder else "adult")
+	p["id"] = "n%03d" % n
+	p["household"] = "newcomer"
+	return p
+
+
 func _weighted(items: Array, key: String = "weight") -> Dictionary:
 	var total := 0.0
 	for it in items:

@@ -23,7 +23,10 @@ func _initialize() -> void:
 	for s in 400:
 		if Serial.rolls(s, "start"):
 			n += 1
-	ok(n > 0 and n <= 80, "serial killers are rare: %d in 400 seeds" % n)
+	ok(n > 0 and n <= 25, "serial killers are very rare (about 1 in 50): %d in 400 seeds" % n)
+	var s1: Dictionary = Serial.begin(DetectiveGame.new(11).sim, 5, "a")
+	var s2: Dictionary = Serial.begin(DetectiveGame.new(11).sim, 5, "a", [s1["signature"]])
+	ok(s1["signature"] != s2["signature"] and s1["nick"] != s2["nick"], "every serial killer has a signature of their own")
 	# --- the first case is harder
 	var g := DetectiveGame.new(11, "", true)
 	var s: Dictionary = g.serial
@@ -89,6 +92,18 @@ func _initialize() -> void:
 			stopped = false
 	ok(g2.sim.people[k0].taken or g2.sim.people[k0].jailed, "the killer is gone")
 	ok(stopped and g2.serial.get("killer", "") != k0 or g2.serial["status"] == "caught", "no more murders by that hand")
+	# --- the town grows two days after a solved case
+	ok(g2.newcomers.size() >= 1, "a newcomer moved in after the case was solved: %d" % g2.newcomers.size())
+	var nc: Dictionary = g2.newcomers[0]
+	var np: RefCounted = g2.sim.people[nc["id"]]
+	ok(g2.sim.order.has(nc["id"]) and g2.sim.alive(np) and np.home != "" and np.job != "" and np.hobby != "" and np.rel.size() >= 1, "with a home, a job, a hobby and a few ties: %s, %s" % [np.display, np.job])
+	g2.save("user://grow_test.json")
+	var l2: RefCounted = DetectiveGame.load_detective("user://grow_test.json")
+	ok(l2 != null and l2.sim.people.has(nc["id"]) and l2.sim.people[nc["id"]].display == np.display, "a saved game brings the newcomer back")
+	var no_nc := DetectiveGame.new(11, "", true)
+	for i in 2:
+		_night(no_nc)
+	ok(no_nc.newcomers.is_empty(), "nobody moves in while a case is open")
 	# --- a lazy detective does not stop it
 	var g3 := DetectiveGame.new(11, "", true)
 	for i in 9:

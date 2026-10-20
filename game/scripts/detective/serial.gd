@@ -7,7 +7,7 @@ const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const News = preload("res://scripts/detective/news.gd")
 const Data = preload("res://scripts/core/data.gd")
 
-const CHANCE := 0.12
+const CHANCE := 0.02      # about one case in fifty
 const DEADLINE_DAYS := 8
 
 
@@ -26,18 +26,19 @@ static func active(s: Dictionary) -> bool:
 
 
 ## Pick the killer and what they leave behind. Returns the opts CaseEngine.generate wants, merged into a fresh serial dict.
-static func begin(sim: RefCounted, seed_v: int, salt: String) -> Dictionary:
+## `used`: signatures earlier killers have already claimed. Every serial killer gets one of their own.
+static func begin(sim: RefCounted, seed_v: int, salt: String, used: Array = []) -> Dictionary:
 	var cb: Dictionary = Data.load_json("detective/casebook.json")
 	var r := RandomNumberGenerator.new()
 	r.seed = hash("%d|serial_who|%s" % [seed_v, salt])
 	var adults: Array = CaseEngine._adults(sim)
 	var killer: String = adults[r.randi() % adults.size()]
-	var held: Array = cb["held_back"]
-	var sig: String = held[r.randi() % held.size()]
-	var nick := "The Visitor"
-	for n in cb["nicknames"]:
-		if String(n["key"]) in sig.to_lower():
-			nick = String(n["name"])
+	var pool: Array = (cb["signatures"] as Array).filter(func(x): return not used.has(x["text"]))
+	if pool.is_empty():
+		pool = cb["signatures"]
+	var pick: Dictionary = pool[r.randi() % pool.size()]
+	var sig: String = pick["text"]
+	var nick: String = pick["nick"]
 	var s := none()
 	s["status"] = "hunting"
 	s["killer"] = killer

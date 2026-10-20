@@ -25,6 +25,17 @@ var episodes: Array = []            # the told stories of cases you have worked
 var seed_v := 1961
 var serial: Dictionary = {}         # the serial killer, if there is one (see serial.gd)
 var _force_serial := false
+var past_signatures: Array = []     # every serial killer leaves a sign of their own
+var newcomers: Array = []           # the residents who have moved in since the story began (their data, so a save brings them back)
+var _arrivals: Array = []
+
+
+## The town grows: two days after a case is fully solved, someone new moves in.
+func _welcome_newcomer() -> void:
+	var d: Dictionary = sim.make_newcomer(newcomers.size() + 1)
+	newcomers.append(d)
+	_arrivals.append("%s, %d, a %s, has moved into %s." % [d["name"], int(d["age"]), String(d["job"]), place_name(d["home"])])
+	chronicle.append({"day": sim.day, "text": "%s moved to Little Mercy." % d["name"]})
 
 
 ## `force_serial` makes the first murder the work of a serial killer (tests; a rare thing in real play).
@@ -53,7 +64,8 @@ func _prelude(seed_value: int) -> void:
 	sim.start_day()
 	var opt := {}
 	if _force_serial or Serial.rolls(seed_value, "start"):
-		serial = Serial.begin(sim, seed_value, "start")
+		serial = Serial.begin(sim, seed_value, "start", past_signatures)
+		past_signatures.append(serial["signature"])
 		opt = Serial.opts(serial)
 	case = CaseEngine.generate(sim, seed_value, 0, opt)
 	CaseEngine.apply_backstory(sim, case)
@@ -299,6 +311,9 @@ func dawn() -> String:
 	_check_caught()
 	var fresh := _night_strike()
 	var id := super.dawn()
+	for a in _arrivals:
+		today.append("New neighbour: %s" % a)
+	_arrivals.clear()
 	var lab_new: Array = CaseOps.lab_results(sim, case, det, int(sim.day))
 	for e in lab_new:
 		today.append("The lab reports: %s" % e["text"])
@@ -342,8 +357,10 @@ func _night_strike() -> bool:
 		elif d >= int(case["closed_day"]) + 2 and serial.get("status", "none") != "failed":
 			var opt := {}
 			if Serial.rolls(seed_v, "d%d" % d):
-				serial = Serial.begin(sim, seed_v, "d%d" % d)
+				serial = Serial.begin(sim, seed_v, "d%d" % d, past_signatures)
+				past_signatures.append(serial["signature"])
 				opt = Serial.opts(serial)
+			_welcome_newcomer()
 			_open_case(opt)
 			if Serial.active(serial):
 				Serial.record(sim, serial, case, seed_v, place_name(case["scene"]))
@@ -392,10 +409,16 @@ func to_dict() -> Dictionary:
 	d["mode"] = "detective"
 	d["seed_v"] = seed_v
 	d["serial"] = serial.duplicate(true)
+	d["past_signatures"] = past_signatures.duplicate()
+	d["newcomers"] = newcomers.duplicate(true)
 	return d
 
 
 func load_dict(d: Dictionary) -> void:
+	newcomers = d.get("newcomers", []).duplicate(true)
+	for n in newcomers:
+		sim.register_resident(n)
+	past_signatures = d.get("past_signatures", []).duplicate()
 	super.load_dict(d)
 	det = Detective.from_dict(d.get("det", {}))
 	case = d.get("case", {}).duplicate(true)
