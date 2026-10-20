@@ -172,6 +172,12 @@ func _bake_head(r: RandomNumberGenerator) -> void:
 	for i in 3:
 		var f := float(i) - 1.0
 		_part(m, "box", Color("8a3b3b"), Vector3(f * 0.03, -0.085 - curve * (-0.008 if i == 1 else 0.004) * -1.0 + (0.0 if i == 1 else curve * 0.007), -0.135), Vector3(0.03, 0.012, 0.012), Vector3(0, 0, -f * curve * 0.55))
+	# a little more face: eyelids, a glint in each eye and soft cheeks
+	var cheek := skin.lerp(Color("e8907a"), 0.35)
+	for sx2 in [-1.0, 1.0]:
+		_part(m, "box", skin_d, Vector3(sx2 * eye_gap, 0.053 * eye_k + 0.004, -0.133), Vector3(0.06, 0.01, 0.012))
+		_part(m, "sphere:4", Color("ffffff"), Vector3(sx2 * eye_gap + 0.01, 0.034, -0.151), Vector3(0.012, 0.012, 0.01))
+		_part(m, "sphere:6", cheek, Vector3(sx2 * 0.092, -0.052, -0.113), Vector3(0.05, 0.034, 0.03))
 	_hair_and_extras(m, r)
 	_head_mesh = _mesh_node(_head, m, Vector3.ZERO, "HeadMesh")
 
@@ -207,6 +213,8 @@ func _hair_and_extras(m, r: RandomNumberGenerator) -> void:
 	elif t["elder"]:
 		_part(m, "capsule:8", Color("d9d9de"), Vector3(-0.14, 0.0, 0.03), Vector3(0.04, 0.12, 0.08))
 		_part(m, "capsule:8", Color("d9d9de"), Vector3(0.14, 0.0, 0.03), Vector3(0.04, 0.12, 0.08))
+	if style != "bald":
+		_hair_detail(m, style)
 	if int(t["beard"]) > 0:
 		_part(m, "sphere:8", hair, Vector3(0, -0.095, -0.055), Vector3(0.24, 0.1 if int(t["beard"]) == 2 else 0.06, 0.15))
 	if t["glasses"]:
@@ -223,6 +231,43 @@ func _hair_and_extras(m, r: RandomNumberGenerator) -> void:
 			_part(m, "hemi:12", Color("d4b266"), Vector3(0, 0.1, 0), Vector3(0.3, 0.2, 0.3))
 		"band":
 			_part(m, "torus", Color("e23d3d"), Vector3(0, 0.09, 0), Vector3(0.3, 0.2, 0.3))
+
+
+## Each hairstyle gets its own silhouette on top of the cap: fringes, side locks, swoops, buzz cuts and tufts, picked per person.
+func _hair_detail(m, style: String) -> void:
+	var hair := _hair
+	var h := hash(person_id + "hs")
+	var dir := 1.0 if h % 2 == 0 else -1.0
+	match style:
+		"crop":
+			match h % 3:
+				0:      # tousled: a few tufts swept one way
+					for i in 5:
+						var a := TAU * float(i) / 5.0
+						_part(m, "cone:5", hair, Vector3(cos(a) * 0.08, 0.175, sin(a) * 0.07 - 0.01), Vector3(0.06, 0.09, 0.06), Vector3(0, 0, dir * 0.5))
+				1:      # a swept fringe
+					_part(m, "box", hair, Vector3(dir * 0.04, 0.11, -0.12), Vector3(0.2, 0.04, 0.06), Vector3(0, 0, dir * 0.22))
+				_:      # a buzz cut: nothing on top, a tidy line at the nape
+					_part(m, "box", hair.darkened(0.1), Vector3(0, -0.045, 0.12), Vector3(0.22, 0.05, 0.05))
+		"side":
+			_part(m, "box", hair, Vector3(-dir * 0.03, 0.115, -0.115), Vector3(0.24, 0.045, 0.07), Vector3(0, 0, -dir * 0.3))
+			_part(m, "box", hair.darkened(0.12), Vector3(dir * 0.135, 0.0, 0.0), Vector3(0.03, 0.14, 0.12))
+		"bob":
+			_part(m, "box", hair, Vector3(0, 0.105, -0.118), Vector3(0.26, 0.05, 0.05))                       # blunt fringe
+			for sx in [-1.0, 1.0]:
+				_part(m, "capsule:6", hair, Vector3(sx * 0.14, -0.04, -0.01), Vector3(0.05, 0.22, 0.12))     # chin-length sides
+		"long":
+			for sx in [-1.0, 1.0]:
+				_part(m, "capsule:6", hair, Vector3(sx * 0.145, -0.1, -0.02), Vector3(0.05, 0.36, 0.1))      # locks framing the face
+			_part(m, "box", hair, Vector3(dir * 0.05, 0.11, -0.118), Vector3(0.18, 0.04, 0.05), Vector3(0, 0, dir * 0.35))
+		"bun", "ponytail":
+			_part(m, "box", hair, Vector3(0, 0.12, -0.11), Vector3(0.2, 0.03, 0.05))
+			for sx in [-1.0, 1.0]:
+				_part(m, "capsule:6", hair, Vector3(sx * 0.135, 0.02, -0.03), Vector3(0.03, 0.12, 0.07))
+		"curls":
+			for sx in [-1.0, 1.0]:
+				_part(m, "sphere:6", hair, Vector3(sx * 0.14, -0.02, 0.02), Vector3(0.08, 0.08, 0.08))
+				_part(m, "sphere:6", hair, Vector3(sx * 0.12, 0.06, -0.06), Vector3(0.07, 0.07, 0.07))
 
 
 ## Rebake the face for a new expression (the mood changed, or a conversation wants a look).

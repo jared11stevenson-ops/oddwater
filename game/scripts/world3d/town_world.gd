@@ -452,9 +452,15 @@ func current_lot() -> String:
 
 
 # ------------------------------------------------------------------ interacting
-func _refresh_prompt() -> void:
+## Work out the Talk / Enter button right now (after a trip, a closed card or a closed panel), even while the town is still paused.
+func refresh_prompt(ignore_pause: bool = false) -> void:
+	_prompt_timer = 0.12
+	_refresh_prompt(ignore_pause)
+
+
+func _refresh_prompt(ignore_pause: bool = false) -> void:
 	var np: Dictionary = {}
-	if inside == "" and game.phase == "day" and not paused:
+	if inside == "" and game.phase == "day" and (not paused or ignore_pause):
 		var p := player.global_position
 		var people: Array = npcs.nearby(p, 3.0)
 		if people.is_empty():
@@ -524,6 +530,8 @@ func arrive_at(lot: String) -> void:
 	if not d.is_empty():
 		player.teleport(d["front"], float(d["yaw"]))
 	time_skipped()
+	prompt = {}
+	_refresh_prompt(true)
 
 
 # ------------------------------------------------------------------ the case on the map

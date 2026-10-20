@@ -443,7 +443,7 @@ func _strip_z(z0: float, z1: float, x: float, w: float, y: float, h: float, col:
 
 func _streets_and_sidewalks() -> void:
 	var spec: Dictionary = layout.spec
-	var road := Color("858b95")
+	var road := Color("9a9893")
 	var walk := Color("cfc7b6")
 	var kerb := Color("e2dccd")
 	var paint := Color("efe3a8")
@@ -667,6 +667,8 @@ func _infill() -> void:
 			_gap(gc, float(a["y"]), _side_sign(a), gap, float(a["d"]), hash("gap%d" % n))
 	_back_yards()
 	_meadows()
+	_fields()
+	_yard_extras()
 
 
 func _gap(gc: float, cz: float, face: float, gap: float, depth: float, hsh: int) -> void:
@@ -777,6 +779,110 @@ func _meadows() -> void:
 	for side in [-1.0, 1.0]:
 		for i in 14:
 			add_tree(Vector3(side * r.randf_range(488.0, 522.0), 0, r.randf_range(-100.0, 410.0)), r.randf_range(1.1, 1.7), ["oak", "oak2", "maple", "pine"][r.randi() % 4])
+
+
+## The farmland that wraps the town to the east, west and south: hedgerows, tree clumps, round bales, field gates, a few sheds and a
+## farm track, so the open ground reads as worked country rather than a bare lawn (the field patchwork itself is in the terrain shader).
+func _fields() -> void:
+	var r := RandomNumberGenerator.new()
+	r.seed = 905
+	var straw := Color("c9a95a")
+	for side in [-1.0, 1.0]:
+		# hedgerows and fence runs in the long direction, along rough field boundaries
+		for i in 22:
+			var hx: float = side * (498.0 + float(i % 6) * 38.0 + r.randf_range(0.0, 12.0))
+			var hz := r.randf_range(-95.0, 545.0)
+			var len := r.randf_range(14.0, 34.0)
+			var gy := ground_height(hx, hz)
+			if r.randf() < 0.65:
+				detail.box(Vector3(hx, gy + 0.55, hz), Vector3(1.1, 1.1, len), Color("46703c"), 0.3)
+				for k in int(len / 2.6):
+					detail.blob(Vector3(hx, gy + 1.1, hz - len / 2.0 + (float(k) + 0.5) * len / floorf(len / 2.6)), Vector3(1.5, 0.9, 2.4), Color("56884a").lightened(r.randf_range(-0.07, 0.05)), 5)
+				if r.randf() < 0.5:
+					add_tree(Vector3(hx, gy - 0.1, hz + r.randf_range(-len / 2.0, len / 2.0)), r.randf_range(1.2, 1.9), ["oak", "oak2", "poplar"][r.randi() % 3])
+			else:
+				for k in int(len / 3.0):
+					detail.box(Vector3(hx, gy + 0.5, hz - len / 2.0 + float(k) * 3.0), Vector3(0.1, 1.0, 0.1), Color("8a7352"), 0.0)
+				detail.box(Vector3(hx, gy + 0.85, hz), Vector3(0.05, 0.05, len), Color("8a7352"), 0.0)
+				detail.box(Vector3(hx, gy + 0.5, hz), Vector3(0.05, 0.05, len), Color("8a7352"), 0.0)
+		# round bales and little tree clumps out in the fields
+		for i in 26:
+			var bx: float = side * r.randf_range(500.0, 700.0)
+			var bz := r.randf_range(-90.0, 540.0)
+			var by := ground_height(bx, bz)
+			var yaw := r.randf() * PI
+			var bs := r.randf_range(0.9, 1.15)
+			detail.add("cyl:10", Transform3D(Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, PI / 2.0) * Basis.from_scale(Vector3(1.5 * bs, 1.2 * bs, 1.5 * bs)), Vector3(bx, by + 0.75 * bs, bz)), straw.lerp(Color("a89048"), r.randf() * 0.6), 0.3)
+			if r.randf() < 0.35:
+				detail.add("cyl:10", Transform3D(Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, PI / 2.0) * Basis.from_scale(Vector3(1.5 * bs, 1.2 * bs, 1.5 * bs)), Vector3(bx + 1.7, by + 0.75 * bs, bz + 0.4)), straw.lerp(Color("a89048"), r.randf() * 0.6), 0.3)
+		for i in 9:
+			var cx: float = side * r.randf_range(505.0, 700.0)
+			var cz := r.randf_range(-80.0, 530.0)
+			for k in 4 + r.randi() % 4:
+				var tx := cx + r.randf_range(-7.0, 7.0)
+				var tz := cz + r.randf_range(-7.0, 7.0)
+				add_tree(Vector3(tx, ground_height(tx, tz) - 0.1, tz), r.randf_range(1.1, 2.0), ["oak", "oak2", "maple", "poplar", "pine"][r.randi() % 5])
+			for k in 10:
+				add_tuft(Vector3(cx + r.randf_range(-9.0, 9.0), ground_height(cx, cz), cz + r.randf_range(-9.0, 9.0)), r.randf_range(1.0, 1.8), true)
+		# a farm track and a couple of sheds
+		for k in 12:
+			var tx2: float = side * (486.0 + float(k) * 18.0)
+			detail.box(Vector3(tx2, ground_height(tx2, 262.0) + 0.04, 262.0), Vector3(18.4, 0.08, 3.6), Color("8f7b5a"), 0.4)
+		for k in 3:
+			var sx: float = side * (560.0 + float(k) * 55.0)
+			var sz := 232.0 + float(k) * 28.0 * (1.0 if k % 2 == 0 else -1.0)
+			var sy := ground_height(sx, sz)
+			var sc := Color(["a8483a", "8a7a5a", "6f8a9a"][k % 3])
+			body.box(Vector3(sx, sy + 1.5, sz), Vector3(7.0, 3.0, 5.0), sc, 0.9)
+			body.add("prism", Transform3D(Basis(Vector3.UP, PI / 2.0) * Basis.from_scale(Vector3(5.4, 1.5, 7.6)), Vector3(sx, sy + 3.75, sz)), Color("5b5b64"), 0.6)
+	# south of the back lane: more hedges, bales and clumps between the farmstead and the town edge
+	for i in 18:
+		var hx2 := r.randf_range(-480.0, 480.0)
+		var hz2 := r.randf_range(425.0, 548.0)
+		if absf(hx2 + 300.0) < 48.0:
+			continue
+		var len2 := r.randf_range(14.0, 30.0)
+		detail.box(Vector3(hx2, 0.55, hz2), Vector3(len2, 1.1, 1.1), Color("46703c"), 0.3)
+		for k in int(len2 / 2.6):
+			detail.blob(Vector3(hx2 - len2 / 2.0 + (float(k) + 0.5) * len2 / floorf(len2 / 2.6), 1.1, hz2), Vector3(2.4, 0.9, 1.5), Color("56884a").lightened(r.randf_range(-0.07, 0.05)), 5)
+		if i % 3 == 0:
+			detail.add("cyl:10", Transform3D(Basis(Vector3.RIGHT, PI / 2.0) * Basis.from_scale(Vector3(1.5, 1.2, 1.5)), Vector3(hx2 + 4.0, 0.75, hz2 + 5.0)), straw, 0.3)
+
+
+## The strips of lawn beside and behind the houses: vegetable plots, wood piles, flower patches, a spare tree, long grass, so the yards
+## are not all the same clipped green.
+func _yard_extras() -> void:
+	var r := RandomNumberGenerator.new()
+	r.seed = 1707
+	for l in layout.lots:
+		var kind := String(l["kind"])
+		if kind in ["landmark", "park"]:
+			continue
+		var cx := float(l["x"])
+		var cz := float(l["y"])
+		var w := float(l["w"])
+		var d := float(l["d"])
+		var face := _side_sign(l)
+		var back := cz - face * (d / 2.0 - 5.0)
+		var roll := r.randf()
+		var px := cx + r.randf_range(-w / 2.0 + 4.0, w / 2.0 - 4.0)
+		if roll < 0.3:
+			detail.box(Vector3(px, 0.05, back), Vector3(4.5, 0.1, 3.0), Color("5a4430"), 0.3)         # a vegetable plot with rows
+			for k in 5:
+				detail.box(Vector3(px - 1.8 + float(k) * 0.9, 0.2, back), Vector3(0.35, 0.22, 2.6), Color(["5f8f3f", "7a9a3c", "4f7f3a"][k % 3]), 0.3)
+		elif roll < 0.5:
+			for k in 9:
+				detail.blob(Vector3(px + r.randf_range(-1.6, 1.6), 0.28, back + r.randf_range(-1.2, 1.2)), Vector3(0.45, 0.4, 0.45), Color(FLOWERS_YARD[r.randi() % FLOWERS_YARD.size()]), 5)
+		elif roll < 0.62:
+			detail.box(Vector3(px, 0.4, back), Vector3(2.0, 0.8, 0.9), Color("8a6a46"), 0.2)          # a woodpile
+			detail.box(Vector3(px, 0.82, back), Vector3(2.0, 0.05, 0.95), Color("5a4a3a"), 0.2)
+		elif roll < 0.8:
+			add_tree(Vector3(px, 0, back + r.randf_range(-2.0, 2.0)), r.randf_range(0.8, 1.2), ["oak", "maple", "oak2", "poplar"][r.randi() % 4])
+		for k in 10:
+			add_tuft(Vector3(cx + r.randf_range(-w / 2.0, w / 2.0), 0, cz + r.randf_range(-d / 2.0, d / 2.0)), r.randf_range(0.8, 1.5), r.randf() < 0.3)
+
+
+const FLOWERS_YARD := ["d9a23a", "c9573f", "b86ad8", "e8e0d0", "d86a8a"]
 
 
 func _forest() -> void:

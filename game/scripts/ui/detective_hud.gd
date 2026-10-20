@@ -257,6 +257,8 @@ func _card(title: String, subtitle: String, body: String, button: String, cb: Ca
 func _close_card() -> void:
 	super._close_card()
 	if act_btn != null:
+		if not panel.visible:
+			world.refresh_prompt(true)
 		_on_prompt(world.prompt)
 
 
@@ -339,6 +341,7 @@ func _report_card() -> void:
 	var day: int = int(game.sim.day)
 	_card("DAY %d" % day, "The day is done", "", "Sleep until morning", _eod_sleep, game.me())
 	card_body.visible = false
+	_compact_card()
 	_eod_stress()
 	var learned: Array = []
 	for eid in d.order:
@@ -388,8 +391,25 @@ func _report_card() -> void:
 	_eod_section("HEADLINES", heads.slice(0, 4) if not heads.is_empty() else ["Nothing in the Courier today. A quiet town, or a careful one."])
 	var sec := _btn(card_button.get_parent(), "Read the case file first", func(): _close_card(); show_case(), 24, 56)
 	sec.name = "CardSecondary"
+	sec.custom_minimum_size = Vector2(0, 48)
 	card_button.get_parent().move_child(sec, card_button.get_index())
+	var tail := Control.new()          # room under the last line so it never ends flush against the buttons
+	tail.custom_minimum_size = Vector2(0, 10)
+	card_content.add_child(tail)
 	UiKit.haptic(30)
+
+
+## A tighter page for the long end-of-day report: smaller headings and buttons so the list gets the height.
+func _compact_card() -> void:
+	var v: Control = card_button.get_parent()
+	var heads := 0
+	for c in v.get_children():
+		if c is Label and heads < 2:
+			(c as Label).add_theme_font_size_override("font_size", 46 if heads == 0 else 28)
+			heads += 1
+	v.add_theme_constant_override("separation", 6)
+	card_button.custom_minimum_size = Vector2(0, 62)
+	card_content.add_theme_constant_override("separation", 6)
 
 
 func _eod_stress() -> void:
@@ -425,7 +445,7 @@ func _eod_section(title: String, lines: Array) -> void:
 	var h := _head(card_content, title, 26, RED)
 	h.custom_minimum_size = Vector2(0, 0)
 	for l in lines:
-		var lb := _lbl(card_content, "·  " + String(l), 23)
+		var lb := _lbl(card_content, "·  " + String(l), 22)
 		lb.custom_minimum_size = Vector2(0, 0)
 		lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -456,6 +476,7 @@ func _night_panel() -> void:
 	var sl := _btn(box, "Sleep until morning", next_morning, 32, 76)
 	sl.name = "Sleep"
 	UiKit.set_button_style(sl, INK, INK, PAPER)
+	_bottom_room()
 
 
 func _inside_panel() -> void:
@@ -627,6 +648,7 @@ func _spend(skill: String) -> void:
 # ------------------------------------------------------------------ talking
 func show_talk(npc: String) -> void:
 	_clear_panel()
+	box.add_theme_constant_override("separation", 6)
 	talk_npc = npc
 	var q: RefCounted = game.sim.people[npc]
 	var hdr := HBoxContainer.new()
@@ -635,7 +657,7 @@ func show_talk(npc: String) -> void:
 	var tone := ""
 	if not last_talk.is_empty() and last_talk.get("npc", "") == npc:
 		tone = last_talk.get("tone", "")
-	hdr.add_child(_portrait(q, 84, tone))
+	hdr.add_child(_portrait(q, 64, tone))
 	var hv := VBoxContainer.new()
 	hdr.add_child(hv)
 	_head(hv, q.display, 34).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
@@ -654,7 +676,7 @@ func show_talk(npc: String) -> void:
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
+	grid.add_theme_constant_override("v_separation", 6)
 	box.add_child(grid)
 	for x in qs:
 		var b := _wbtn(grid, "%s  (%d min)" % [x[0], x[2]], _q.bind(npc, x[1], ""))
@@ -667,14 +689,15 @@ func show_talk(npc: String) -> void:
 	sb.name = "Q_show"
 	var fb := _wbtn(grid, "Be friendly  (%d min)" % COST_FRIENDLY, _friendly.bind(npc))
 	fb.name = "Q_friendly"
-	var lv := _btn(box, "Done talking", _leave_talk, 28, 64)
+	var lv := _btn(box, "Done talking", _leave_talk, 26, 50)
 	lv.name = "Q_leave"
 	UiKit.set_button_style(lv, INK, INK, PAPER)
+	_bottom_room(8.0)
 
 
 ## A wrapping two-line button for the question grid.
 func _wbtn(parent: Control, text: String, cb: Callable) -> Button:
-	var b := _btn(parent, text, cb, 21, 76)
+	var b := _btn(parent, text, cb, 20, 52)
 	b.clip_text = false
 	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return b

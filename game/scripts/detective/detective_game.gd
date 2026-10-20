@@ -45,7 +45,7 @@ var town_news: Array = []           # front pages that are not about a serial ki
 func _welcome_newcomer() -> void:
 	var d: Dictionary = sim.make_newcomer(newcomers.size() + 1)
 	newcomers.append(d)
-	_arrivals.append("%s, %d, a %s, has moved into %s." % [d["name"], int(d["age"]), String(d["job"]), place_name(d["home"])])
+	_arrivals.append("%s, %d, %s, has moved into %s." % [d["name"], int(d["age"]), Prose.job_np(String(d["job"])), place_name(d["home"])])
 	chronicle.append({"day": sim.day, "text": "%s moved to Little Mercy." % d["name"]})
 
 

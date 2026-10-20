@@ -323,6 +323,12 @@ static func _serial_tweaks(sim: RefCounted, c: Dictionary, n: int) -> void:
 		c["facts"].erase("f_owns")
 		c["owner_item_knowers"] = []
 		c["latents"] = c["latents"].filter(func(l): return l["owner"] != k)
+	# Every serial case must be provably solvable: with no scene evidence on the killer, somebody on their street noticed the hours they keep.
+	# That is enough on its own (two kinds of proof) to ask the judge for the warrant that opens the weapon and the coat.
+	var pk_home: String = sim.people[k].home
+	var street: Array = neighbors(sim, pk_home, 3, [k, v, c["found_by"]])
+	if not street.is_empty():
+		_fact(c, "f_serial_street", "I keep odd hours myself, so I notice. %s came up the lane after two in the morning, that night, and the next morning there was a wash of grey water down the gutter from their back step." % first(sim, k), "saw", [street[0]], "free", [_sup("opportunity", k, 2), _sup("link", k, 2)], k)
 	if n < 1 and c["herring_ids"].size() > 0:
 		# a decoy: the first body looks like an ordinary murder with an ordinary, loud suspect
 		var d: String = c["herring_ids"][-1]

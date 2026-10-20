@@ -1,4 +1,11 @@
 {
+"know_more": [
+{"s": "There's more I could say, but ask me properly. What I saw, or who I'd look at. I'm not good at being asked everything at once.", "t": []},
+{"s": "I've a bit more than that, if you ask the right thing. I won't ramble. Ask me what I saw, or who I'd suspect.", "t": ["soc+"]},
+{"s": "That's the shape of it, as I know it. If you want what I actually saw, or who I think did it, ask me straight.", "t": ["hon+"]},
+{"s": "Ask me what I saw, or whom I suspect. I'll answer. I'd rather not guess out loud, in this town.", "t": ["bold-", "old"]},
+{"s": "I know a bit more. Ask me plainly, Detective. What I saw. Who I'd suspect. Don't dress it up.", "t": ["bold+"]}
+],
 "alibi_default": [
 {"s": "Home, in bed, like every night. Nobody to vouch for me but the cat.", "t": ["soc-"]},
 {"s": "I had the television on until the news, then I was out. Ask the neighbours if my light went off, they notice such things.", "t": ["soc+"]},

@@ -336,11 +336,20 @@ func _panel_header() -> void:
 	var l := Label.new()
 	l.name = "PanelHeader"
 	l.text = t
-	l.custom_minimum_size = Vector2(PANEL_W - 64.0 - 76.0, 54)
+	l.custom_minimum_size = Vector2(PANEL_W - 64.0 - 76.0, 36)
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	l.add_theme_font_size_override("font_size", UiKit.fs(20))
 	l.add_theme_color_override("font_color", RED if (spent != null and int(spent) > 0) else VIOLET)
 	box.add_child(l)
+
+
+## A little air under the last button of a panel, so a scrolled panel never ends flush against the screen edge.
+func _bottom_room(h: float = 16.0) -> void:
+	var sp := Control.new()
+	sp.name = "BottomRoom"
+	sp.custom_minimum_size = Vector2(0, h)
+	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(sp)
 
 
 func close_panel() -> void:
@@ -350,6 +359,7 @@ func close_panel() -> void:
 	last_talk = {}
 	if world.inside == "" and game.phase == "day":
 		world.paused = false
+		world.refresh_prompt()
 		_on_prompt(world.prompt)
 
 
@@ -460,6 +470,8 @@ func go(place: String) -> Dictionary:
 	if r.get("ok", false):
 		world.arrive_at(place)
 		close_panel()
+		world.refresh_prompt()
+		_on_prompt(world.prompt)
 	return r
 
 

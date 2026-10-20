@@ -247,11 +247,23 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 						_tell_fact(sim, c, det, npc, f, lines, learned)
 				if not found:
 					lines.append("\"%s\"" % Voice.say("alibi_unknown", sim, c, npc, {"about": CaseEngine.first(sim, about)}))
-		"victim":
+		"victim", "know":
+			if npc == victim:
+				lines.append("(The dead don't answer.)")
+				return _finish(sim, c, det, {"text": "\n".join(lines), "learned": [], "minutes": 0}, "ask|%s|%s|%s" % [npc, topic, about])
 			var st: String = Relationship.stage(p.affinity(victim), p.trust(victim))
 			var intent: String = {"best friend": "victim_close", "close friend": "victim_close", "friend": "victim_friend", "acquaintance": "victim_acq", "stranger": "victim_stranger", "on bad terms": "victim_bad", "rival": "victim_bad", "enemy": "victim_enemy"}.get(st, "victim_acq")
 			lines.append("\"%s? %s\"" % [CaseEngine.first(sim, victim), Voice.say(intent, sim, c, npc, {"v": CaseEngine.first(sim, victim)})])
 			_facts_for(sim, c, det, npc, "victim", lines, learned)
+			if topic == "know":
+				# "What do you know?" is open-ended: they give you the lay of it, and point you at what they could say if asked properly
+				var more := false
+				for fid in c["facts"]:
+					var f9: Dictionary = c["facts"][fid]
+					if f9["knowers"].has(npc) and f9["topic"] in ["saw", "suspects", "owner"] and not det.has(fid) and not f9.get("faded", false):
+						more = true
+				if more:
+					lines.append("\"%s\"" % Voice.say("know_more", sim, c, npc, {"n": CaseEngine.first(sim, npc)}))
 		"suspects":
 			var named := 0
 			for sid in c["suspects"]:
@@ -288,6 +300,9 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 						var e3 := _fact_entry(c, f2, sim, npc)
 						if det.learn(e3):
 							learned.append(e3)
+	lines = lines.filter(func(l): return String(l).strip_edges() != "" and String(l) != "\"\"")
+	if lines.is_empty():
+		lines.append("%s thinks about it. \"I've told you what I've got. Ask me something particular and I'll try.\"" % CaseEngine.first(sim, npc))
 	var text := "\n".join(lines)
 	_log(det, sim, npc, topic, about, text)
 	if not learned.is_empty():
@@ -471,7 +486,11 @@ static func judge(sim: RefCounted, c: Dictionary, det: RefCounted, culprit: Stri
 	var right_person: bool = culprit == c["killer"]
 	var right_motive: bool = motive == c["motive"]
 	var right_method: bool = method == c["method"]
-	var enough: bool = cats >= 3 and (int(pr["opportunity"]) > 0 or int(pr["link"]) > 0) and total >= 6
+	# judge and jury must agree: the same confidence function the trial uses decides whether the case holds
+	var jury: Dictionary = {"confidence": 0.0}
+	if right_person:
+		jury = load("res://scripts/detective/justice.gd").trial(sim, c, det, culprit)
+	var enough: bool = cats >= 3 and (int(pr["opportunity"]) > 0 or int(pr["link"]) > 0) and total >= 6 and float(jury["confidence"]) >= 70.0
 	var verdict := ""
 	var text := ""
 	if right_person and enough:

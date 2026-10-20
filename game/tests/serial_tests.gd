@@ -4,6 +4,9 @@ extends SceneTree
 const DetectiveGame = preload("res://scripts/detective/detective_game.gd")
 const Serial = preload("res://scripts/detective/serial.gd")
 const Bot = preload("res://tests/case_bot.gd")
+const Justice = preload("res://scripts/detective/justice.gd")
+const CaseOps = preload("res://scripts/detective/case_ops.gd")
+const Prose = preload("res://scripts/detective/prose.gd")
 var fails := 0
 var checks := 0
 
@@ -115,5 +118,39 @@ func _initialize() -> void:
 	for i in 9:
 		_night(g3)
 	ok((g3.serial["kills"] as Array).size() >= 3, "if you do nothing, the dead pile up: %d" % (g3.serial["kills"] as Array).size())
+	# --- every forced-serial case is provably solvable, through the whole road: accuse -> arrest -> trial
+	for sd in [110, 120, 101, 105, 115]:
+		var gs := DetectiveGame.new(sd, "", true)
+		var ks: String = gs.case["killer"]
+		var bs = Bot.new(gs.sim, gs.case, gs.det)
+		bs.solve()
+		var missing: Array = gs.case["clues"].keys().filter(func(id): return not gs.det.has(id))
+		ok(missing.is_empty(), "seed %d: a thorough detective finds every clue (missing %s)" % [sd, str(missing)])
+		var jr: Dictionary = Justice.trial(gs.sim, gs.case, gs.det, ks)
+		var jd: Dictionary = CaseOps.judge(gs.sim, gs.case, gs.det, ks, gs.case["motive"], gs.case["method"])
+		ok(jd["verdict"] == "convicted" and jr["confidence"] >= 70.0, "seed %d: judge and jury agree on a flawless notebook (%s, %d)" % [sd, jd["verdict"], int(jr["confidence"])])
+		var rs: Dictionary = gs.accuse(ks, gs.case["motive"], gs.case["method"])
+		ok(rs["verdict"] == "convicted" and rs.get("trial", {}).get("verdict", "") == "guilty" and gs.sim.people[ks].jailed, "seed %d: convicted at trial (%s, confidence %d)" % [sd, rs["verdict"], int(rs.get("trial", {}).get("confidence", -1))])
+	# a thin notebook does not convict: judge and jury agree on that too
+	var gt := DetectiveGame.new(120, "", true)
+	var kt: String = gt.case["killer"]
+	gt.det.learn({"id": "thin", "title": "x", "text": "x", "kind": "testimony", "source": "", "supports": [{"cat": "opportunity", "about": kt, "strength": 1}, {"cat": "means", "about": kt, "strength": 1}, {"cat": "link", "about": kt, "strength": 1}], "day": 1})
+	var jt: Dictionary = CaseOps.judge(gt.sim, gt.case, gt.det, kt, gt.case["motive"], gt.case["method"])
+	ok(jt["verdict"] != "convicted" and Justice.trial(gt.sim, gt.case, gt.det, kt)["confidence"] < 70.0, "a thin case neither convicts on the judge's word nor at trial (%s)" % jt["verdict"])
+	# --- ask "know": always a meaningful reply, from everyone
+	var gk := DetectiveGame.new(110, "", true)
+	var empty_know := 0
+	for id in gk.sim.order:
+		if id == "player" or not gk.sim.alive(gk.sim.people[id]):
+			continue
+		if String(gk.ask(id, "know")["text"]).strip_edges().length() < 12:
+			empty_know += 1
+	ok(empty_know == 0, "everyone answers 'what do you know': %d silent" % empty_know)
+	# --- job names carry their article ("an events coordinator")
+	var ga := DetectiveGame.new(11)
+	ga._welcome_newcomer()
+	var arr: String = ga._arrivals[-1]
+	var nj: String = String(ga.newcomers[-1]["job"])
+	ok(arr.contains(Prose.job_np(nj)) and not arr.contains(", a events") and not arr.contains(", a %s," % nj) or Prose.job_np(nj).begins_with("a "), "the arrival text uses the article helper: %s" % arr)
 	print("serial_tests: %d checks, %d failed" % [checks, fails])
 	quit(1 if fails > 0 else 0)

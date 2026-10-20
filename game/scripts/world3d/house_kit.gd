@@ -258,8 +258,11 @@ func house(cx: float, cz: float, face: float, lot_w: float, lot_d: float, hsh: i
 		D.box(Vector3(cx, 0.72, fz), Vector3(span, 0.08, 0.45), Color("c4beb2"), 0.4)
 	# mailbox
 	var mx := door_x + 2.3
-	D.box(Vector3(mx, 0.55, fz + face * 0.1), Vector3(0.08, 1.1, 0.08), Color("4a3a2a"))
-	D.box(Vector3(mx, 1.18, fz + face * 0.1), Vector3(0.3, 0.26, 0.5), Color("2f5a8a") if (hsh >> 21) % 2 == 0 else Color("a8483a"))
+	var mb_col := Color(["7f9bb8", "c4705f", "93a67e", "e6e0cc", "a0a0ac"][(hsh >> 21) % 5])
+	D.box(Vector3(mx, 0.55, fz + face * 0.1), Vector3(0.08, 1.1, 0.08), Color("a08c6c"))
+	D.box(Vector3(mx, 1.12, fz + face * 0.1), Vector3(0.3, 0.2, 0.5), mb_col)
+	D.add("cyl:8", Transform3D(Basis(Vector3.RIGHT, PI / 2.0) * Basis.from_scale(Vector3(0.3, 0.5, 0.2)), Vector3(mx, 1.22, fz + face * 0.1)), mb_col)    # the rounded lid
+	D.box(Vector3(mx + 0.17, 1.28, fz + face * 0.1 + 0.12), Vector3(0.025, 0.14, 0.03), Color("c9b04a"))                                                      # the little flag
 	# garden: trees, shrubs and flowerbeds
 	var trees := r.randi() % 3
 	for i in trees:

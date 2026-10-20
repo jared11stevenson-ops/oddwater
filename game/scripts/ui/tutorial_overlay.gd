@@ -134,6 +134,14 @@ func _on_look(d: Vector2) -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	# a panel or page over the world: step out of its way (and count opening the Case panel as doing the "case" step)
+	var covered: bool = (hud.panel != null and hud.panel.visible) or hud.card != null or (hud.settings_ui != null and is_instance_valid(hud.settings_ui))
+	if covered:
+		if hud.panel != null and hud.panel.visible and String(STEPS[index]["key"]) == "case" and index < STEPS.size() - 1:
+			_show_step(index + 1)
+		visible = false
+		return
+	visible = true
 	if ring != null:
 		ring.queue_redraw()
 	_rect = hud.tut_rect(String(STEPS[index]["key"]))

@@ -165,7 +165,7 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 	for k in ["opportunity", "means", "motive", "link"]:
 		if int(pr[k]) > 0:
 			cats += 1
-	var conf := 20.0 + total * 4.5 + cats * 4.0
+	var conf := 28.0 + total * 5.0 + cats * 4.0   # three solid categories and six points of proof is a case a jury convicts on (70); judge() asks this same function
 	var attacks: Array = []
 	var add := func(t: String, d: float) -> void:
 		attacks.append({"text": t, "delta": d})

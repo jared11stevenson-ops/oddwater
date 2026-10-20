@@ -133,7 +133,7 @@ func update_tint() -> void:
 		col = TINTS[-1][1]
 	match game.sim.weather_today():
 		"cloudy": col = col * Color(0.93, 0.95, 0.99)
-		"rain": col = col * Color(0.8, 0.86, 0.97)
+		"rain": col = col * (Color(0.93, 0.95, 0.99) if mini else Color(0.8, 0.86, 0.97))
 		"fog": col = col * Color(0.92, 0.94, 0.97)
 	base.modulate = col
 	night = clampf((19.2 - h) / -2.0, 0.0, 1.0) if h >= 19.2 else (clampf((6.8 - h) / 0.8, 0.0, 1.0) if h < 6.8 else 0.0)
@@ -180,10 +180,10 @@ func _draw() -> void:
 	match game.sim.weather_today():
 		"rain":
 			var tms := Time.get_ticks_msec()
-			for i in 140:
+			for i in (36 if mini else 140):
 				var rx := fmod(float(i) * 97.3 + float(tms) * 0.12 * (0.7 + float(i % 5) * 0.1), size.x + 60.0) - 30.0
 				var ry := fmod(float(i) * 53.7 + float(tms) * 0.55 * (0.8 + float(i % 7) * 0.05), size.y + 40.0) - 20.0
-				draw_line(Vector2(rx, ry), Vector2(rx - 4.0, ry + 11.0), Color(0.45, 0.6, 0.75, 0.55), 1.6, true)
+				draw_line(Vector2(rx, ry), Vector2(rx - 4.0, ry + 11.0), Color(0.45, 0.6, 0.75, 0.2 if mini else 0.55), 1.0 if mini else 1.6, true)
 		"fog":
 			draw_rect(Rect2(Vector2.ZERO, size), Color(0.93, 0.95, 0.97, 0.3))
 	# selection

@@ -2,8 +2,8 @@ shader_type spatial;
 render_mode cull_back, specular_schlick_ggx;
 // The lake: teal shallows deepening to a dark blue-green, layered ripples that catch the light, a capped fresnel that reflects the
 // sky's own horizon colour (never white), glitter that follows the sun or moon, soft foam at the shore and around posts.
-uniform vec3 shallow : source_color = vec3(0.17, 0.40, 0.42);
-uniform vec3 deep : source_color = vec3(0.02, 0.09, 0.15);
+uniform vec3 shallow : source_color = vec3(0.2, 0.33, 0.34);
+uniform vec3 deep : source_color = vec3(0.03, 0.08, 0.12);
 uniform vec3 foam_col : source_color = vec3(0.9, 0.95, 0.93);
 uniform vec3 sky_col : source_color = vec3(0.62, 0.78, 0.9);
 uniform vec3 glint_col : source_color = vec3(1.0, 0.95, 0.85);
@@ -46,7 +46,7 @@ void fragment() {
 	vec3 col = mix(shallow, deep, pow(dd, 0.7));
 	// sandy, lighter water in the first few metres
 	float edge = clamp((shore_z - wpos.z) / 7.0, 0.0, 1.0);
-	col = mix(vec3(0.5, 0.66, 0.58), col, smoothstep(0.0, 1.0, edge));
+	col = mix(vec3(0.46, 0.5, 0.42), col, smoothstep(0.0, 1.0, edge));
 	// light and dark bands, like brush strokes
 	col *= 0.92 + 0.16 * smoothstep(0.4, 0.8, vnoise(uv * vec2(0.09, 0.31) + vec2(t * 0.02, 0.0)));
 	col += vec3(0.05, 0.08, 0.07) * smoothstep(0.55, 0.8, r0);
@@ -56,9 +56,17 @@ void fragment() {
 	float foam = smoothstep(2.0 + pulse * 0.7, 0.2, fz + (r0 - 0.5) * 2.4);
 	foam *= smoothstep(-1.5, 0.3, fz);
 	col = mix(col, foam_col, clamp(foam, 0.0, 1.0) * 0.85);
+	// a lacy foam line where the water meets the land: it breathes in and out with the swell, and breaks up with the ripples
+	float wave = 0.5 + 0.5 * sin(t * 0.8 + wpos.x * 0.13 + r0 * 3.0);
+	float line_c = 0.15 + wave * 0.9;
+	float lace = smoothstep(0.3, 0.7, vnoise(vec2(wpos.x * 1.7, fz * 2.2) + t * 0.1));
+	float fline = smoothstep(0.45, 0.0, abs(fz - line_c + (r0 - 0.5) * 0.5)) * mix(0.55, 1.0, lace);
+	fline += smoothstep(0.2, 0.0, abs(fz - line_c - 0.9 - wave * 0.4)) * lace * 0.35;
+	col = mix(col, foam_col, clamp(fline, 0.0, 1.0) * 0.9);
 	// fresnel, capped so the far lake never washes to white
 	float fres = pow(1.0 - clamp(dot(nrm_w, normalize((INV_VIEW_MATRIX * vec4(VIEW, 0.0)).xyz)), 0.0, 1.0), 4.0);
 	col = mix(col, sky_col, clamp(fres, 0.0, 0.4) * mix(0.55, 0.4, night));
+	col = mix(vec3(dot(col, vec3(0.299, 0.587, 0.114))), col, 0.82);
 	// glitter
 	float glit = smoothstep(0.88, 1.0, vnoise(uv * 3.1 + vec2(t * 0.4, -t * 0.3))) * smoothstep(0.45, 0.8, r0);
 	col += glint_col * glit * 0.2 * (1.0 - 0.4 * night) * calm;

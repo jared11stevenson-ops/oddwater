@@ -71,12 +71,11 @@ void fragment() {
 	} else if (id == 5) {
 		float n = vnoise(wp.xz * 0.9) * 0.5 + vnoise(wp.xz * 5.0) * 0.3 + vnoise(wp.xz * 21.0) * 0.2;
 		c *= 0.82 + 0.3 * n;
-		float crack = smoothstep(0.012, 0.0, abs(vnoise(wp.xz * 0.55) - 0.5));
-		c *= 1.0 - 0.25 * crack;
+		c *= 1.0 + 0.1 * (smoothstep(0.6, 0.66, vnoise(wp.xz * 0.15 + 9.0)) - 0.5);       // patched, repaired stretches
 		float pud = smoothstep(0.52, 0.64, vnoise(wp.xz * 0.28 + 3.0)) * wet;
 		c = mix(c * (1.0 - 0.35 * wet), c * 0.45, pud);
-		rough = mix(0.88, 0.12, max(pud, wet * 0.45));
-		spec = mix(0.2, 0.9, max(pud, wet * 0.4));
+		rough = mix(0.9, 0.12, max(pud, wet * 0.45));
+		spec = mix(0.08, 0.9, max(pud, wet * 0.4));
 	} else if (id == 4) {
 		vec2 g = fract(wp.xz / 1.5);
 		float line = step(g.x, 0.025) + step(g.y, 0.025);
@@ -86,8 +85,12 @@ void fragment() {
 		rough = mix(0.9, 0.45, wet);
 	} else if (id == 3) {
 		float n = vnoise(wp.xz * 0.35) * 0.6 + vnoise(wp.xz * 1.9) * 0.4;
-		c *= 0.86 + 0.28 * n;
-		c *= 0.95 + 0.1 * h21(floor(wp.xz * 3.0));
+		float lum = dot(c, vec3(0.299, 0.587, 0.114));
+		c = mix(vec3(lum), c, 0.72) * 0.78;
+		float drift = vnoise(wp.xz * 0.06 + 5.0);
+		c = mix(c * vec3(0.82, 0.92, 0.76), c * vec3(1.14, 1.04, 0.82), smoothstep(0.3, 0.7, drift));
+		c *= 0.8 + 0.4 * n;
+		c *= 0.94 + 0.12 * h21(floor(wp.xz * 3.0));
 	} else if (id == 2) {
 		float across = wp.z;
 		float u = fract(along * 1.0 / 0.28);
@@ -105,6 +108,7 @@ void fragment() {
 	}
 	c *= 1.0 - 0.18 * wet * (id <= 9 ? 1.0 : 0.0);
 	ALBEDO = c;
+	EMISSION = c * 0.22 * (1.0 - night) * (1.0 - 0.5 * wet);       // a soft sky fill so the shaded side of anything is never pitch black
 	ROUGHNESS = mix(rough, rough * 0.55, wet);
 	SPECULAR = spec;
 }

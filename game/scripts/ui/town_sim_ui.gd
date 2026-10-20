@@ -185,6 +185,7 @@ func _clear_panel() -> void:
 	for c in box.get_children():
 		box.remove_child(c)
 		c.queue_free()
+	box.add_theme_constant_override("separation", 10)
 	scroll.scroll_vertical = 0
 
 
@@ -272,7 +273,50 @@ func _card(title: String, subtitle: String, body: String, button: String, cb: Ca
 	bt.name = "CardButton"
 	UiKit.set_button_style(bt, INK, INK, PAPER)
 	card_button = bt
+	page.modulate.a = 0.0            # shown once it has been sized to its text
+	_fit_card(page, v, sc, row)
 	UiKit.fade_in(card, 0.22)
+
+
+## Size the page to the whole text from the start (typewriter pages reveal with visible_ratio, the layout is already final), so a short
+## page is a short page and never a big empty block. Long pages keep the full height and scroll.
+func _fit_card(page: Control, v: Control, sc: Control, row: Control) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(page) or not is_instance_valid(card_content):
+		return
+	var full := page.size.y
+	var inner := v.get_combined_minimum_size().y + _content_height()
+	var side := 0.0
+	for c in row.get_children():
+		if c != v:
+			side = maxf(side, c.get_combined_minimum_size().y)
+	var need := maxf(inner, side) + 22.0 * 2.0 + 12.0 + 6.0
+	need = clampf(need, 320.0, full)
+	if need < full - 4.0:
+		page.size.y = need
+		page.position.y += (full - need) / 2.0
+	page.modulate.a = 1.0
+
+
+## The true height of the page's scrolling content: wrapped labels count every line they will need, whatever they have revealed so far.
+func _content_height() -> float:
+	var h := 0.0
+	var n := 0
+	var sep := float(card_content.get_theme_constant("separation"))
+	for c in card_content.get_children():
+		if not (c is Control) or not (c as Control).visible:
+			continue
+		var cy := (c as Control).get_combined_minimum_size().y
+		if c is Label and (c as Label).autowrap_mode != TextServer.AUTOWRAP_OFF:
+			var lb := c as Label
+			var font := lb.get_theme_font("font")
+			var fs := lb.get_theme_font_size("font_size")
+			var wd := maxf(lb.size.x, lb.custom_minimum_size.x)
+			var sz := font.get_multiline_string_size(lb.text, HORIZONTAL_ALIGNMENT_LEFT, wd, fs, -1, TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE)
+			cy = maxf(cy, sz.y + float(lb.get_line_count()) * float(lb.get_theme_constant("line_spacing")))
+		h += cy
+		n += 1
+	return h + sep * maxf(0.0, float(n - 1)) + 8.0
 
 
 func _close_card() -> void:
