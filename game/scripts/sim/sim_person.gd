@@ -26,6 +26,15 @@ var memories: Array = []      # {day, who, what, weight}
 var rel: Dictionary = {}      # other id -> {affinity, trust}
 var notes: Dictionary = {}    # personality imprint from the Chorus (warmth, candor, nerve, curiosity, fidelity)
 var contentment := 0.0
+# everyday-resident detail (generated population; empty for the authored cast)
+var age := 0
+var group := ""               # child | teen | adult | elder
+var hobby := ""
+var quirk := ""
+var days_off: Array = []      # weekday indices (0 = Monday) with no work or school
+var haunts: Array = []        # favourite places, in order of preference
+var household := ""
+var pay := 0.0                # hourly
 
 
 static func from_data(d: Dictionary) -> RefCounted:
@@ -35,6 +44,9 @@ static func from_data(d: Dictionary) -> RefCounted:
 	p.faction = d["faction"]; p.walkon = d["walkon"]; p.traits = d["traits"].duplicate(); p.secret = d["secret"]
 	p.money = float(d["money"]); p.location = p.home
 	p.employed = float(d["work_end"]) > float(d["work_start"])
+	p.age = int(d.get("age", 0)); p.group = d.get("group", ""); p.hobby = d.get("hobby", ""); p.quirk = d.get("quirk", "")
+	p.days_off = d.get("days_off", []).duplicate(); p.haunts = d.get("haunts", []).duplicate(); p.household = d.get("household", "")
+	p.pay = float(d.get("pay", 0.0))
 	return p
 
 

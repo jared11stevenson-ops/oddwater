@@ -1,0 +1,61 @@
+{
+ "first_names": ["Aaron","Abby","Adele","Aiden","Alma","Amir","Anika","Arlo","Ava","Bao","Beau","Bianca","Blake","Bo","Brianna","Caleb","Camila","Carmen","Cass","Chidi","Clara","Cleo","Cody","Dana","Darius","Dee","Dev","Diego","Dolly","Drew","Edie","Eli","Elena","Emeka","Esme","Etta","Ezra","Farah","Felix","Finn","Fiona","Gabe","Gemma","Gil","Gwen","Hana","Hugo","Ida","Ines","Ivan","Jada","Jamal","Jasper","Jin","Joon","Josie","Juno","Kai","Kayla","Keiko","Kofi","Lars","Leila","Leo","Lena","Lia","Lou","Luca","Lucy","Mabel","Malik","Marcy","Mateo","Maya","Mei","Milo","Mina","Nadia","Nico","Nia","Noor","Odette","Omar","Otis","Paloma","Pax","Pearl","Quinn","Rafi","Reggie","Rhea","Rosa","Rudy","Ruth","Sam","Sana","Seth","Sky","Sol","Stella","Tai","Tara","Teo","Tess","Theo","Tina","Uma","Vic","Viv","Wes","Willa","Xavi","Yara","Yusuf","Zane","Zoe","Zora"],
+ "surnames": ["Abbott","Adeyemi","Alvarez","Andersen","Banerjee","Barlow","Bellamy","Boyle","Brandt","Calloway","Carver","Chen","Cole","Dasgupta","Delgado","Dunn","Eaton","Farouk","Finch","Gallo","Garza","Gill","Haas","Hale","Hartley","Hobbs","Ibarra","Iyer","Jovanovic","Kane","Kim","Kowalski","Lang","Larkin","Lindqvist","Lopez","Mbeki","Mercer","Moreau","Nakamura","Nguyen","Novak","Oduya","Okoye","Ortega","Park","Patel","Quill","Reyes","Rowe","Sato","Shah","Sorensen","Tanaka","Thorne","Tran","Ueda","Valdez","Voss","Walsh","Weiss","Yadav","Zhou"],
+ "households": [
+  {"kind": "single", "weight": 22},
+  {"kind": "couple", "weight": 18},
+  {"kind": "family", "weight": 28},
+  {"kind": "single_parent", "weight": 9},
+  {"kind": "elder_alone", "weight": 8},
+  {"kind": "elder_couple", "weight": 6},
+  {"kind": "roommates", "weight": 9}
+ ],
+ "workplaces": [
+  {"place": "marina", "titles": ["boat hand", "dockmaster", "rental clerk"], "slots": 6, "start": 7.0, "end": 15.5, "pay": 24, "days_off": [5, 6]},
+  {"place": "launch_quay", "titles": ["ferry hand", "ticket seller"], "slots": 3, "start": 8.0, "end": 16.0, "pay": 22, "days_off": [1, 2]},
+  {"place": "bait_shop", "titles": ["bait clerk", "tackle fitter"], "slots": 3, "start": 6.0, "end": 14.0, "pay": 20, "days_off": [2, 3]},
+  {"place": "low_water", "titles": ["bartender", "cook", "bouncer"], "slots": 5, "start": 16.0, "end": 23.0, "pay": 22, "days_off": [0, 1]},
+  {"place": "pink_heron", "titles": ["server", "line cook", "dishwasher"], "slots": 7, "start": 7.0, "end": 15.0, "pay": 21, "days_off": [1, 2]},
+  {"place": "wmrc", "titles": ["board operator", "producer", "ad sales"], "slots": 3, "start": 9.0, "end": 17.0, "pay": 28, "days_off": [5, 6]},
+  {"place": "dam_house", "titles": ["dam technician", "inspector"], "slots": 4, "start": 7.0, "end": 15.0, "pay": 38, "days_off": [5, 6]},
+  {"place": "town_hall", "titles": ["clerk", "planner", "records officer", "council aide"], "slots": 7, "start": 8.5, "end": 16.5, "pay": 30, "days_off": [5, 6]},
+  {"place": "library", "titles": ["library assistant", "archivist"], "slots": 3, "start": 10.0, "end": 18.0, "pay": 22, "days_off": [6, 0]},
+  {"place": "playhouse", "titles": ["stagehand", "box office", "costumer"], "slots": 4, "start": 13.0, "end": 21.0, "pay": 20, "days_off": [0, 1]},
+  {"place": "pell_dentistry", "titles": ["hygienist", "receptionist"], "slots": 2, "start": 8.5, "end": 17.0, "pay": 31, "days_off": [5, 6]},
+  {"place": "clock_shop", "titles": ["repairer"], "slots": 1, "start": 10.0, "end": 17.0, "pay": 26, "days_off": [6, 0]},
+  {"place": "rising_loaf", "titles": ["baker", "counter hand"], "slots": 4, "start": 4.5, "end": 12.5, "pay": 21, "days_off": [2, 3]},
+  {"place": "hardware", "titles": ["hardware clerk", "stock hand"], "slots": 4, "start": 8.0, "end": 17.0, "pay": 23, "days_off": [6, 0]},
+  {"place": "funeral_home", "titles": ["funeral assistant", "groundskeeper"], "slots": 2, "start": 9.0, "end": 17.0, "pay": 27, "days_off": [5, 6]},
+  {"place": "post_office", "titles": ["mail carrier", "counter clerk"], "slots": 3, "start": 8.0, "end": 16.0, "pay": 27, "days_off": [6, 0]},
+  {"place": "paws_reflect", "titles": ["pet groomer", "kennel hand"], "slots": 2, "start": 9.0, "end": 17.0, "pay": 22, "days_off": [6, 0]},
+  {"place": "school", "titles": ["teacher", "teaching aide", "caretaker", "cafeteria cook"], "slots": 8, "start": 7.5, "end": 15.5, "pay": 28, "days_off": [5, 6]},
+  {"place": "clinic", "titles": ["nurse", "orderly", "medical receptionist"], "slots": 5, "start": 7.0, "end": 19.0, "pay": 34, "days_off": [2, 3]},
+  {"place": "chapel", "titles": ["sexton", "choir director"], "slots": 2, "start": 9.0, "end": 16.0, "pay": 18, "days_off": [0, 1]},
+  {"place": "sheriff", "titles": ["deputy", "dispatcher"], "slots": 4, "start": 8.0, "end": 18.0, "pay": 31, "days_off": [4, 5]},
+  {"place": "grange_hall", "titles": ["events coordinator", "caretaker"], "slots": 2, "start": 10.0, "end": 18.0, "pay": 21, "days_off": [0, 1]},
+  {"place": "lakeview_rest", "titles": ["care aide", "kitchen aide", "night nurse"], "slots": 6, "start": 6.5, "end": 14.5, "pay": 25, "days_off": [5, 6]}
+ ],
+ "remote_titles": ["freelance designer", "remote bookkeeper", "online tutor", "writer", "web developer", "translator"],
+ "hobbies": {
+  "fishing":   {"places": ["marina", "launch_quay"], "tag": "fishes whenever there's light"},
+  "gardening": {"places": ["home"], "tag": "keeps a garden that is slightly too ambitious"},
+  "reading":   {"places": ["library", "home"], "tag": "always has a book in a pocket"},
+  "music":     {"places": ["playhouse", "low_water", "home"], "tag": "plays something badly and happily"},
+  "sports":    {"places": ["pageant_green"], "tag": "runs the loop around the green most evenings"},
+  "walking":   {"places": ["pageant_green", "launch_quay"], "tag": "walks everywhere, faster than they should"},
+  "gaming":    {"places": ["home"], "tag": "is up late finishing one more level"},
+  "crafts":    {"places": ["grange_hall", "home"], "tag": "has a half-finished project in every room"},
+  "baking":    {"places": ["home", "rising_loaf"], "tag": "brings baked things to people who didn't ask"},
+  "regular":   {"places": ["low_water", "pink_heron"], "tag": "has a stool they consider theirs"},
+  "birding":   {"places": ["launch_quay", "pageant_green"], "tag": "stops mid-sentence for a bird"},
+  "volunteering": {"places": ["chapel", "grange_hall", "school"], "tag": "says yes to every sign-up sheet"}
+ },
+ "quirks": [
+  "hums while working", "always early", "always five minutes late", "talks to the radio", "keeps meticulous lists",
+  "says 'friend' to everyone", "never finishes a coffee", "waves at every car", "collects bottle caps", "loses their keys daily",
+  "tells the same joke weekly", "can't pass a dog without stopping", "hates small talk, loves gossip", "irons everything",
+  "cries at ads", "is lethal at trivia", "sleeps in socks and sandals", "hoards napkins", "overtips", "argues with the weather forecast",
+  "whistles off-key", "names their appliances", "reads the last page first", "sings in the shower, loudly", "keeps score of everything"
+ ],
+ "social_venues": ["low_water", "pink_heron", "rising_loaf", "pageant_green", "library", "chapel", "grange_hall", "marina", "playhouse"]
+}

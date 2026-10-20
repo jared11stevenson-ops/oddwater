@@ -4,6 +4,8 @@ extends RefCounted
 
 const Data = preload("res://scripts/core/data.gd")
 const SimPerson = preload("res://scripts/sim/sim_person.gd")
+const Population = preload("res://scripts/sim/population.gd")
+const TownLayout = preload("res://scripts/core/town_layout.gd")
 
 const HAUNTS := ["low_water", "pink_heron", "rising_loaf", "pageant_green", "library"]
 
@@ -23,7 +25,8 @@ var next_rumor := 1
 var wages := {"mayor": 34.0, "dentist": 48.0, "pastor": 22.0, "radio host": 26.0, "nurse": 32.0, "teacher": 24.0}
 
 
-func _init(seed: int = 1961) -> void:
+## `everyday`: also generate the town's ordinary residents (households, jobs, hobbies) around the authored cast.
+func _init(seed: int = 1961, everyday: bool = false) -> void:
 	seed_base = seed
 	tuning = Data.load_json("sim/sim_tuning.json")
 	acts = Data.load_json("sim/activities.json")
@@ -35,6 +38,33 @@ func _init(seed: int = 1961) -> void:
 		if people.has(r["a"]) and people.has(r["b"]):
 			people[r["a"]].rel[r["b"]] = {"affinity": float(r["affinity"]), "trust": float(r["trust"])}
 			people[r["b"]].rel[r["a"]] = {"affinity": float(r["affinity"]), "trust": float(r["trust"])}
+	if everyday:
+		var names: Array = []
+		for id in order:
+			names.append(people[id].display)
+		var gen: Dictionary = Population.new().generate(seed, TownLayout.new(), names)
+		for d in gen["people"]:
+			var p2: RefCounted = SimPerson.from_data(d)
+			people[p2.id] = p2
+			order.append(p2.id)
+		for r in gen["relations"]:
+			if people.has(r["a"]) and people.has(r["b"]):
+				people[r["a"]].rel[r["b"]] = {"affinity": float(r["affinity"]), "trust": float(r["trust"])}
+				people[r["b"]].rel[r["a"]] = {"affinity": float(r["affinity"]), "trust": float(r["trust"])}
+
+
+## Day 1 is a Monday. 0 = Monday ... 6 = Sunday.
+func weekday() -> int:
+	return (day - 1) % 7
+
+
+func is_weekend() -> bool:
+	return weekday() >= 5
+
+
+## Is this person due at work (or school) right now?
+func on_shift(p: RefCounted, h: float) -> bool:
+	return p.employed and h >= p.work_start and h < p.work_end and not p.days_off.has(weekday())
 
 
 func hour_of(t: int) -> float:
@@ -70,7 +100,10 @@ func choose_activity(p: RefCounted, t: int) -> String:
 		"relax": (100.0 - float(n["fun"])) * 0.7 + (100.0 - float(n["comfort"])) * 0.3,
 		"worship": (p.trait_of("pious") * 30.0 if h >= 17.0 and h < 19.0 else 0.0),
 		"errand": 8.0}
-	if p.employed and h >= p.work_start and h < p.work_end:
+	if is_weekend() and not p.days_off.is_empty():
+		scores["socialize"] += 12.0
+		scores["relax"] += 10.0
+	if on_shift(p, h):
 		scores["work"] = 70.0 + (10.0 if float(n["purpose"]) < 40.0 else 0.0)
 		scores["eat"] = (100.0 - float(n["hunger"])) * 1.5 if float(n["hunger"]) < 25.0 else scores["eat"] * 0.6
 	if h >= 21.5:
@@ -97,8 +130,14 @@ func place_for(p: RefCounted, act: String, t: int) -> String:
 			if (h < 8.5 or h >= 18.5) and p.money > 40.0:
 				return p.home
 			return ["pink_heron", "rising_loaf", p.home][rng.randi() % 3] if p.money > 15.0 else p.home
-		"socialize": return HAUNTS[(rng.randi() + int(p.trait_of("sociable") * 10)) % HAUNTS.size()]
-		"relax": return p.home if rng.randf() < 0.6 else "pageant_green"
+		"socialize":
+			if not p.haunts.is_empty() and rng.randf() < 0.7:
+				return p.haunts[rng.randi() % p.haunts.size()]
+			return HAUNTS[(rng.randi() + int(p.trait_of("sociable") * 10)) % HAUNTS.size()]
+		"relax":
+			if not p.haunts.is_empty() and rng.randf() < 0.55:
+				return p.haunts[rng.randi() % mini(2, p.haunts.size())]   # the hobby places come first
+			return p.home if rng.randf() < 0.6 else "pageant_green"
 	return p.home
 
 
@@ -268,7 +307,7 @@ func player_act(id: String, action: String, args: Dictionary = {}) -> Dictionary
 			var hrs: float = float(args.get("hours", 4))
 			if not p.employed:
 				return {"ok": false, "decision": false, "text": "no job to do"}
-			p.money += hrs * float(wages.get(p.job, 20.0))
+			p.money += hrs * (p.pay if p.pay > 0.0 else float(wages.get(p.job, 20.0)))
 			p.needs["purpose"] = clampf(float(p.needs["purpose"]) + 4.0 * hrs, 0, 100)
 			p.needs["energy"] = clampf(float(p.needs["energy"]) - 4.0 * hrs, 0, 100)
 			p.needs["hunger"] = clampf(float(p.needs["hunger"]) - 4.0 * hrs, 0, 100)
