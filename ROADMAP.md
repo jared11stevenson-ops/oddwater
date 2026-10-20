@@ -20,6 +20,15 @@ The product comes first as a Sims-like town you play from inside: a town 2x Sout
 - [ ] Art pass 2: distinct landmark silhouettes, walk animation on twos, interiors, weather, audio, event lettering
 - [ ] Then, later: re-introduce the story layers (Cause, Case Board, lore) on top of the sim
 
+## PRIORITY NOW — Little Mercy: a detective RPG (direction from the user, 2026-10-20)
+You are the lead and only detective of Little Mercy; the town is riddled with strange murders, conspiracies, paranormal activity and cults. Everything built so far is the base. Design of record: `02-gdd/05-detective-rpg.md` (the living town is the crime's ground truth: real alibis, fair deduction, people who lie for reasons, an RPG that gates perception not progress).
+- [x] 1. Sim history + night record + death (real alibis; `SimWorld.where_was/who_was_at`, 10 checks)
+- [x] 2. Case engine (`scripts/detective/case_engine.gd`, `case_ops.gd`, `detective.gd`; 110 checks): picks a victim/killer/motive from the real relationships, writes the past into the sim, decides the night, builds clues/witnesses/lies; a solver bot cracks 24/24 generated cases, a lazy one 0/24; 5 motives, 4 methods, home/work scenes; RPG gates (skills, stress, warrants, lab, XP)
+- [ ] 3. Detective state (skills, stress, tools, notebook, XP) and DetectiveGame (fixed host)
+- [ ] 4. 3D integration: case file, scene exam, interviews, records, lab, search, accusation and consequences
+- [ ] 5. Escalation, reputation, more case types; cult case; lake case; the overarching conspiracy
+- [ ] 6. Office and upgrades; interiors for scenes; polish
+
 ## PRIORITY NOW — 3D (direction from the user, 2026-10-20)
 The game is **3D**, graphics standard **Peak** (stylised, saturated, soft-lit), characters are **normal humans**. This is the benchmark to get the full game running, not the final look. Design: `03-art/02-3d-direction.md`.
 - [x] 3D pass 1 (`scripts/world3d/`, 27 robot checks): the whole town in 3D (houses, landmarks, park, lake, hills, forest), sky/sun/moon/weather, 217 residents with bodies that walk the streets as the sim directs, you in the host's body (thumb stick, look pad, third-person camera), real-time clock, walk up to doors and people, enter buildings to act, talk, night and morning flow, save/continue

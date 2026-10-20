@@ -19,6 +19,7 @@ var location := ""
 var activity := "sleep"
 var struck := false
 var taken := false
+var dead := false             # killed (a crime), as opposed to taken or struck
 var employed := true
 var routine_streak := 0
 var last_activity := ""
@@ -88,13 +89,13 @@ func remember(day: int, who: String, what: String, weight: float) -> void:
 
 func to_dict() -> Dictionary:
 	return {"id": id, "money": money, "needs": needs.duplicate(), "location": location, "activity": activity, "struck": struck,
-		"taken": taken, "employed": employed, "rel": rel.duplicate(true), "memories": memories.duplicate(true), "notes": notes.duplicate(),
+		"taken": taken, "dead": dead, "employed": employed, "rel": rel.duplicate(true), "memories": memories.duplicate(true), "notes": notes.duplicate(),
 		"streak": routine_streak, "last": last_activity, "contentment": contentment, "traits": traits.duplicate(), "job": job, "pay": pay}
 
 
 func load_dict(d: Dictionary) -> void:
 	money = float(d["money"]); needs = d["needs"].duplicate(); location = d["location"]; activity = d["activity"]
-	struck = d["struck"]; taken = d["taken"]; employed = d["employed"]; rel = d["rel"].duplicate(true)
+	struck = d["struck"]; taken = d["taken"]; dead = d.get("dead", false); employed = d["employed"]; rel = d["rel"].duplicate(true)
 	memories = d["memories"].duplicate(true); notes = d["notes"].duplicate(); routine_streak = int(d["streak"])
 	if d.has("traits"):
 		traits = d["traits"].duplicate()

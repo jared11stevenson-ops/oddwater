@@ -1,0 +1,30 @@
+{
+ "methods": {
+  "blunt": {"wound": "a single heavy blow to the back of the head", "weapons": ["a brass candlestick", "a cast-iron frying pan", "a long-handled wrench", "a bronze trophy"], "buy": false},
+  "knife": {"wound": "one narrow wound under the ribs, clean and deep", "weapons": ["a boning knife", "a letter opener with a bone handle", "a hunting knife"], "buy": true, "shop": "hardware"},
+  "strangle": {"wound": "ligature marks around the neck, no other injuries", "weapons": ["a length of boat rope", "a silk scarf", "an electrical cord"], "buy": true, "shop": "hardware"},
+  "poison": {"wound": "no wound at all: blue lips, a cold cup of tea, a faint smell of almonds", "weapons": ["a vial of rat poison", "a bottle of foxglove tincture"], "buy": true, "shop": "paws_reflect"}
+ },
+ "motives": {
+  "grudge": {"label": "an old grudge", "things": ["a fence line they had fought over for six years", "a loan that was never repaid", "an insult at the Grange dinner that was never forgiven", "a dog that kept getting into the garden", "a tree that kept dropping on the other side"]},
+  "money": {"label": "money", "things": ["a debt of $4,000 they could not pay", "a shared till that was short", "an inheritance dispute with a cousin", "a business partnership that had gone sour"]},
+  "family": {"label": "inheritance", "things": ["the victim was rewriting the will", "the victim planned to sell the family house", "the victim was about to cut them out of the estate"]},
+  "silence": {"label": "a secret", "things": ["the victim had learned about the skimming from the Grange fund", "the victim had seen a hit-and-run in 2019 and finally decided to talk", "the victim found out about a second family in the next county", "the victim had found the old census with a page torn out"]},
+  "passion": {"label": "jealousy", "things": ["the victim was leaving them for someone else", "the victim had refused them, again, in front of the whole diner", "the victim had ended it by letter that morning"]}
+ },
+ "dropped": ["a single brass button", "a torn leather glove", "one earring, still warm to the touch", "a bus ticket stub", "an embroidered handkerchief", "a strand of red wool tied in a knot", "a key fob with a fish on it", "a pipe cleaner twisted into a ring"],
+ "shoes": ["work boots, size 11, with a cracked left heel", "narrow loafers with a leather sole worn on the outside", "rubber waders, size 9, with a diamond tread", "heavy hiking boots with a missing lug on the right"],
+ "traits": ["a limp", "a long dark coat", "a hat pulled low", "a tall, stooped shape", "an umbrella they didn't need", "a heavy bag"],
+ "secrets": {
+  "affair": {"text": "was with {p} that night, in secret", "why": "the affair is a secret in a small town", "place": "home_of_partner"},
+  "gambling": {"text": "was in the back room of the Low Water after closing, losing money at cards", "why": "they are ashamed of the gambling", "place": "low_water"},
+  "vigil": {"text": "was at the lake shore with the others, at the midnight vigil, standing in the water", "why": "no one is allowed to say what the vigil is for", "place": "launch_quay", "cult": true},
+  "burglary": {"text": "was breaking into the Grange hall to take back something that had been theirs", "why": "it would mean arrest", "place": "grange_hall"}
+ },
+ "scene_spots": {
+  "home": [["body", "The body"], ["door", "The door and locks"], ["floor", "The floor and rug"], ["desk", "The desk and papers"], ["phone", "The phone and the calendar"], ["garden", "The garden path"]],
+  "work": [["body", "The body"], ["door", "The back door and locks"], ["floor", "The floor"], ["desk", "The till and the papers"], ["phone", "The phone and the appointment book"], ["garden", "The alley outside"]]
+ },
+ "first_names_note": "unused",
+ "alibi_places": {"clinic": "sitting up at the clinic with a sick relative", "low_water": "at the Low Water until close, then walking home slowly", "chapel": "in the chapel, praying", "pink_heron": "washing up at the Pink Heron after the late rush"}
+}

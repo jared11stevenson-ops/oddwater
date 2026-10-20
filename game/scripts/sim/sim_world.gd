@@ -23,6 +23,12 @@ var player_id := ""
 var pending: Dictionary = {}    # id -> "struck" | "taken" (resolved at the Slack)
 var next_rumor := 1
 var decisions_vanish := true    # story mode: a Decision removes the person at dawn. Town sim: only leaving town does
+# Where everyone really was: history[day] = Array (one entry per tick) of PackedInt32Array (a location index per person, in `order`).
+# night[day] = {person id: {lot, from, to}} for the hours after midnight, written by the case engine; everyone else is home in bed.
+var history: Dictionary = {}
+var night: Dictionary = {}
+var loc_table: Array = [""]
+var loc_idx: Dictionary = {"": 0}
 var clock := 0                  # live mode: the current tick of the day (0 = 6:00)
 var player_activity := ""       # what the controlled person is doing this tick (live mode); blank = idle relaxing
 var wages := {"mayor": 34.0, "dentist": 48.0, "pastor": 22.0, "radio host": 26.0, "nurse": 32.0, "teacher": 24.0}
@@ -87,7 +93,7 @@ func event_active(h: float) -> bool:
 
 ## Day 1 is a Monday. 0 = Monday ... 6 = Sunday.
 func weekday() -> int:
-	return (day - 1) % 7
+	return posmod(day - 1, 7)
 
 
 func is_weekend() -> bool:
@@ -114,7 +120,7 @@ func log_event(type: String, who: String, text: String, other: String = "") -> v
 
 
 func alive(p: RefCounted) -> bool:
-	return not p.struck and not p.taken
+	return not p.struck and not p.taken and not p.dead
 
 
 # ------------------------------------------------------------------ autonomy
@@ -241,6 +247,58 @@ func step_tick(t: int) -> void:
 		if float(p.needs["restless"]) >= 92.0 and not pending.has(id) and _rng(t, id + "edge").randf() < 0.1:
 			log_event("on_the_edge", id, "%s stares at the lake and hasn't moved for an hour." % p.display)
 	_interactions(t)
+	_record(t)
+
+
+func _loc_index(loc: String) -> int:
+	if not loc_idx.has(loc):
+		loc_idx[loc] = loc_table.size()
+		loc_table.append(loc)
+	return int(loc_idx[loc])
+
+
+## Remember where everybody was this tick. Three days of memory is plenty: an investigation is about last night.
+func _record(t: int) -> void:
+	if not history.has(day):
+		history[day] = []
+		for d in history.keys():
+			if int(d) < day - 3:
+				history.erase(d)
+	var row := PackedInt32Array()
+	row.resize(order.size())
+	for i in order.size():
+		var p: RefCounted = people[order[i]]
+		row[i] = _loc_index(p.location if alive(p) else "")
+	var h: Array = history[day]
+	while h.size() <= t:
+		h.append(PackedInt32Array())
+	h[t] = row
+
+
+## Where someone was on a given day and tick (ticks 0-35 are 6:00 to 24:00). "" = nowhere / not known.
+func where_was(id: String, d: int, t: int) -> String:
+	if not people.has(id):
+		return ""
+	var idx := order.find(id)
+	if t >= int(tuning["ticks_per_day"]):
+		var n: Dictionary = night.get(d, {})
+		var hour := 24.0 + float(t - int(tuning["ticks_per_day"])) * 0.5
+		if n.has(id) and hour >= float(n[id]["from"]) and hour < float(n[id]["to"]):
+			return String(n[id]["lot"])
+		return people[id].home
+	var h: Array = history.get(d, [])
+	if t < 0 or t >= h.size() or (h[t] as PackedInt32Array).size() <= idx:
+		return ""
+	return String(loc_table[(h[t] as PackedInt32Array)[idx]])
+
+
+## Everyone who was at `lot` on that tick (night ticks use the night record).
+func who_was_at(lot: String, d: int, t: int) -> Array:
+	var out: Array = []
+	for id in order:
+		if where_was(id, d, t) == lot:
+			out.append(id)
+	return out
 
 
 func _interactions(t: int) -> void:
@@ -613,15 +671,47 @@ func to_dict() -> Dictionary:
 		ps[id] = people[id].to_dict()
 	return {"day": day, "people": ps, "rumors": rumors.duplicate(true), "pending": pending.duplicate(), "next": next_rumor, "seed": seed_base,
 		"clock": clock, "player_id": player_id, "player_activity": player_activity, "events": events.duplicate(true), "tick": tick,
-		"decisions_vanish": decisions_vanish, "thin_weeks": thin_weeks}
+		"decisions_vanish": decisions_vanish, "thin_weeks": thin_weeks,
+		"history": _history_to_json(), "night": night.duplicate(true), "loc_table": loc_table.duplicate()}
 
 
 func load_dict(d: Dictionary) -> void:
 	day = int(d["day"]); rumors = d["rumors"].duplicate(true); pending = d["pending"].duplicate(); next_rumor = int(d["next"]); seed_base = int(d["seed"])
 	clock = int(d.get("clock", 0)); player_id = d.get("player_id", ""); player_activity = d.get("player_activity", ""); tick = int(d.get("tick", 0))
 	events = d.get("events", []).duplicate(true); decisions_vanish = bool(d.get("decisions_vanish", true)); thin_weeks = bool(d.get("thin_weeks", true))
+	loc_table = d.get("loc_table", [""]).duplicate()
+	loc_idx = {}
+	for i in loc_table.size():
+		loc_idx[loc_table[i]] = i
+	history = _history_from_json(d.get("history", {}))
+	night = {}
+	for k in d.get("night", {}):
+		night[int(k)] = d["night"][k].duplicate(true)
 	for ru in rumors:      # JSON turns ids into floats; keep them integral
 		ru["id"] = int(ru["id"])
 	for id in d["people"]:
 		if people.has(id):
 			people[id].load_dict(d["people"][id])
+
+
+func _history_to_json() -> Dictionary:
+	var out := {}
+	for d in history:
+		var rows: Array = []
+		for r in history[d]:
+			rows.append(Array(r))
+		out[str(d)] = rows
+	return out
+
+
+func _history_from_json(d: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for k in d:
+		var rows: Array = []
+		for r in d[k]:
+			var pr := PackedInt32Array()
+			for v in r:
+				pr.append(int(v))
+			rows.append(pr)
+		out[int(k)] = rows
+	return out
