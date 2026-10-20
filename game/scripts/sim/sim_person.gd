@@ -30,6 +30,7 @@ var notes: Dictionary = {}    # personality imprint from the Chorus (warmth, can
 var contentment := 0.0
 # everyday-resident detail (generated population; empty for the authored cast)
 var age := 0
+var arrived_day := 0            # newcomers: the day they moved in
 var group := ""               # child | teen | adult | elder
 var hobby := ""
 var quirk := ""

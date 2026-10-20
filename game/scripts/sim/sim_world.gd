@@ -94,6 +94,7 @@ func make_newcomer(n: int) -> Dictionary:
 		elif d["work"] != "" and o.work == d["work"] and d["work"] != best and rr.randf() < 0.6:
 			ties.append({"id": id, "affinity": rr.randf_range(5, 30), "trust": rr.randf_range(10, 35)})
 	d["ties"] = ties
+	d["arrived"] = day
 	register_resident(d)
 	return d
 
@@ -103,6 +104,7 @@ func register_resident(d: Dictionary) -> void:
 	if people.has(d["id"]):
 		return
 	var p: RefCounted = SimPerson.from_data(d)
+	p.arrived_day = int(d.get("arrived", 0))
 	people[p.id] = p
 	order.append(p.id)
 	for t in d.get("ties", []):

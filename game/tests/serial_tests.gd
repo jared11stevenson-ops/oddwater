@@ -109,5 +109,5 @@ func _initialize() -> void:
 	for i in 9:
 		_night(g3)
 	ok((g3.serial["kills"] as Array).size() >= 3, "if you do nothing, the dead pile up: %d" % (g3.serial["kills"] as Array).size())
-	print("serial_tests: %d checks, %d failures" % [checks, fails])
+	print("serial_tests: %d checks, %d failed" % [checks, fails])
 	quit(1 if fails > 0 else 0)

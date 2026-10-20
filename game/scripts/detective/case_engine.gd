@@ -31,7 +31,8 @@ static func first(sim: RefCounted, id: String) -> String:
 static func _adults(sim: RefCounted) -> Array:
 	return sim.order.filter(func(id):
 		var p: RefCounted = sim.people[id]
-		return id != "player" and sim.alive(p) and p.group in ["adult", "elder"] and p.age >= 25 and p.home != "")
+		# a newcomer needs a few days to be woven into town before a story can be built on them
+		return id != "player" and sim.alive(p) and p.group in ["adult", "elder"] and p.age >= 25 and p.home != "" and not (id.begins_with("n") and int(sim.day) - int(p.arrived_day) < 6))
 
 
 static func _dist(lot_a: String, lot_b: String) -> float:

@@ -10,7 +10,7 @@ for t in run_tests dialogue_tests dental_tests board_tests rhythm_tests day23_te
   [ -f tests/$t.gd ] || continue
   res=$(timeout 300 godot --headless --path . -s tests/$t.gd 2>&1 | grep -E "checks|smoke:|FAIL" | tail -3)
   echo "$t: ${res:-TIMEOUT/NO OUTPUT}"
-  echo "$res" | grep -qE "FAIL|failed$|[1-9][0-9]* failed" && fail=$((fail+1))
+  echo "$res" | grep -qE "FAIL|[1-9][0-9]* fail(ed|ures)" && fail=$((fail+1))
   [ -z "$res" ] && fail=$((fail+1))
 done
 exit $fail
