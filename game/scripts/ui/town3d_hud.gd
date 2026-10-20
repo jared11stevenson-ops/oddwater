@@ -37,7 +37,7 @@ func start3d(w: Node3D) -> void:
 	TownTheme.heading(top, 32, PAPER)
 	topbar.add_child(top)
 	top.position = Vector2(14, 10)
-	for spec in [["Menu", "MenuBtn", _main_menu], ["Me", "MeBtn", open_me], ["x1", "SpeedBtn", _cycle_speed]]:
+	for spec in [["Menu", "MenuBtn", _main_menu], ["Me", "MeBtn", open_me], ["x1", "SpeedBtn", _cycle_speed]] + _extra_topbar():
 		var b := _btn(topbar, spec[0], spec[2], 26)
 		b.name = spec[1]
 		b.clip_text = false
@@ -106,13 +106,22 @@ func start3d(w: Node3D) -> void:
 		world.paused = true
 
 
+## Subclasses add their own top-bar buttons: [[label, node name, callable]].
+func _extra_topbar() -> Array:
+	return []
+
+
+func _extra_names() -> Array:
+	return _extra_topbar().map(func(x): return x[1])
+
+
 func _layout() -> void:
 	var sz := size
 	var tb: Control = get_node("TopBar")
 	tb.position = Vector2.ZERO
 	tb.size = Vector2(sz.x, 60)
 	var x := sz.x - 10.0
-	for n in ["MenuBtn", "MeBtn", "SpeedBtn"]:
+	for n in ["MenuBtn", "MeBtn", "SpeedBtn"] + _extra_names():
 		var b: Control = tb.get_node(n)
 		b.size = Vector2(maxf(b.get_combined_minimum_size().x, 78.0), 48)
 		x -= b.size.x + 8.0

@@ -35,7 +35,12 @@ var _weather := ""
 
 
 func start(seed_value: int = 1961, loaded: RefCounted = null) -> void:
-	game = loaded if loaded != null else TownGame.new(seed_value)
+	start_game(loaded if loaded != null else TownGame.new(seed_value))
+
+
+## Start the world around any game model (a town sim, or the detective game).
+func start_game(the_game: RefCounted) -> void:
+	game = the_game
 	builder = Builder.new()
 	add_child(builder)
 	builder.build(game.layout)
@@ -52,6 +57,7 @@ func start(seed_value: int = 1961, loaded: RefCounted = null) -> void:
 	add_child(player)
 	_build_rain()
 	place_host(true)
+	refresh_markers()
 
 
 func hour() -> float:
@@ -123,6 +129,11 @@ func _process(delta: float) -> void:
 	npcs.focus = p
 	if rain != null:
 		rain.global_position = p + Vector3(0, 16, 0)
+	if _beam_mat != null and _marker != null:
+		var d: Dictionary = builder.doors.get(game.case["scene"], {})
+		if not d.is_empty():
+			var dist := p.distance_to(d["front"])
+			_beam_mat.albedo_color.a = clampf((dist - 10.0) / 30.0, 0.0, 1.0) * 0.24      # the beam fades when you are standing in it
 	_light_timer -= delta
 	if _light_timer <= 0.0:
 		_light_timer = 0.25
@@ -251,3 +262,61 @@ func arrive_at(lot: String) -> void:
 	if not d.is_empty():
 		player.teleport(d["front"], float(d["yaw"]))
 	time_skipped()
+
+
+# ------------------------------------------------------------------ the case on the map
+var _marker: Node3D
+var _beam_mat: StandardMaterial3D
+
+
+## A crime scene is yellow tape across the door and a beam of light you can see from across the town.
+func refresh_markers() -> void:
+	if _marker != null:
+		_marker.queue_free()
+		_marker = null
+	if not game.get("case") or game.case.is_empty() or game.solved():
+		return
+	var d: Dictionary = builder.doors.get(game.case["scene"], {})
+	if d.is_empty():
+		return
+	_marker = Node3D.new()
+	add_child(_marker)
+	var f: Vector3 = d["front"]
+	var face: float = float(d["face"])
+	var yellow := StandardMaterial3D.new()
+	yellow.albedo_color = Color("f5c518")
+	yellow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var black := StandardMaterial3D.new()
+	black.albedo_color = Color("14121c")
+	black.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 2:
+		for k in 8:
+			var seg := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(0.5, 0.18, 0.02)
+			seg.mesh = bm
+			seg.material_override = yellow if k % 2 == 0 else black
+			seg.position = f + Vector3(-2.0 + k * 0.5 + 0.25, 0.9 + i * 0.35, 0.0)
+			_marker.add_child(seg)
+	for sx in [-2.1, 2.1]:
+		var post := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.04; cm.bottom_radius = 0.04; cm.height = 1.5
+		post.mesh = cm
+		post.material_override = black
+		post.position = f + Vector3(sx, 0.75, 0)
+		_marker.add_child(post)
+	var beam := MeshInstance3D.new()
+	var bc := CylinderMesh.new()
+	bc.top_radius = 0.6; bc.bottom_radius = 0.6; bc.height = 60.0
+	beam.mesh = bc
+	var bm2 := StandardMaterial3D.new()
+	bm2.albedo_color = Color(1.0, 0.75, 0.2, 0.22)
+	bm2.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bm2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bm2.cull_mode = BaseMaterial3D.CULL_DISABLED
+	beam.material_override = bm2
+	_beam_mat = bm2
+	beam.position = f + Vector3(0, 30.0, face * -1.0)
+	beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_marker.add_child(beam)

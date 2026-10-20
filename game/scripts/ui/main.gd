@@ -10,6 +10,8 @@ const TownSimUI = preload("res://scripts/ui/town_sim_ui.gd")
 const TownGame = preload("res://scripts/sim/town_game.gd")
 const TownWorld = preload("res://scripts/world3d/town_world.gd")
 const Town3DHUD = preload("res://scripts/ui/town3d_hud.gd")
+const DetectiveGame = preload("res://scripts/detective/detective_game.gd")
+const DetectiveHUD = preload("res://scripts/ui/detective_hud.gd")
 const DentalUI = preload("res://scripts/ui/dental_ui.gd")
 const RhythmUI = preload("res://scripts/ui/rhythm_ui.gd")
 const EavesdropUI = preload("res://scripts/ui/eavesdrop_ui.gd")
@@ -121,20 +123,46 @@ func _title() -> void:
 	post_layer.visible = true
 	_bg(Color("f1dfc0"))
 	_text("UNDERSTUDY\n\nA town full of people, each living their own life.\nTomorrow you'll be living one of them.", Vector2(300, 220), 48)
-	var y := 520.0
+	var y := 470.0
 	var first: Button = null
-	if TownGame.has_save():
-		var bc := _button("Continue", Vector2(300, y), func(): _town_3d(1961, true), 520.0)
+	if DetectiveGame.has_detective_save():
+		var bc := _button("Continue the case", Vector2(300, y), func(): _detective_3d(1961, true), 520.0)
 		bc.name = "ContinueButton"
 		first = bc
-		y += 120.0
-	var b1 := _button("New town", Vector2(300, y), func(): _town_3d(int(Time.get_ticks_usec() % 100000)), 520.0)
-	b1.name = "TownSimButton"
-	var b3 := _button("Map view (2D)", Vector2(300, y + 120.0), func(): _town_sim(int(Time.get_ticks_usec() % 100000)), 520.0)
+		y += 110.0
+	var b1 := _button("New case", Vector2(300, y), func(): _detective_3d(int(Time.get_ticks_usec() % 100000)), 520.0)
+	b1.name = "NewCaseButton"
+	var b4 := _button("Town sandbox (3D)", Vector2(300, y + 110.0), func(): _town_3d(int(Time.get_ticks_usec() % 100000)), 520.0)
+	b4.name = "TownSimButton"
+	var b3 := _button("Map view (2D)", Vector2(300, y + 220.0), func(): _town_sim(int(Time.get_ticks_usec() % 100000)), 520.0)
 	b3.name = "Map2DButton"
-	var b2 := _button("Story (early)", Vector2(300, y + 240.0), _creator, 520.0)
+	var b2 := _button("Story (early)", Vector2(300, y + 330.0), _creator, 520.0)
 	b2.name = "StoryButton"
 	(first if first != null else b1).grab_focus()
+
+
+## The detective game: you, the only detective in Little Mercy, in the 3D town.
+func _detective_3d(seed_value: int = 1961, resume: bool = false) -> Control:
+	_clear()
+	_bg(Color("f1dfc0"))
+	_text("A call at dawn...", Vector2(300, 460), 56)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var g: RefCounted = DetectiveGame.load_detective() if resume else null
+	if g == null:
+		g = DetectiveGame.new(seed_value)
+	_clear()
+	get_window().content_scale_size = Vector2i(1280, 720)
+	post_layer.visible = false
+	var w := TownWorld.new()
+	stage.add_child(w)
+	w.start_game(g)
+	var hud := DetectiveHUD.new()
+	ui.add_child(hud)
+	hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud.start3d(w)
+	hud.back_to_menu.connect(_title)
+	return hud
 
 
 ## The 3D town: walk about as the host. A phone-sized canvas (1280x720 base) for the screen furniture.

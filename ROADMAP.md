@@ -24,8 +24,8 @@ The product comes first as a Sims-like town you play from inside: a town 2x Sout
 You are the lead and only detective of Little Mercy; the town is riddled with strange murders, conspiracies, paranormal activity and cults. Everything built so far is the base. Design of record: `02-gdd/05-detective-rpg.md` (the living town is the crime's ground truth: real alibis, fair deduction, people who lie for reasons, an RPG that gates perception not progress).
 - [x] 1. Sim history + night record + death (real alibis; `SimWorld.where_was/who_was_at`, 10 checks)
 - [x] 2. Case engine (`scripts/detective/case_engine.gd`, `case_ops.gd`, `detective.gd`; 110 checks): picks a victim/killer/motive from the real relationships, writes the past into the sim, decides the night, builds clues/witnesses/lies; a solver bot cracks 24/24 generated cases, a lazy one 0/24; 5 motives, 4 methods, home/work scenes; RPG gates (skills, stress, warrants, lab, XP)
-- [ ] 3. Detective state (skills, stress, tools, notebook, XP) and DetectiveGame (fixed host)
-- [ ] 4. 3D integration: case file, scene exam, interviews, records, lab, search, accusation and consequences
+- [x] 3. Detective state and `DetectiveGame` (fixed host, a murder already waiting on Day 1, saves; 16 checks)
+- [x] 4. 3D integration (`ui/detective_hud.gd`, 22 robot checks): crime-scene marker (tape and beam), scene examination menu, notebook, interrogation (alibi/victim/who/saw/where was.../show them.../be friendly), lab, warrants, search, people tab, accusation and verdict, your sheet (skills, stress, XP), objective tracker, nights and mornings, continue
 - [ ] 5. Escalation, reputation, more case types; cult case; lake case; the overarching conspiracy
 - [ ] 6. Office and upgrades; interiors for scenes; polish
 
