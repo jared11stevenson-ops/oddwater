@@ -325,6 +325,10 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 	_clue(c, "c_body", "The body", "%s lies where they fell. %s. They have been dead some hours." % [vname, String(m["wound"]).capitalize()], scene, "body", {"skill": "forensics", "level": 1}, [_sup("method", c["method"], 3)])
 	_clue(c, "c_odd", "The detail that doesn't fit", "%s. Nothing else in the room is out of place." % c["held_back"], scene, "body", {"skill": "observation", "level": 2}, [], {"held_back": true})
 	_clue(c, "c_time", "Time of death", "Body temperature and stiffness put the death between %s and %s." % [_time(hk - 1.0), _time(hk + 1.0)], scene, "body", {"skill": "forensics", "level": 2}, [_sup("time", "", 2)])
+	# the wrongness: what the house itself seems to know, and what the victim had been feeling in their last weeks
+	var vfirst := first(sim, v)
+	_clue(c, "c_unease", "The room is wrong", String(_pick(r, cb["unease"])).replace("{v}", vfirst), scene, "body", {"skill": "empathy", "level": 3}, [], {"eerie": true})
+	_clue(c, "c_diary", "The last pages", String(_pick(r, cb["diaries"])).replace("{v}", vfirst), scene, "desk", {"skill": "empathy", "level": 2}, [], {"eerie": true})
 	var keyholders := [v, k]
 	if not c["found_by"] in keyholders:
 		keyholders.append(c["found_by"])

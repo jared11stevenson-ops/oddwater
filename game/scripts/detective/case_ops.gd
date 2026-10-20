@@ -94,6 +94,10 @@ static func examine(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String
 			lines.append("There's detail here you can't read yet. [%s %d]" % [SKILL_LABEL[gate["skill"]], int(gate["level"])])
 	if any_new:
 		det.gain_xp(10 * learned.size())
+		for e in learned:
+			if c["clues"].get(e["id"], {}).get("eerie", false):
+				det.add_stress(6.0)
+				lines.append("(Something about this will stay with you. Stress +6.)")
 		if spot == "body":
 			det.add_stress(8.0)
 			lines.append("(The scene gets to you. Stress +8.)")

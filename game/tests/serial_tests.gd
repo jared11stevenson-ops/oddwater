@@ -36,6 +36,12 @@ func _initialize() -> void:
 	ok(not c["facts"].has("f_kn_saw") and not c["facts"].has("f_argument") and c["relatives"][c["killer"]].is_empty(), "no neighbour saw them go, no quarrel, no family to break")
 	ok(c["clues"]["c_door"]["supports"].is_empty() and c["clues"]["c_desk"].get("thread", false), "a forced window, and the thread that links the dead")
 	ok(g.news().is_empty() and g.pressure() == 0.0, "no news until three")
+	ok(c["clues"].has("c_unease") and c["clues"].has("c_diary") and not String(c["clues"]["c_unease"]["text"]).contains("{v}"), "every scene has its wrongness and the victim's last pages")
+	g.det.skills["empathy"] = 5
+	g.det.skills["observation"] = 5
+	var st0: float = g.det.stress
+	g.examine(c["scene"], "body")
+	ok(g.det.has("c_unease") and g.det.stress >= st0 + 14.0, "the wrongness costs you: stress %d -> %d" % [int(st0), int(g.det.stress)])
 	# --- the killer does not wait
 	var victims := [c["victim"]]
 	var sigs := {c["held_back"]: true}

@@ -210,6 +210,23 @@
   "silence": "A secret is only heavy for the person carrying it. Put it in someone else's hands, and watch how far they will go to take it back.",
   "passion": "Jealousy dresses itself up as love for so long that, in the end, even the person wearing it forgets the difference."
  },
+ "unease": [
+  "Every chair at the table has been pulled out a few inches, as if the house were expecting guests. Four places are laid. {v} lived alone.",
+  "The bed is made, and the pillow holds a dent the shape of a head. {v} was found nowhere near it. The sheet is still warm to the back of your hand, which it cannot be.",
+  "The family photographs have all been turned to look at the door. Not turned away. Turned to look.",
+  "There is a second set of wet footprints on the stairs, going up. None coming down. The upstairs room is empty and the window is painted shut.",
+  "The cat will not cross the threshold. It sits in the garden facing the house and watches one window, and does not blink when you wave a hand.",
+  "A single line is written in the dust on the mirror, in a child's hand: 'she said it was only for a minute'. Nobody here is a child.",
+  "The kitchen clock is running backward, one second at a time. The radio is on, tuned between stations, and under the static someone is counting.",
+  "Every door in the house is unlocked and standing open an inch. Every one. Even the cupboards under the stairs."
+ ],
+ "diaries": [
+  "The last entries get shorter. 'Things moved again. An inch. Never more than an inch.' Then: 'I stopped checking whether I was imagining it.' Then nothing for nine days. The last line is a single word, underlined twice: 'Patient.'",
+  "'Someone has been standing at the end of the garden at night. When I turn the light on there is no one. When I turn it off, there is.' {v} had stopped sleeping in the bedroom a week ago.",
+  "{v} had been keeping a list of every time the phone rang and nobody spoke. Forty-one calls. At the bottom, in a steadier hand than the rest: 'They know what time I come home.'",
+  "'I have decided not to tell anyone. They would say it is my nerves, and then it would be true.' The entry is dated three days ago. Beneath it, in different ink: 'Good.'",
+  "Most pages are shopping lists and weather. Then one page, pressed hard enough to tear: 'It is not what they want from me. It is that they want me to KNOW.'"
+ ],
  "signatures": [
   {"text": "A single sock, folded, was left on the victim's chest", "nick": "The Odd Sock"},
   {"text": "The nine of clubs was tucked into the victim's collar", "nick": "The Nine of Clubs"},
