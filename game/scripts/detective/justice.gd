@@ -7,13 +7,43 @@ extends RefCounted
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const Brief = preload("res://scripts/sim/brief.gd")
+const Data = preload("res://scripts/core/data.gd")
+const Prose = preload("res://scripts/detective/prose.gd")
+const Reputation = preload("res://scripts/detective/reputation.gd")
 
 const TYPES := {"grudge": "organised", "money": "calculating", "family": "remorseful", "silence": "secretive", "passion": "volatile"}
 const LORE := [
 	"The lake level has not changed in sixty-three years. They measure it every morning, and they write the same number down.",
 	"There's a bell you only hear at 4:12. The old ones don't ask what it is. They just close the window.",
 	"Whatever you think this town is for, you have it backwards. It is not here to keep people in. It is here to keep something out.",
-	"Ask the pastor about the hymn that isn't in the book. Then ask why the book has a gap where it should be."]
+	"Ask the pastor about the hymn that isn't in the book. Then ask why the book has a gap where it should be.",
+	"The old jury never went home. That is the part nobody says. They went down to the water in a line, and the line is still there on the nights the fog comes in.",
+	"Every house in Little Mercy has a window that faces the lake and is never opened. Ask whoever built yours why.",
+	"You have noticed that no one says goodbye here. It isn't manners. Goodbye is a word that gets answered."]
+
+const APPROACH := {
+	"rapport": [
+		"You let {n} talk. About the weather, the dog, the job. It takes forty minutes before the guard goes quiet. {n} is a little less afraid of you.",
+		"You bring two coffees and say nothing about the case. {n} wraps both hands round a cup and starts, haltingly, on the winter the lake froze.",
+		"You ask about ordinary things: what {n} had for breakfast, who feeds the cat. {n} answers each slowly, testing it for a trap, and finds none.",
+		"You sit with {n} until the clock has gone round once. Neither of you mentions the dead. It is the nearest thing to a conversation you have had all week."],
+	"evidence": [
+		"You lay it out, piece by piece. {n} watches the table the whole time.",
+		"You slide the first page across, then the second. {n} reads each one twice, the way people read a bill.",
+		"You put the pieces down in the order you found them. {n} follows your finger to each, and flinches only once, and not where you expected.",
+		"The file lies open between you. You do not touch it. You let {n} see how thick it has become."],
+	"pressure": [
+		"You press. You keep pressing. The room is hot, the clock is slow, and {n} has not slept.",
+		"You come back to the same three questions, asked in a different order each time. {n}'s answers begin to arrive a half-second before the questions finish.",
+		"The lights stay on. The coffee stops coming. You ask again, and again, and {n} begins to answer questions you have not asked.",
+		"You say the dead person's name in every sentence. By the sixth {n} has stopped flinching, and that is worse."]}
+
+const INNOCENT_TELLS := [
+	"{n} keeps repeating one true thing in exactly the same words, the way a person says a prayer they half believe.",
+	"{n} is frightened, but of the room, and of you, and not of anything you say about the night. It is a different kind of fear.",
+	"{n} answers before you finish, and the answer is always the same: plain, tired, and not very clever. A liar would be cleverer.",
+	"{n} asks twice, in different words, whether they can go home. It is not what a guilty person asks. A guilty person asks how long."]
+
 
 
 # =========================================================================== arrest and interrogation
@@ -33,7 +63,7 @@ static func arrest(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictiona
 	if st.get("custody", "") != "":
 		return {"ok": false, "text": "You already have someone in custody."}
 	if not probable_cause(det, target):
-		det.reputation["sheriff"] = int(det.reputation["sheriff"]) - 5
+		Reputation.apply(det, "failed_arrest", int(sim.day))
 		det.add_stress(8.0)
 		sim.people[target].bump("player", -20.0, -20.0)
 		return {"ok": false, "text": "You can't arrest %s on a hunch. The Sheriff reminds you what probable cause means, and %s will not forget you tried." % [CaseEngine.name_of(sim, target), CaseEngine.first(sim, target)]}
@@ -60,23 +90,25 @@ static func interrogate(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dic
 			ss["rapport"] = float(ss["rapport"]) + 15.0
 			ss["resistance"] = float(ss["resistance"]) - 5.0
 			ss["fatigue"] = maxf(float(ss["fatigue"]) - 5.0, 0.0)
-			text = "You let %s talk. About the weather, the dog, the job. It takes forty minutes before the guard goes quiet. %s is a little less afraid of you." % [name, name]
+			text = _round_text("rapport", int(ss["sessions"]), name)
 		"evidence":
 			var pr: Dictionary = det.proof_against(t)
 			var w := float(pr["opportunity"] + pr["means"] + pr["motive"] + pr["link"])
 			ss["resistance"] = float(ss["resistance"]) - (w * 4.0 if guilty else w * 1.0)
 			ss["fatigue"] = float(ss["fatigue"]) + 10.0
-			text = "You lay it out, piece by piece. %s watches the table the whole time." % name
+			text = _round_text("evidence", int(ss["sessions"]), name)
 		"pressure":
 			ss["resistance"] = float(ss["resistance"]) - 12.0
 			ss["fatigue"] = float(ss["fatigue"]) + 25.0
 			ss["rapport"] = float(ss["rapport"]) - 15.0
 			ss["pressure"] = int(ss["pressure"]) + 1
-			text = "You press. You keep pressing. The room is hot, the clock is slow, and %s has not slept." % name
+			text = _round_text("pressure", int(ss["sessions"]), name)
+	# what the face does, and what a patient killer says back
+	text += "\n\n" + _tell_and_voice(sim, c, det, t, guilty, int(ss["sessions"]), learned)
 	# outcomes
 	if guilty and float(ss["resistance"]) <= 0.0 and not det.has("confession_" + t):
 		var e := {"id": "confession_" + t, "title": "Confession: %s" % CaseEngine.first(sim, t), "kind": "confession",
-			"text": "%s breaks. \"I went round after midnight. We argued about %s. I didn't mean... %s.\" Then, quietly: \"%s.\"" % [CaseEngine.name_of(sim, t), c["motive_thing"], "it happened so fast", c["held_back"]],
+			"text": "%s breaks. \"I went round after midnight. We argued about %s. I didn't mean... %s.\" Then, quietly: \"%s.\"" % [CaseEngine.name_of(sim, t), CaseEngine.thing_about(c["motive_thing"]), "it happened so fast", c["held_back"]],
 			"source": t, "supports": [{"cat": "opportunity", "about": t, "strength": 3}, {"cat": "motive", "about": t, "strength": 2}, {"cat": "means", "about": t, "strength": 2}], "day": int(sim.day), "has_detail": true}
 		if det.learn(e):
 			learned.append(e)
@@ -91,6 +123,37 @@ static func interrogate(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dic
 	elif float(ss["rapport"]) <= -30.0:
 		text += "\n\n\"I want a lawyer.\" The session is over."
 	return {"text": text, "minutes": 60, "learned": learned}
+
+
+static func _round_text(approach: String, round_n: int, name: String) -> String:
+	var bank: Array = APPROACH[approach]
+	return String(bank[(maxi(round_n, 1) - 1) % bank.size()]).replace("{n}", name)
+
+
+## The tell (a small thing the body does) and, from the second session, the killer's own philosophy answering back. Guilty and innocent
+## people sit differently. The tell goes in the notebook so you can weigh it later; it proves nothing and it is not meant to.
+static func _tell_and_voice(sim: RefCounted, c: Dictionary, det: RefCounted, t: String, guilty: bool, round_n: int, learned: Array) -> String:
+	var h: Dictionary = Prose.json("detective/horror.json")
+	var name := CaseEngine.first(sim, t)
+	var type: String = TYPES[c["motive"]]
+	var tell: String
+	if guilty:
+		var tl: Array = h["tells"][type]
+		tell = String(tl[(round_n - 1) % tl.size()]) % name
+	else:
+		tell = String(INNOCENT_TELLS[(round_n + absi(hash(t))) % INNOCENT_TELLS.size()]).replace("{n}", name)
+	var out := tell
+	var e := {"id": "tell_%s_%d" % [t, round_n], "title": "Interview %d: %s" % [round_n, name], "kind": "testimony", "source": t, "supports": [], "day": int(sim.day), "text": tell}
+	if det.learn(e):
+		learned.append(e)
+	if guilty and round_n >= 2:
+		var ph: Array = h["philosophy"][type]
+		var line: String = ph[(round_n - 2) % ph.size()]
+		out += "\n\n%s says, without being asked: %s" % [name, line]
+		var e2 := {"id": "view_%s_%d" % [t, round_n], "title": "%s argues back" % name, "kind": "testimony", "source": t, "supports": [], "day": int(sim.day), "text": line}
+		if det.learn(e2):
+			learned.append(e2)
+	return out
 
 
 # =========================================================================== trial
@@ -129,7 +192,8 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 	for s in c["suspects"]:
 		if s == target:
 			continue
-		if int(det.proof_against(s)["exonerate"]) < 3:
+		var ps: Dictionary = det.proof_against(s)
+		if int(ps["exonerate"]) < 3 and int(ps["opportunity"]) + int(ps["means"]) + int(ps["motive"]) + int(ps["link"]) >= 2:
 			add.call("The defence points across the room: \"%s had a motive and no alibi, and nobody ever ruled them out.\"" % CaseEngine.name_of(sim, s), -5.0)
 	var look: String = c.get("lookalike", "")
 	if look != "" and det.order.any(func(e): return String(e).begins_with("cmp_") and String(e).ends_with(look) and det.known[e].get("unreliable", false)) and target != look:
@@ -140,37 +204,78 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 	return {"confidence": conf, "attacks": attacks, "verdict": verdict, "sentence": 25 if verdict == "guilty" else 0, "wrongful": verdict == "guilty" and not guilty_truth, "target": target}
 
 
-## Apply a verdict: guilty goes to jail; not guilty goes home (a guilty one freed is dangerous).
+## Apply a verdict: guilty goes to jail; not guilty goes home (a guilty one freed is dangerous). Every cost goes through the one reputation ledger.
 static func conclude(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictionary, jail: Array, res: Dictionary) -> void:
 	var t: String = res["target"]
 	var p: RefCounted = sim.people[t]
+	var day := int(sim.day)
 	st["custody"] = ""
 	match String(res["verdict"]):
 		"guilty":
 			p.jailed = true
 			p.location = ""
-			var inmate := {"id": t, "case": c["id"], "guilty": t == c["killer"], "sentence": res["sentence"], "type": TYPES[c["motive"]], "rapport": 0.0, "told": [], "day": int(sim.day), "freed": false}
+			var inmate := {"id": t, "case": c["id"], "guilty": t == c["killer"], "sentence": res["sentence"], "type": TYPES[c["motive"]], "rapport": 0.0, "told": [], "day": day, "freed": false}
 			jail.append(inmate)
 			if t == c["killer"]:
 				c["status"] = "solved"
 				det.cases_solved += 1
-				det.reputation["sheriff"] = int(det.reputation["sheriff"]) + 10
+				Reputation.apply(det, "convicted_killer", day)
+				if _is_occult(c):
+					Reputation.apply(det, "occult_solved", day)
 				det.gain_xp(150)
+				det.add_stress(-25.0)
 			else:
 				det.cases_failed += 1
-				det.reputation["town"] = int(det.reputation["town"]) - 8
+				Reputation.apply(det, "wrongful_conviction", day)
 				det.add_stress(25.0)
 		"hung":
 			st["custody"] = t
-			st["trial_day"] = int(sim.day) + 3
+			st["trial_day"] = day + 3
+			Reputation.apply(det, "hung_jury", day)
 			det.add_stress(6.0)
 		_:
 			p.needs["comfort"] = clampf(float(p.needs["comfort"]) - 15.0, 0.0, 100.0)
 			if t == c["killer"]:
 				c["alerted"] = true
+				c["killer_alert"] = int(c.get("killer_alert", 0)) + 1
+				Reputation.apply(det, "acquitted_guilty", day)
 				det.add_stress(15.0)
 			else:
 				det.cases_failed += 1
+
+
+## Was this an old-town case: a vigil, a stopped clock at 4:12?
+static func _is_occult(c: Dictionary) -> bool:
+	if String(c.get("held_back", "")).contains("4:12"):
+		return true
+	for id in c.get("profiles", {}):
+		if c["profiles"][id].get("cult", false):
+			return true
+	return false
+
+
+## The formal accusation as one coherent road: charge -> arrest -> interrogation -> trial -> a cell. `fast` runs it all in one sitting
+## (a case that already holds up); otherwise the accused is held and the trial is set three days on. Returns the trial result, if one was
+## held, plus the interview notes.
+static func formal_charge(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictionary, jail: Array, culprit: String, right_theory: bool, fast: bool) -> Dictionary:
+	var out := {"custody": true, "interview": "", "trial": {}, "learned": []}
+	if st.get("custody", "") != "" and st["custody"] != culprit:
+		st["custody"] = ""         # the one held before is let go: the charge has moved
+	st["custody"] = culprit
+	st["arrest_day"] = int(sim.day)
+	st["trial_day"] = int(sim.day) if fast else int(sim.day) + 3
+	var guilty: bool = culprit == c["killer"]
+	st["sess"] = {"rapport": 0.0, "resistance": 60.0 if guilty else 45.0, "fatigue": 0.0, "sessions": 0, "pressure": 0}
+	if right_theory:
+		st["sess"]["resistance"] = float(st["sess"]["resistance"]) - 20.0     # laying the whole theory on the table counts
+	var iv: Dictionary = interrogate(sim, c, det, st, "evidence")
+	out["interview"] = iv["text"]
+	out["learned"] = iv["learned"]
+	if fast:
+		var tr: Dictionary = trial(sim, c, det, culprit)
+		conclude(sim, c, det, st, jail, tr)
+		out["trial"] = tr
+	return out
 
 
 # =========================================================================== the jail
@@ -189,7 +294,7 @@ static func visit(sim: RefCounted, c: Dictionary, det: RefCounted, inmate: Dicti
 		"crime":
 			if inmate["guilty"]:
 				if float(inmate["rapport"]) >= 20.0:
-					text = "\"You want to know why? %s. That's all. It sounds smaller every year.\" They look at their hands. \"%s.\"" % [c["motive_thing"], c["held_back"]]
+					text = "\"You want to know why? %s. That's all. It sounds smaller every year.\" They look at their hands. \"%s.\"" % [Prose.sentence(CaseEngine.thing_about(c["motive_thing"])), c["held_back"]]
 				else:
 					text = "%s will not say. Not yet. \"Ask me when I know you're not just writing it down for a book.\"" % name
 			else:
@@ -231,7 +336,7 @@ static func appeal(sim: RefCounted, c: Dictionary, det: RefCounted, jail: Array,
 	sim.people[inmate["id"]].location = sim.people[inmate["id"]].home
 	inmate["freed"] = true
 	jail.erase(inmate)
-	det.reputation["town"] = int(det.reputation["town"]) + 6
+	Reputation.apply(det, "appeal_win", int(sim.day))
 	det.add_stress(-15.0)
 	c["alerted"] = true
 	return {"ok": true, "text": "%s walks out into the rain. They don't thank you. They don't have to. The case is open again, and the real killer is watching." % CaseEngine.name_of(sim, inmate["id"])}

@@ -87,14 +87,20 @@
   }
  },
  "dropped": [
-  "a single brass button",
+  "a brass button",
   "a torn leather glove",
-  "one earring, still warm to the touch",
+  "an earring",
   "a bus ticket stub",
   "an embroidered handkerchief",
   "a strand of red wool tied in a knot",
   "a key fob with a fish on it",
-  "a pipe cleaner twisted into a ring"
+  "a pipe cleaner twisted into a ring",
+  "a hair slide",
+  "a pencil stub with tooth marks",
+  "a matchbook from the Low Water",
+  "a lozenge tin, empty",
+  "a mother-of-pearl cufflink",
+  "a folded church bulletin"
  ],
  "shoes": [
   "work boots, size 11, with a cracked left heel",
@@ -228,41 +234,274 @@
   "Most pages are shopping lists and weather. Then one page, pressed hard enough to tear: 'It is not what they want from me. It is that they want me to KNOW.'"
  ],
  "signatures": [
-  {"text": "A single sock, folded, was left on the victim's chest", "nick": "The Odd Sock"},
-  {"text": "The nine of clubs was tucked into the victim's collar", "nick": "The Nine of Clubs"},
-  {"text": "Every mirror in the house was draped with a bedsheet", "nick": "The Mourner"},
-  {"text": "A saucer of milk was set on the doorstep", "nick": "The Milkman"},
-  {"text": "The victim's hands were folded around one white feather", "nick": "The Feather Man"},
-  {"text": "A paper boat was left floating in the bathtub", "nick": "The Shipwright"},
-  {"text": "The victim's hair was braided with red thread", "nick": "The Weaver"},
-  {"text": "A key that fits no lock in the house was placed in the victim's palm", "nick": "The Keeper"},
-  {"text": "A child's crayon drawing of the house was pinned to the door", "nick": "The Artist"},
-  {"text": "Every photograph in the house was turned face down", "nick": "The Turner"},
-  {"text": "A bar of soap, unwrapped, was set in the victim's hand", "nick": "The Washer"},
-  {"text": "The radio was tuned to static and left on low", "nick": "The Operator"},
-  {"text": "A ring of salt was poured around the body", "nick": "The Salter"},
-  {"text": "An orange peel, in one unbroken spiral, lay on the pillow", "nick": "The Peeler"},
-  {"text": "A stub of candle was burning in every window", "nick": "The Candleman"},
-  {"text": "The victim's shoes were lined up on the step, toes pointing at the lake", "nick": "The Ferryman"},
-  {"text": "A single button, not the victim's, was sewn onto their cuff", "nick": "The Tailor"},
-  {"text": "The kettle was on the boil and two cups were laid out", "nick": "The Host"}
+  {
+   "text": "A single sock, folded, was left on the victim's chest",
+   "nick": "The Odd Sock"
+  },
+  {
+   "text": "The nine of clubs was tucked into the victim's collar",
+   "nick": "The Nine of Clubs"
+  },
+  {
+   "text": "Every mirror in the house was draped with a bedsheet",
+   "nick": "The Mourner"
+  },
+  {
+   "text": "A saucer of milk was set on the doorstep",
+   "nick": "The Milkman"
+  },
+  {
+   "text": "The victim's hands were folded around one white feather",
+   "nick": "The Feather Man"
+  },
+  {
+   "text": "A paper boat was left floating in the bathtub",
+   "nick": "The Shipwright"
+  },
+  {
+   "text": "The victim's hair was braided with red thread",
+   "nick": "The Weaver"
+  },
+  {
+   "text": "A key that fits no lock in the house was placed in the victim's palm",
+   "nick": "The Keeper"
+  },
+  {
+   "text": "A child's crayon drawing of the house was pinned to the door",
+   "nick": "The Artist"
+  },
+  {
+   "text": "Every photograph in the house was turned face down",
+   "nick": "The Turner"
+  },
+  {
+   "text": "A bar of soap, unwrapped, was set in the victim's hand",
+   "nick": "The Washer"
+  },
+  {
+   "text": "The radio was tuned to static and left on low",
+   "nick": "The Operator"
+  },
+  {
+   "text": "A ring of salt was poured around the body",
+   "nick": "The Salter"
+  },
+  {
+   "text": "An orange peel, in one unbroken spiral, lay on the pillow",
+   "nick": "The Peeler"
+  },
+  {
+   "text": "A stub of candle was burning in every window",
+   "nick": "The Candleman"
+  },
+  {
+   "text": "The victim's shoes were lined up on the step, toes pointing at the lake",
+   "nick": "The Ferryman"
+  },
+  {
+   "text": "A single button, not the victim's, was sewn onto their cuff",
+   "nick": "The Tailor"
+  },
+  {
+   "text": "The kettle was on the boil and two cups were laid out",
+   "nick": "The Host"
+  }
  ],
  "nicknames": [
-  {"key": "lamp", "name": "The Lamplighter"},
-  {"key": "shoe", "name": "The Cobbler"},
-  {"key": "coin", "name": "The Coin Man"},
-  {"key": "clock", "name": "The Clockstopper"},
-  {"key": "door", "name": "The Locksmith"},
-  {"key": "glass", "name": "The Hostess"}
+  {
+   "key": "lamp",
+   "name": "The Lamplighter"
+  },
+  {
+   "key": "shoe",
+   "name": "The Cobbler"
+  },
+  {
+   "key": "coin",
+   "name": "The Coin Man"
+  },
+  {
+   "key": "clock",
+   "name": "The Clockstopper"
+  },
+  {
+   "key": "door",
+   "name": "The Locksmith"
+  },
+  {
+   "key": "glass",
+   "name": "The Hostess"
+  }
  ],
  "threads": [
-  {"photo": "a framed photograph from years ago: twelve people on the courthouse steps, the jury of a trial everyone has agreed to forget", "gossip": "They all sat on the Harlan jury, years back. We don't talk about the Harlan jury."},
-  {"photo": "a faded photograph of the chapel choir, one face scratched out with a pin", "gossip": "They sang together in the chapel choir, the year the choir was disbanded. Nobody says why."},
-  {"photo": "a photograph of the dam crew the summer the lake rose, a name written on the back and crossed out", "gossip": "They all worked the dam the summer the lake rose. Some of that crew never came back up the ridge."}
+  {
+   "photo": "a framed photograph from years ago: twelve people on the courthouse steps, the jury of a trial everyone has agreed to forget",
+   "gossip": "They all sat on the Harlan jury, years back. We don't talk about the Harlan jury."
+  },
+  {
+   "photo": "a faded photograph of the chapel choir, one face scratched out with a pin",
+   "gossip": "They sang together in the chapel choir, the year the choir was disbanded. Nobody says why."
+  },
+  {
+   "photo": "a photograph of the dam crew the summer the lake rose, a name written on the back and crossed out",
+   "gossip": "They all worked the dam the summer the lake rose. Some of that crew never came back up the ridge."
+  }
  ],
  "openers": [
   "Little Mercy sits on a ridge above a lake that nobody swims in. It is the kind of town where strangers get waved at, doors go unlocked, and nobody, ever, says goodbye.",
   "There is a particular kind of quiet in a small town after rain. Everyone is home. Everyone is listening. And everyone knows exactly whose light is still on.",
   "In Little Mercy the clocks run a little slow, the gossip runs a little fast, and the lake keeps its own counsel. Nothing happens here. That is what everyone will tell you."
- ]
+ ],
+ "forms": {
+  "a fence line they had fought over for six years": [
+   "the fence line",
+   "Six years over that fence line, {k}, and you still won't give an inch.",
+   "the fence line"
+  ],
+  "a loan that was never repaid": [
+   "the unpaid loan",
+   "The loan, {k}. I've waited long enough. I want it back this week.",
+   "the loan"
+  ],
+  "an insult at the Grange dinner that was never forgiven": [
+   "what was said at the Grange dinner",
+   "What you said at the Grange dinner, {k}, in front of everyone. I haven't forgotten, and neither have they.",
+   "the Grange dinner"
+  ],
+  "a dog that kept getting into the garden": [
+   "the dog and the garden",
+   "Your dog has been in my garden again, {k}. I will not say it a fifth time.",
+   "the dog"
+  ],
+  "a tree that kept dropping on the other side": [
+   "the tree on the boundary",
+   "That tree is coming down, {k}, whatever you say. I've had the letter drawn up.",
+   "the tree"
+  ],
+  "a debt of $4,000 they could not pay": [
+   "the four thousand dollars",
+   "Four thousand, {k}. By Friday, or I go to the Sheriff.",
+   "the debt"
+  ],
+  "a shared till that was short": [
+   "the shortfall in the till",
+   "The till was short again. You know how much, {k}. I know what you've been doing.",
+   "the till"
+  ],
+  "an inheritance dispute with a cousin": [
+   "the inheritance",
+   "I'm done splitting it your way, {k}. My lawyer has the papers.",
+   "the inheritance"
+  ],
+  "a business partnership that had gone sour": [
+   "the partnership",
+   "I'm dissolving the partnership, {k}. You can have your name back and nothing else.",
+   "the partnership"
+  ],
+  "the victim was rewriting the will": [
+   "the will",
+   "I'm redoing the will, {k}. You won't like the new one.",
+   "the will"
+  ],
+  "the victim planned to sell the family house": [
+   "the family house",
+   "I'm selling the house, {k}. The agent comes Monday. Don't make it difficult.",
+   "the family house"
+  ],
+  "the victim was about to cut them out of the estate": [
+   "the estate",
+   "You are out of it, {k}. All of it. I'm sorry, but you did this.",
+   "the estate"
+  ],
+  "the victim had learned about the skimming from the Grange fund": [
+   "the missing Grange money",
+   "I know about the Grange fund, {k}. I know exactly how much. I have to say something. I'll tell you first, as a courtesy.",
+   "the Grange fund"
+  ],
+  "the victim had seen a hit-and-run in 2019 and finally decided to talk": [
+   "the night of the hit-and-run",
+   "I saw what happened in 2019, {k}. I've kept quiet for years and I can't any more. I'll tell you first.",
+   "what happened in 2019"
+  ],
+  "the victim found out about a second family in the next county": [
+   "the second family",
+   "I know about the house in the next county, {k}. I have to say something. I wanted you to hear it from me.",
+   "the second family"
+  ],
+  "the victim had found the old census with a page torn out": [
+   "the torn page in the old census",
+   "I found the census, {k}, the one with the page torn out. I know who tore it. I have to tell someone, and I wanted you to hear it from me first.",
+   "the torn census page"
+  ],
+  "the victim was leaving them for someone else": [
+   "the end of it",
+   "I can't go on with this, {k}. There is someone else. I won't lie to you any more.",
+   "the break"
+  ],
+  "the victim had refused them, again, in front of the whole diner": [
+   "being turned down in front of the diner",
+   "I said no, {k}. I said it kindly and I'll say it again. Stop. Please stop.",
+   "the refusal"
+  ],
+  "the victim had ended it by letter that morning": [
+   "the letter that ended it",
+   "I am sorry to do it like this, {k}. I couldn't say it to your face. It's over.",
+   "the letter"
+  ],
+  "the verdict of years ago, and a name that was never forgiven": [
+   "the verdict of years ago",
+   "You know what you did at the trial, and you know whose name it was.",
+   "the old verdict"
+  ]
+ },
+ "dropped_where": [
+  "Under the edge of the rug: {i}.",
+  "Wedged behind the radiator: {i}.",
+  "Caught in the floor-boards by the door: {i}.",
+  "Half under the table: {i}.",
+  "In the corner by the skirting board: {i}.",
+  "Pressed into the mat by the door: {i}.",
+  "At the foot of the stairs, kicked out of sight: {i}.",
+  "Under the chair, in the dust: {i}."
+ ],
+ "dropped_state": [
+  "It doesn't belong here.",
+  "Nobody here owned it.",
+  "It was not in the dust, it was on top of it.",
+  "It had not been there long.",
+  "It looks handled, not lost.",
+  "It is too small to matter and too out of place to ignore."
+ ],
+ "seasons": [
+  "early spring",
+  "the end of summer",
+  "late autumn",
+  "the first week of winter"
+ ],
+ "weather_lines": {
+  "clear": [
+   "The morning was clear and cold, the sky so bright over the lake it looked rinsed.",
+   "A pale clear morning had come up, with the water lying flat and silver as a spoon.",
+   "It was dry and bright, which in Little Mercy makes everything look more exposed, not less.",
+   "The sky was cloudless, and the lake gave it back a shade darker, like a bruise."
+  ],
+  "cloudy": [
+   "The sky sat low and grey over the lake.",
+   "Cloud lay on the ridge like a hand pressed down, and the light was the colour of dishwater.",
+   "It was overcast, the kind of flat white day that makes every face look tired.",
+   "A heavy ceiling of cloud had come down in the night and nobody had asked it to leave."
+  ],
+  "rain": [
+   "It had rained all night, and it was still coming down.",
+   "Rain ran off every roof in town in a steady, indifferent gossip.",
+   "The morning came up wet; the gutters were singing, and every window on the street wore a fine grey skin of water.",
+   "A thin cold rain was falling, the sort that doesn't so much wet you as accompany you."
+  ],
+  "fog": [
+   "A thick fog had come in off the water and not left.",
+   "The fog was so thick that the streetlamps stayed on and stared into it like men looking down a well.",
+   "Fog filled the town to the gutters. The lake was somewhere to the east, and everybody could feel exactly where.",
+   "Fog stood in the streets like a held breath, and the church bell, when it rang the hour, seemed to ring it from underneath."
+  ]
+ }
 }

@@ -12,13 +12,14 @@ const TownTheme = preload("res://scripts/ui/town_theme.gd")
 const Portrait = preload("res://scripts/art/portrait.gd")
 const Relationship = preload("res://scripts/sim/relationship.gd")
 const PRINT = preload("res://shaders/page_post.gdshader")
+const UiKit = preload("res://scripts/ui/ui_kit.gd")
 
 const INK := Color("14121c")
 const PAPER := Color("f3e9d2")
 const MARIGOLD := Color("f5b82e")
 const VIOLET := Color("4a3f7a")
 const RED := Color("e23d3d")
-const PANEL_W := 470.0
+const PANEL_W := 500.0
 const DURATIONS := [0.5, 1.0, 2.0, 4.0]
 
 var game: RefCounted
@@ -31,6 +32,8 @@ var toast: Label
 var news: Label
 var card: Control
 var card_body: Label
+var card_content: VBoxContainer
+var card_button: Button
 var print_pass: ColorRect
 var dur_i := 1
 var last_talk: Dictionary = {}
@@ -131,11 +134,13 @@ func _layout() -> void:
 func _btn(parent: Control, text: String, cb: Callable, size_px: int = 30, min_h: float = 0.0) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.add_theme_font_size_override("font_size", size_px)
-	b.custom_minimum_size = Vector2(0, min_h if min_h > 0.0 else size_px * 1.9)
+	var px := UiKit.fs(size_px)
+	b.add_theme_font_size_override("font_size", px)
+	b.custom_minimum_size = Vector2(0, maxf(min_h, 52.0) if min_h > 0.0 else maxf(px * 1.9, 52.0))
 	b.clip_text = true
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.pressed.connect(cb)
+	UiKit.press_fx(b)
 	parent.add_child(b)
 	return b
 
@@ -145,7 +150,7 @@ func _lbl(parent: Control, text: String, size_px: int = 28, color: Color = INK) 
 	l.text = text
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.custom_minimum_size = Vector2(PANEL_W - 68.0, 0)
-	l.add_theme_font_size_override("font_size", size_px)
+	l.add_theme_font_size_override("font_size", UiKit.fs(size_px))
 	l.add_theme_color_override("font_color", color)
 	parent.add_child(l)
 	return l
@@ -153,7 +158,7 @@ func _lbl(parent: Control, text: String, size_px: int = 28, color: Color = INK) 
 
 func _head(parent: Control, text: String, size_px: int = 40, color: Color = INK) -> Label:
 	var l := _lbl(parent, text, size_px, color)
-	TownTheme.heading(l, size_px, color)
+	TownTheme.heading(l, UiKit.fs(size_px), color)
 	return l
 
 
@@ -176,7 +181,9 @@ func _need(name: String, v: float) -> void:
 
 
 func _clear_panel() -> void:
+	# taken out of the tree at once (not just queued): the old rows must never be drawn under the new ones
 	for c in box.get_children():
+		box.remove_child(c)
 		c.queue_free()
 	scroll.scroll_vertical = 0
 
@@ -213,40 +220,59 @@ func _card(title: String, subtitle: String, body: String, button: String, cb: Ca
 		card.queue_free()
 	card = ColorRect.new()
 	(card as ColorRect).color = Color(0.08, 0.07, 0.11, 0.78)
+	card.name = "Card"
 	add_child(card)
 	card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var sm := UiKit.safe_margins(self)
 	var page := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = PAPER; sb.border_color = INK; sb.set_border_width_all(6); sb.set_content_margin_all(22)
+	sb.bg_color = PAPER; sb.border_color = INK; sb.set_border_width_all(6); sb.set_content_margin_all(22); sb.set_corner_radius_all(10)
 	sb.shadow_color = Color(0, 0, 0, 0.35); sb.shadow_offset = Vector2(8, 10)
 	page.add_theme_stylebox_override("panel", sb)
+	page.mouse_filter = Control.MOUSE_FILTER_PASS
 	card.add_child(page)
-	page.position = Vector2(40, 24)
-	page.size = Vector2(size.x - 80, size.y - 48)
+	page.position = Vector2(maxf(40.0, sm.x + 12.0), maxf(24.0, sm.y + 14.0))
+	page.size = Vector2(size.x - page.position.x - maxf(40.0, sm.z + 12.0), size.y - page.position.y - maxf(24.0, sm.w + 12.0))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 26)
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
 	page.add_child(row)
 	if person != null:
 		var pv := VBoxContainer.new()
+		pv.mouse_filter = Control.MOUSE_FILTER_PASS
 		row.add_child(pv)
-		pv.add_child(_portrait(person, 250))
+		pv.add_child(_portrait(person, 230))
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 10)
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(v)
-	var tl := _head(v, title, 66, RED)
+	var tl := _head(v, title, 60, RED)
 	tl.custom_minimum_size = Vector2(0, 0)
-	_head(v, subtitle, 40)
+	if subtitle != "":
+		var st := _head(v, subtitle, 34)
+		st.custom_minimum_size = Vector2(0, 0)
 	var sc := ScrollContainer.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.mouse_filter = Control.MOUSE_FILTER_PASS
 	v.add_child(sc)
-	var t := _lbl(sc, body, 28)
-	t.custom_minimum_size = Vector2(size.x - (440 if person != null else 180), 0)
+	card_content = VBoxContainer.new()
+	card_content.add_theme_constant_override("separation", 12)
+	card_content.mouse_filter = Control.MOUSE_FILTER_PASS
+	card_content.custom_minimum_size = Vector2(page.size.x - (400 if person != null else 120), 0)
+	card_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(card_content)
+	var t := _lbl(card_content, body, 27)
+	t.custom_minimum_size = Vector2(page.size.x - (400 if person != null else 120), 0)
+	t.mouse_filter = Control.MOUSE_FILTER_PASS
 	card_body = t
-	var bt := _btn(v, button, cb, 36)
+	var bt := _btn(v, button, cb, 34)
 	bt.custom_minimum_size = Vector2(0, 76)
 	bt.name = "CardButton"
+	UiKit.set_button_style(bt, INK, INK, PAPER)
+	card_button = bt
+	UiKit.fade_in(card, 0.22)
 
 
 func _close_card() -> void:

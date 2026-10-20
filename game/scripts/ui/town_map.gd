@@ -23,6 +23,9 @@ var _moved := 0.0
 var _lots_sorted: Array = []
 var base: Control
 var night := 0.0
+var mini := false                    # the HUD minimap: no place names, plain dots, a facing arrow and the objective marker
+var host_yaw := 0.0
+var target_world := Vector2.INF       # the objective, in town metres
 var host_world := Vector2.INF       # 3D mode: where you really are, in town metres (overrides the sim's lot position)
 var _tokens: Dictionary = {}       # person id -> portrait traits (for the head tokens)
 
@@ -192,6 +195,8 @@ func _draw() -> void:
 	var label_boxes: Array = []
 	var named: Array = layout.lots.filter(func(x): return x["kind"] == "landmark" or x["kind"] == "park")
 	named.sort_custom(func(a, b): return float(a["w"]) > float(b["w"]))
+	if mini:
+		named = []
 	for l in named:
 		var tl2 := to_screen(Vector2(float(l["x"]) - float(l["w"]) / 2.0, float(l["y"]) - float(l["d"]) / 2.0))
 		var fs := int(clampf(14.0 * sc, 13.0, 26.0))
@@ -213,7 +218,7 @@ func _draw() -> void:
 	# people: small coloured dots from afar, little faces when you zoom in
 	var rad := clampf(2.4 * sc, 3.5, 10.0)
 	var host: String = game.host
-	var heads := sc >= 1.5
+	var heads := sc >= 1.5 and not mini
 	for id in cur_pos:
 		if id == host:
 			continue
@@ -235,6 +240,14 @@ func _draw() -> void:
 		var hp := to_screen(host_world) if host_world != Vector2.INF else to_screen((prev_pos.get(host, cur_pos[host]) as Vector2).lerp(cur_pos[host], anim))
 		var pulse := 1.0 + 0.12 * sin(Time.get_ticks_msec() * 0.006)
 		draw_circle(hp, rad * 2.6 * pulse, Color(0.96, 0.72, 0.18, 0.3))
+		if mini:
+			var fwd := Vector2(-sin(host_yaw), -cos(host_yaw))
+			var side := Vector2(-fwd.y, fwd.x)
+			var tri := PackedVector2Array([hp + fwd * 13.0, hp - fwd * 8.0 + side * 8.0, hp - fwd * 4.0, hp - fwd * 8.0 - side * 8.0])
+			draw_colored_polygon(tri, Color("f5b82e"))
+			draw_polyline(tri + PackedVector2Array([tri[0]]), INK, 2.5, true)
+			_draw_target(sc)
+			return
 		Portrait.draw_token(self, hp, maxf(rad * 1.9, 9.0), _token(host), true)
 		var nm: String = String(game.sim.people[host].display).split(" ")[0]
 		var tw := font.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
@@ -242,6 +255,28 @@ func _draw() -> void:
 		draw_rect(tag, Color("f5b82e"))
 		draw_rect(tag, INK, false, 2.0)
 		draw_string(font, tag.position + Vector2(6, 20), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, INK)
+
+
+## The objective on the minimap: a red diamond, or an arrow on the rim when it is off the map.
+func _draw_target(_sc: float) -> void:
+	if target_world == Vector2.INF:
+		return
+	var tp := to_screen(target_world)
+	var inner := Rect2(Vector2(14, 14), size - Vector2(28, 28))
+	var c := inner.get_center()
+	if inner.has_point(tp):
+		var pts := PackedVector2Array([tp + Vector2(0, -11), tp + Vector2(8, 0), tp + Vector2(0, 11), tp + Vector2(-8, 0)])
+		draw_colored_polygon(pts, Color("e23d3d"))
+		draw_polyline(pts + PackedVector2Array([pts[0]]), INK, 2.5, true)
+		return
+	var d := tp - c
+	var k := minf((inner.size.x / 2.0) / maxf(absf(d.x), 0.001), (inner.size.y / 2.0) / maxf(absf(d.y), 0.001))
+	var rim := c + d * k
+	var dir := d.normalized()
+	var perp := Vector2(-dir.y, dir.x)
+	var tri := PackedVector2Array([rim + dir * 8.0, rim - dir * 6.0 + perp * 8.0, rim - dir * 6.0 - perp * 8.0])
+	draw_colored_polygon(tri, Color("e23d3d"))
+	draw_polyline(tri + PackedVector2Array([tri[0]]), INK, 2.0, true)
 
 
 func _process(_d: float) -> void:

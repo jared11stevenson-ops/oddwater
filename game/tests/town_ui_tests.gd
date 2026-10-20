@@ -62,7 +62,7 @@ func _initialize() -> void:
 				break
 		t.show_more(); t.show_decisions(); t.show_lives(); t.show_place("pink_heron"); t.show_host()
 		t.end_day()
-		ok(g.phase == "night" and buttons(t.box).size() >= 3, "night panel with visits")
+		ok(g.phase == "night" and buttons(t.box).size() >= 2, "night panel with visits (sleep and lives at least)")
 		var edges: Array = g.night_edges()
 		if not edges.is_empty():
 			t.night_do("comfort", edges[0]["id"])

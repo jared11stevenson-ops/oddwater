@@ -1,0 +1,283 @@
+{
+"types": {
+"marina": "waterfront", "launch_quay": "waterfront", "pageant_green": "waterfront",
+"bait_shop": "shop", "hardware": "shop", "clock_shop": "shop", "paws_reflect": "shop",
+"low_water": "tavern", "pink_heron": "diner", "rising_loaf": "bakery",
+"wmrc": "studio", "dam_house": "dam",
+"town_hall": "civic", "post_office": "civic", "library": "civic",
+"playhouse": "theatre", "pell_dentistry": "medical", "clinic": "medical", "lakeview_rest": "medical",
+"funeral_home": "funeral", "school": "school", "chapel": "chapel", "sheriff": "sheriff", "grange_hall": "hall"
+},
+"unease_key": {"tavern": "diner", "diner": "diner"},
+"kinds": {
+"home": {
+"label": "home",
+"rooms": ["the kitchen", "the front room", "the narrow hall", "the back bedroom", "the study", "the porch", "the stairs"],
+"senses": [
+"Toast had been made and left to go cold on the side. The butter was still soft",
+"The radiator ticked as it cooled, and a mug on the arm of the chair held a skin of tea",
+"A pair of slippers waited at the foot of the stairs, toes pointed at the door, as if their owner meant to be back",
+"The house smelled of floor polish, wet wool and a coal fire gone to ash",
+"A kettle was still warm. A television somewhere murmured to nobody",
+"Someone had started the washing and left it in the drum, damp, forgotten",
+"A calendar by the fridge was marked in three colours of ink: dentist, bins, a birthday",
+"The curtains were open on a garden full of dew, and the lamp was still on in daylight"
+],
+"plans": [
+"a calendar with a dentist's appointment circled for Thursday",
+"a shopping list on the table, half crossed through",
+"a casserole dish by the sink, soaking, for a Sunday that now would not come",
+"a birthday card on the mantel, signed and not yet posted"
+]
+},
+"waterfront": {
+"label": "the water's edge",
+"rooms": ["the end of the dock", "the boat shed", "the quay office", "the slipway", "the launch ticket booth"],
+"senses": [
+"Diesel, rope and weed; the water slapped the pilings in a slow, sleepy count",
+"Gulls were quarrelling over something on the slip; a mooring line creaked like a door",
+"A kettle sat on a camping stove, still warm, beside a thermos with a dented cup",
+"The tide-table nailed to the shed wall had been ticked in pencil up to yesterday",
+"Fog lay on the lake like a lid, and every sound inside it was close and flat"
+],
+"plans": [
+"a tide-chart with a boat booked out for Sunday",
+"a ferry rota with their name pencilled in for next week",
+"a coil of new rope, still tagged, and a receipt for it dated yesterday"
+]
+},
+"shop": {
+"label": "the shop",
+"rooms": ["the shop floor", "the stockroom", "the counter", "the workbench at the back", "the yard behind the shop"],
+"senses": [
+"The shop smelled of oil, brass and cardboard; the little bell above the door was still stilled",
+"Shelves of small neat things, each in its place, and one gap among them like a missing tooth",
+"A radio on the workbench was talking low about the weather over the lake",
+"There was a sticker on the till: BACK IN FIVE. It had been there some time",
+"The light through the window had a dusty gold in it and the whole place held still"
+],
+"plans": [
+"a delivery docket for Monday, signed in advance",
+"an order book with next week's repairs pencilled in",
+"a 'sale' sign half-lettered on the counter, the marker still beside it"
+]
+},
+"tavern": {
+"label": "the bar",
+"rooms": ["the bar", "the back room", "the cellar steps", "the snug", "the yard behind the bar"],
+"senses": [
+"Stale beer, lemon and floor cleaner; the stools were still up on the tables, legs in the air",
+"A glass stood on the bar with a quarter inch of whiskey in it and a ring still wet underneath",
+"The jukebox hummed and clicked, hunting for a song nobody had asked for",
+"Last night's ash was cold in the trays, and the blinds had been drawn against the morning",
+"The cellar door was ajar and a cold draught came up it, smelling of mud"
+],
+"plans": [
+"a chalkboard with Friday's quiz night already lettered up",
+"a keg order scribbled on a beer mat, with a smiley face",
+"next week's rota on the wall, with their name in every other column"
+]
+},
+"diner": {
+"label": "the diner",
+"rooms": ["the kitchen", "the serving counter", "the dry store", "the back booth", "the walk-in"],
+"senses": [
+"The griddle was still faintly warm; the room smelled of onions, coffee and old fat",
+"Plates were stacked in the rack in the half-dark, still beaded with water",
+"A pot of soup stood on the back ring with a skin on it, a ladle standing up in it like a flag",
+"The coffee machine gave one long tired sigh and went quiet",
+"Pies sat under glass domes. A single slice had been taken and not finished"
+],
+"plans": [
+"a menu for the week lettered on a board, with their name beside Saturday's special",
+"the staff rota with their name written against every late shift",
+"a delivery of flour and eggs stacked in the doorway, signed for"
+]
+},
+"bakery": {
+"label": "the bakery",
+"rooms": ["the bake room", "the shop front", "the proving room", "the flour store", "the loading door"],
+"senses": [
+"Yeast, scorched sugar and warm flour: the room had been baking since three, and nobody was there to take it out",
+"Loaves stood on the racks gone dark and hard, and a timer was still counting backward",
+"A fine white film lay on everything, and a single set of prints crossed it and stopped",
+"The ovens ticked as they cooled. Somewhere in the walls a pipe ran like a stream",
+"The window was fogged from inside, and in the fog someone had written nothing, carefully, with a finger"
+],
+"plans": [
+"an order slip for a wedding cake, due Saturday",
+"a tray of buns marked for the school, wrapped and tied with string",
+"a bake plan for the week in a neat hand, every day filled"
+]
+},
+"studio": {
+"label": "the studio",
+"rooms": ["the booth", "the control room", "the record library", "the news desk", "the stairwell to the aerial"],
+"senses": [
+"Cold coffee, dust on the equalisers, the green glow of a dozen needles at rest",
+"The soundproofing swallowed every footstep; the room sounded like the inside of a held breath",
+"A pair of headphones hung round the neck of the chair, still faintly hissing",
+"The red light over the door was on, and nobody could say why",
+"A reel of tape had run off its spool and lay across the floor in long brown curls"
+],
+"plans": [
+"tomorrow's running order, typed, with their slot circled",
+"a pile of ads to be voiced, each tagged with a sticky note",
+"a birthday dedication on the request list, to be read on air at noon"
+]
+},
+"dam": {
+"label": "the dam",
+"rooms": ["the control room", "the pump gallery", "the inspection walk", "the gatehouse", "the lower tunnel"],
+"senses": [
+"Damp concrete, machine oil and a cold that came up through the soles; the turbines hummed on a single low note",
+"Water ran somewhere in the walls, and the gauges ticked, patient and exact",
+"A flask and a paperback lay on the console. The page was marked at a chapter about drowning",
+"The inspection lamp on its hook swung gently though there was no wind in the gallery",
+"The air smelled of rust and lake, and your voice came back a moment after you spoke"
+],
+"plans": [
+"an inspection sheet for next week, already half filled out",
+"a maintenance schedule with their name against every Thursday",
+"a leave request for the lake festival, signed and approved"
+]
+},
+"civic": {
+"label": "the office",
+"rooms": ["the records room", "the front counter", "the back office", "the stacks", "the sorting room"],
+"senses": [
+"Paper, toner and radiator heat; a clock ticked on the wall with a slightly embarrassed air",
+"Index cards stood in long drawers like organ pipes, and a stamp-pad lay open and drying",
+"A stack of forms waited under a paperweight; the top one was half filled in",
+"The room had the hush of a place that is always about to be asked a question",
+"Dust moved slowly in the light from the single high window"
+],
+"plans": [
+"a diary with a leave request filed for the lake festival",
+"a Monday schedule on the desk, every hour accounted for",
+"a half-written memo with a deadline of Friday"
+]
+},
+"theatre": {
+"label": "the playhouse",
+"rooms": ["the stage", "the wings", "the dressing room", "the prop store", "the box office"],
+"senses": [
+"Dust, glue and old velvet, with the ghost light burning on the stage like a single patient eye",
+"Costumes hung in rows, still faintly breathing out their last wearers' scent",
+"The ropes of the fly-loft creaked as something very high up settled itself",
+"A kettle in the wings, a cigarette stub in a saucer, a script open face down",
+"The house seats were all tipped up, and in the dark they looked like rows of folded hands"
+],
+"plans": [
+"a rehearsal call-sheet for Tuesday with their name highlighted",
+"the poster for opening night, signed by the whole cast",
+"a costume fitting booked, written in lipstick on the dressing-room mirror"
+]
+},
+"medical": {
+"label": "the clinic",
+"rooms": ["the treatment room", "the front desk", "the night station", "the supply cupboard", "the end bed"],
+"senses": [
+"Antiseptic, boiled linen and the faint sweetness of something under it; a machine somewhere gave a patient, regular beep",
+"The blinds were down and the strip light buzzed a quarter-tone flat",
+"A tray of instruments was laid out under a cloth, neat, as if for a procedure that had been put off",
+"A cup of tea had gone cold on the nurses' desk beside a page of handover notes",
+"The floor had been mopped and still smelled of pine; the mop bucket stood by the door, the water grey"
+],
+"plans": [
+"an appointment book with next week filled in, name by name",
+"a rota with their name against the whole of the weekend",
+"a hand-written card, 'get well soon', waiting to be sent to someone else"
+]
+},
+"funeral": {
+"label": "the funeral home",
+"rooms": ["the chapel of rest", "the preparation room", "the office", "the garage", "the flower room"],
+"senses": [
+"Lilies, polish and a cold that had nothing to do with the weather; the carpet swallowed every footstep",
+"A bell chimed softly somewhere in the building, for no reason anyone could find",
+"The long room was silent, and the silence had a courteous, waiting quality",
+"A guest book lay open on its stand, and beside it a pen on a chain",
+"Curtains of heavy velvet hung motionless, and the air smelled of cut stems"
+],
+"plans": [
+"a service sheet for Thursday, drafted and left on the blotter",
+"a diary with three arrangements pencilled in, one of them still blank",
+"an order for white roses, to be delivered on the weekend"
+]
+},
+"school": {
+"label": "the school",
+"rooms": ["the classroom", "the caretaker's room", "the cloakroom", "the hall", "the kitchen"],
+"senses": [
+"Chalk, floor wax and a small, sour trace of milk; tiny coats hung from tiny pegs in the dim",
+"The radiators clanked and the heating pipes knocked in long, slow sentences",
+"The clock over the board ticked loud enough to be a person in the room",
+"A child's painting of a house by a lake was taped to the glass, the colours still wet",
+"A bell, unrung, hung over the door, and the whole building seemed to be listening for it"
+],
+"plans": [
+"a lesson plan for Monday, written in a careful hand",
+"a stack of marked exercise books with a sticker chart on top",
+"a parents' evening schedule with their slot circled"
+]
+},
+"chapel": {
+"label": "the chapel",
+"rooms": ["the vestry", "the nave", "the bell loft", "the crypt stairs", "the porch"],
+"senses": [
+"Beeswax and cold stone; the light through the lake window lay across the pews like a spilled drink",
+"The organ breathed once, a long soft breath from a pipe nobody was touching",
+"A single candle guttered in a draught that had no business in a shut church",
+"Hymn numbers stood on the board for a service that would not now be taken",
+"The air was heavy with the smell of old hymnals and, beneath it, the lake"
+],
+"plans": [
+"a sermon draft for Sunday, the last paragraph unwritten",
+"a service rota with their name against every week of the month",
+"a funeral booking for Friday in a hand not their own"
+]
+},
+"sheriff": {
+"label": "the Sheriff's office",
+"rooms": ["the squad room", "the cell block", "the evidence room", "the dispatch desk", "the back stairs"],
+"senses": [
+"Burnt coffee, gun oil and carbon paper; the radio on the shelf crackled and rested like a sleeping animal",
+"A cell door stood ajar and the thin grey light of morning lay on the bunk like a sheet",
+"The fluorescent tube flickered over the dispatch desk, and the log still lay open to last night",
+"A phone rang once on a desk with nobody at it, and stopped",
+"The wall clock was exactly right, which in this town was the strangest thing in the room"
+],
+"plans": [
+"a duty roster with their name in every night shift for the month",
+"a stack of reports to be filed on Monday, in three colours of ink",
+"a retirement card signed by half the town, waiting on the desk"
+]
+},
+"hall": {
+"label": "the Grange hall",
+"rooms": ["the main hall", "the kitchen hatch", "the committee room", "the stage", "the store room"],
+"senses": [
+"Floor polish and stacked chairs; a long trestle table stood ready for a supper nobody had come to eat",
+"The tea urn gurgled and clicked into silence, and the bunting stirred overhead though the doors were shut",
+"The raffle tickets were still in their drum, and the drum was still turning",
+"A folding screen leaned against the wall and behind it something had been put away carefully",
+"The place smelled of damp wool, jam, and a century of other people's gatherings"
+],
+"plans": [
+"a notice for the harvest supper, in their handwriting, pinned to the board",
+"a booking sheet for the hall with their name in the next three Saturdays",
+"a float of coins in a biscuit tin for the raffle, counted and labelled"
+]
+},
+"generic": {
+"label": "the place",
+"rooms": ["the main room", "the back room", "the front", "the yard"],
+"senses": [
+"The room held the faint sourness of a place left suddenly",
+"Light came grey through a dusty window and the clock ticked as if nothing had happened"
+],
+"plans": ["a diary with next week filled in", "a pencilled note on the desk about Friday"]
+}
+}
+}

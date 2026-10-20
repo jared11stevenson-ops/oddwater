@@ -27,6 +27,8 @@ const CreatorUI = preload("res://scripts/ui/creator_ui.gd")
 const TutorialUI = preload("res://scripts/ui/tutorial_ui.gd")
 const Persona = preload("res://scripts/core/persona.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
+const TitleScreen = preload("res://scripts/ui/title_screen.gd")
+const UiKit = preload("res://scripts/ui/ui_kit.gd")
 const POST := preload("res://shaders/page_post.gdshader")
 
 var state: RefCounted
@@ -119,33 +121,28 @@ func eligible_hosts() -> Array:
 # ---------------------------------------------------------------- title / wake
 func _title() -> void:
 	_clear()
-	get_window().content_scale_size = Vector2i(1920, 1080)
-	post_layer.visible = true
-	_bg(Color("f1dfc0"))
-	_text("UNDERSTUDY\n\nA town full of people, each living their own life.\nTomorrow you'll be living one of them.", Vector2(300, 220), 48)
-	var y := 470.0
-	var first: Button = null
-	if DetectiveGame.has_detective_save():
-		var bc := _button("Continue the case", Vector2(300, y), func(): _detective_3d(1961, true), 520.0)
-		bc.name = "ContinueButton"
-		first = bc
-		y += 110.0
-	var b1 := _button("New case", Vector2(300, y), func(): _detective_3d(int(Time.get_ticks_usec() % 100000)), 520.0)
-	b1.name = "NewCaseButton"
-	var b4 := _button("Town sandbox (3D)", Vector2(300, y + 110.0), func(): _town_3d(int(Time.get_ticks_usec() % 100000)), 520.0)
-	b4.name = "TownSimButton"
-	var b3 := _button("Map view (2D)", Vector2(300, y + 220.0), func(): _town_sim(int(Time.get_ticks_usec() % 100000)), 520.0)
-	b3.name = "Map2DButton"
-	var b2 := _button("Story (early)", Vector2(300, y + 330.0), _creator, 520.0)
-	b2.name = "StoryButton"
-	(first if first != null else b1).grab_focus()
+	get_window().content_scale_size = Vector2i(1280, 720)
+	post_layer.visible = false
+	var t := TitleScreen.new()
+	ui.add_child(t)
+	t.build(UiKit.detective_save_valid())
+	t.continue_pressed.connect(func(): _detective_3d(1961, true))
+	t.new_pressed.connect(func(): _detective_3d(int(Time.get_ticks_usec() % 100000)))
+
+
+## A dark card with the title while the town is built.
+func _loading(line: String) -> void:
+	_bg(Color("0e0d18"))
+	_text("LITTLE MERCY", Vector2(110, 250), 96, Color("f3e9d2"), 1000.0)
+	_text(line, Vector2(114, 380), 40, Color("e23d3d"), 1000.0)
 
 
 ## The detective game: you, the only detective in Little Mercy, in the 3D town.
 func _detective_3d(seed_value: int = 1961, resume: bool = false) -> Control:
 	_clear()
-	_bg(Color("f1dfc0"))
-	_text("A call at dawn...", Vector2(300, 460), 56)
+	get_window().content_scale_size = Vector2i(1280, 720)
+	post_layer.visible = false
+	_loading("A call at dawn...")
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var g: RefCounted = DetectiveGame.load_detective() if resume else null
@@ -207,6 +204,8 @@ func _town_sim(seed_value: int = 1961, resume: bool = false) -> Control:
 ## Make your character. This is who you are in every body.
 func _creator() -> void:
 	_clear()
+	get_window().content_scale_size = Vector2i(1920, 1080)      # the older screens are drawn for the big canvas
+	post_layer.visible = true
 	_bg(Color("f1dfc0"))
 	var c := CreatorUI.new()
 	ui.add_child(c)

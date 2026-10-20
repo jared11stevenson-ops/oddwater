@@ -51,10 +51,10 @@ func _initialize() -> void:
 		if not w.people[v].dead: problems.append("victim not dead")
 		if not w.alive(w.people[k]): problems.append("killer not alive")
 		if v == k: problems.append("victim is killer")
-		if sus.size() != 4 or sus.has(v): problems.append("suspects wrong: %s" % [sus])
+		if sus.size() < 3 or sus.size() > 6 or sus.has(v): problems.append("suspects wrong: %s" % [sus])
 		var uniq: Dictionary = {}
 		for x in sus: uniq[x] = true
-		if uniq.size() != 4: problems.append("duplicate suspects")
+		if uniq.size() != sus.size(): problems.append("duplicate suspects")
 		if not sus.has(k): problems.append("killer not a suspect")
 		for fid in c["facts"]:
 			for kn in c["facts"][fid]["knowers"]:

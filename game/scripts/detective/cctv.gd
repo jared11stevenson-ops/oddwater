@@ -3,6 +3,7 @@ extends RefCounted
 ## went in and out of a place, and who really walked past it that night (routes along the sidewalks, with timestamps).
 ## Cameras are imperfect: some only see a figure, and their clocks are rarely right to the minute.
 
+const Prose = preload("res://scripts/detective/prose.gd")
 const Data = preload("res://scripts/core/data.gd")
 const Brief = preload("res://scripts/sim/brief.gd")
 const PathGrid = preload("res://scripts/world3d/path_grid.gd")
@@ -13,7 +14,7 @@ const WALK_MPS := 1.4
 
 static func cameras(c: Dictionary) -> Array:
 	var out: Array = []
-	for cam in Data.load_json("detective/cameras.json"):
+	for cam in Prose.json("detective/cameras.json"):
 		out.append(cam)
 	for cam in c.get("cameras", []):
 		out.append(cam)
@@ -44,7 +45,7 @@ static func door_point(lot: String) -> Vector2:
 static func _trait_of(c: Dictionary, id: String) -> String:
 	if id == c["killer"]:
 		return c["trait"]
-	var cb: Dictionary = Data.load_json("detective/casebook.json")
+	var cb: Dictionary = Prose.json("detective/casebook.json")
 	var traits: Array = cb["traits"].filter(func(t): return t != c["trait"])
 	return traits[absi(hash(id)) % traits.size()]
 
@@ -120,15 +121,19 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 					crowd += 1
 	# 2. the night's walks
 	for w in walks(sim, c):
+		if w["who"] == k and c.get("avoids_cams", false):
+			continue         # a careful killer keeps to the dark between the cameras
 		var pts: Array = w["pts"]
 		var t := float(w["t0"])
+		var best_ev: Dictionary = {}
+		var best_d := 1e9
 		for i in range(pts.size() - 1):
 			var a: Vector2 = pts[i]
 			var b: Vector2 = pts[i + 1]
 			var seg: float = a.distance_to(b)
 			var cl: Dictionary = _closest(a, b, cp)
 			var when: float = t + (float(cl["along"]) / WALK_MPS) / 3600.0
-			if float(cl["d"]) <= float(cam["radius"]) and when >= from_h and when <= to_h:
+			if float(cl["d"]) <= float(cam["radius"]) and when >= from_h and when <= to_h and float(cl["d"]) < best_d:
 				var face: bool = hd and float(cl["d"]) <= float(cam["radius"]) * 0.7
 				var who: String = w["who"]
 				var dirw := _dir_word(a, b)
@@ -137,14 +142,17 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 					tx = "%s walks past heading %s." % [CaseEngine.name_of(sim, who), dirw]
 				else:
 					tx = "A figure with %s passes heading %s. The face is not visible." % [_trait_of(c, who), dirw]
-				evs.append({"t": when, "who": who, "text": tx, "ident": face})
-				if who == k:
-					supports.append({"cat": "opportunity", "about": k, "strength": 3 if face else 1})
+				best_d = float(cl["d"])
+				best_ev = {"t": when, "who": who, "text": tx, "ident": face}
 			t += (seg / WALK_MPS) / 3600.0
+		if not best_ev.is_empty():
+			evs.append(best_ev)
+			if best_ev["who"] == k:
+				supports.append({"cat": "opportunity", "about": k, "strength": 3 if best_ev["ident"] else 1})
 	evs.sort_custom(func(x, y): return x["t"] < y["t"])
 	var lines: Array = []
 	for e in evs:
-		lines.append("%s  %s" % [Brief.clock_text(fposmod(float(e["t"]) + shown, 24.0)), e["text"]])
+		lines.append("%s - %s" % [Brief.clock_text(fposmod(float(e["t"]) + shown, 24.0)), e["text"]])
 	if crowd > 0:
 		lines.append("(and %d other people come and go)" % crowd)
 	var text := "\n".join(lines) if not lines.is_empty() else "Nothing on this camera in that window."
@@ -155,8 +163,12 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 	var best := 0
 	for s in supports:
 		best = maxi(best, int(s["strength"]))
+	# a clock that is badly out puts the figure at the wrong hour: until it is checked the footage proves less than it seems
+	var lies: bool = (not calibrated) and absi(int(cam["offset"])) >= 25
+	if lies and best > 0:
+		best = 1
 	var sup: Array = [] if best == 0 else [{"cat": "opportunity", "about": k, "strength": best}]
-	return {"events": evs, "text": text + off_txt, "supports": sup, "offset": int(cam["offset"])}
+	return {"events": evs, "text": text + off_txt, "supports": sup, "offset": int(cam["offset"]), "misleading": lies}
 
 
 ## Open a camera's recording for a window and put what it shows in the notebook.
@@ -166,10 +178,10 @@ static func view(sim: RefCounted, c: Dictionary, det: RefCounted, cam_id: String
 		return {"text": "No such camera.", "learned": [], "minutes": 0}
 	var cal: bool = det.calibrated.get(cam_id, false)
 	var f: Dictionary = footage(sim, c, cam_id, from_h, to_h, cal)
-	var id := "cctv_%s_%d_%d" % [cam_id, int(from_h * 10), int(to_h * 10)]
+	var id := "cctv_%s_%d_%d%s" % [cam_id, int(from_h * 10), int(to_h * 10), "_c" if cal else ""]
 	var learned: Array = []
-	var entry := {"id": id, "title": "CCTV: %s" % cam["label"], "text": "%s  (%s to %s)\n%s" % [cam["label"], Brief.clock_text(fposmod(from_h, 24.0)), Brief.clock_text(fposmod(to_h, 24.0)), f["text"]],
-		"kind": "cctv", "source": cam["lot"], "supports": f["supports"], "day": int(sim.day), "calibrated": cal, "camera": cam_id}
+	var entry := {"id": id, "title": "CCTV: %s" % cam["label"], "text": "%s (%s to %s)\n%s" % [cam["label"], Brief.clock_text(fposmod(from_h, 24.0)), Brief.clock_text(fposmod(to_h, 24.0)), f["text"]],
+		"kind": "cctv", "source": cam["lot"], "supports": f["supports"], "day": int(sim.day), "calibrated": cal, "camera": cam_id, "misleading": f.get("misleading", false)}
 	if not f["events"].is_empty() and det.learn(entry):
 		learned.append(entry)
 		det.gain_xp(15)

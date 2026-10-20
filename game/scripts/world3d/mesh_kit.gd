@@ -3,7 +3,8 @@ extends RefCounted
 ## props cost a handful of draw calls. Flat, saturated, soft-lit: the look we're aiming for (a game like Peak), not final art.
 
 
-## One mesh, one material, many instances (each with its own transform and colour).
+## One mesh, one material, many instances (each with its own transform and colour). With `cell` > 0 the instances are split into one
+## MultiMesh per ~cell-metre square, so off-screen chunks are culled and far ones can be hidden (`vis_end`).
 class Batch extends RefCounted:
 	var mesh: Mesh
 	var material: Material
@@ -11,33 +12,58 @@ class Batch extends RefCounted:
 	var colors: Array = []
 	var shadows := true
 	var srgb := true          # colours are given in sRGB (as typed) and converted for the renderer
+	var cell := 0.0
+	var vis_end := 0.0
 
-	func _init(m: Mesh, mat: Material, cast_shadows: bool = true) -> void:
+	func _init(m: Mesh, mat: Material, cast_shadows: bool = true, cell_size: float = 0.0, visible_to: float = 0.0) -> void:
 		mesh = m
 		material = mat
 		shadows = cast_shadows
+		cell = cell_size
+		vis_end = visible_to
 
 	func add(xf: Transform3D, color: Color = Color.WHITE) -> void:
 		xforms.append(xf)
 		colors.append(color.srgb_to_linear() if srgb else color)
 
+	func count() -> int:
+		return xforms.size()
+
 	func build(parent: Node3D, node_name: String = "") -> MultiMeshInstance3D:
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.use_colors = true
-		mm.mesh = mesh
-		mm.instance_count = xforms.size()
+		var groups: Dictionary = {}
 		for i in xforms.size():
-			mm.set_instance_transform(i, xforms[i])
-			mm.set_instance_color(i, colors[i])
-		var mi := MultiMeshInstance3D.new()
-		mi.multimesh = mm
-		mi.material_override = material
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		if node_name != "":
-			mi.name = node_name
-		parent.add_child(mi)
-		return mi
+			var key := Vector2i.ZERO
+			if cell > 0.0:
+				var o: Vector3 = (xforms[i] as Transform3D).origin
+				key = Vector2i(floori(o.x / cell), floori(o.z / cell))
+			if not groups.has(key):
+				groups[key] = []
+			(groups[key] as Array).append(i)
+		var first: MultiMeshInstance3D = null
+		var keys: Array = groups.keys()
+		keys.sort()
+		for key in keys:
+			var idx: Array = groups[key]
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.use_colors = true
+			mm.mesh = mesh
+			mm.instance_count = idx.size()
+			for j in idx.size():
+				mm.set_instance_transform(j, xforms[idx[j]])
+				mm.set_instance_color(j, colors[idx[j]])
+			var mi := MultiMeshInstance3D.new()
+			mi.multimesh = mm
+			mi.material_override = material
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			if vis_end > 0.0:
+				mi.visibility_range_end = vis_end
+			if node_name != "":
+				mi.name = node_name if cell <= 0.0 else "%s_%d_%d" % [node_name, key.x, key.y]
+			parent.add_child(mi)
+			if first == null:
+				first = mi
+		return first
 
 
 static func matte(color: Color = Color.WHITE, use_instance_color: bool = true, rough: float = 0.95) -> StandardMaterial3D:

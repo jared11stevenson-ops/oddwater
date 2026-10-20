@@ -10,14 +10,15 @@ const RUN := 6.6
 var human: Node3D
 var cam: Camera3D
 var yaw := 0.0
-var pitch := -0.22
-var dist := 5.2
+var pitch := -0.3
+var dist := 7.4
 var move_input := Vector2.ZERO          # from the on-screen stick: x = right, y = forward (up is positive)
 var look_delta := Vector2.ZERO
 var frozen := false
 var running := false
 var moved_recently := 0.0
-var _cam_dist := 5.2
+var _cam_dist := 7.4
+var shoulder := 0.55                   # the camera sits a little over your right shoulder so the street ahead is clear
 
 
 func _ready() -> void:
@@ -30,9 +31,9 @@ func _ready() -> void:
 	add_child(cs)
 	cam = Camera3D.new()
 	cam.top_level = true
-	cam.fov = 62.0
-	cam.near = 0.12
-	cam.far = 3500.0
+	cam.fov = 66.0
+	cam.near = 0.15
+	cam.far = 4800.0
 	add_child(cam)
 	cam.current = true
 
@@ -88,19 +89,22 @@ func _process(delta: float) -> void:
 func _update_camera(delta: float, snap: bool = false) -> void:
 	if cam == null:
 		return
-	var pivot := global_position + Vector3(0, 1.55, 0)
-	var back := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch) * Vector3(0, 0, 1)
+	var pivot := global_position + Vector3(0, 1.75, 0)
+	var basis_y := Basis(Vector3.UP, yaw)
+	var right := basis_y * Vector3(1, 0, 0)
+	var back := basis_y * Basis(Vector3.RIGHT, pitch) * Vector3(0, 0, 1)
 	var want := dist
 	# pull the camera in if geometry is in the way
 	var space := get_world_3d().direct_space_state
-	var q := PhysicsRayQueryParameters3D.create(pivot, pivot + back * dist, 1, [get_rid()])
+	var q := PhysicsRayQueryParameters3D.create(pivot, pivot + back * dist + right * shoulder, 1, [get_rid()])
 	var hit := space.intersect_ray(q)
 	if not hit.is_empty():
-		want = maxf(1.0, (hit["position"] as Vector3).distance_to(pivot) - 0.35)
+		want = maxf(1.2, (hit["position"] as Vector3).distance_to(pivot) - 0.4)
 	_cam_dist = want if snap else lerpf(_cam_dist, want, clampf(delta * 10.0, 0.0, 1.0))
-	cam.global_position = pivot + back * _cam_dist
-	cam.look_at(pivot + Vector3(0, 0.1, 0), Vector3.UP)
+	var k := _cam_dist / maxf(dist, 0.01)
+	cam.global_position = pivot + back * _cam_dist + right * shoulder * k
+	cam.look_at(pivot + right * shoulder * 0.6 * k + Vector3(0, 0.15, 0), Vector3.UP)
 
 
 func apply_zoom(factor: float) -> void:
-	dist = clampf(dist * factor, 2.4, 14.0)
+	dist = clampf(dist * factor, 2.6, 16.0)

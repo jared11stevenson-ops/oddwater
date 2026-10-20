@@ -1,0 +1,183 @@
+{
+"alibi_default": [
+{"s": "Home, in bed, like every night. Nobody to vouch for me but the cat.", "t": ["soc-"]},
+{"s": "I had the television on until the news, then I was out. Ask the neighbours if my light went off, they notice such things.", "t": ["soc+"]},
+{"s": "Sound asleep, Detective. I have a bad back and an early start, and I'm in bed by nine like a Christian.", "t": ["pious+", "old"]},
+{"s": "At home. I was reading until my eyes gave up. You can check the library card if you think a book can alibi me.", "t": ["office"]},
+{"s": "Dead to the world. I wasn't in a state to be anywhere else. I'd been on my feet since five.", "t": ["service", "trade"]},
+{"s": "Where I always am. Home, then bed, then the bus. I know that isn't exciting, but it's true.", "t": ["hon+"]},
+{"s": "Home. I don't go out after dark if I can help it. Not in this town. Not lately.", "t": ["bold-"]},
+{"s": "Out for a smoke on the step about ten, then bed. Nothing happened. If it had, I'd have gone looking.", "t": ["bold+"]},
+{"s": "I was doing my accounts at the kitchen table until midnight and I can show you the pencil marks. That's the exciting life of a person who counts every dollar.", "t": ["thrift+"]},
+{"s": "I was home. My mum rang about half ten, if it helps, and we talked about nothing for an hour.", "t": ["young"]},
+{"s": "Home, with the radio. I had it on low. The radio is good company, and it never asks where you've been.", "t": ["old", "soc-"]},
+{"s": "Home. Asleep on the sofa with my boots on, if I'm honest. I only woke because the dog wanted out.", "t": ["trade"]},
+{"s": "I was in. I did my rounds of the house, locked up, and I said my prayers. I always do.", "t": ["pious+"]},
+{"s": "At home, flat out. Something about this town makes you tired at that hour. It's the damp, I think. Or the lake.", "t": []},
+{"s": "In bed. Ask my neighbour, who complains if I so much as flush after eleven.", "t": ["soc+", "mid"]}
+],
+"saw_none": [
+{"s": "Asleep by ten. I didn't see or hear a thing.", "t": ["old"]},
+{"s": "I'd like to help. But I had my curtains drawn and a pillow over my head. There's a draught in my bedroom window that whistles.", "t": ["soc-"]},
+{"s": "No. And I'd tell you if I had, truly. I'm not one to keep a thing like that in.", "t": ["hon+", "soc+"]},
+{"s": "I saw nothing. Honestly, nothing. You'd be surprised how little you see in this town when the fog comes down.", "t": []},
+{"s": "Nothing at all. If I'd seen something I'd be in the Sheriff's office right now with my hat in my hand.", "t": ["bold+"]},
+{"s": "I don't look out at night. Not anymore. You see things you don't need to know about.", "t": ["bold-"]},
+{"s": "I was working. If anything went by, it went by without me.", "t": ["service", "trade"]},
+{"s": "Not a thing. I heard the lake, but then I always hear the lake.", "t": ["pious+"]},
+{"s": "Nobody asked me that last time, either. No. No, there was nothing to see.", "t": ["old", "soc-"]},
+{"s": "I was on the phone most of the evening. My sister does go on. If a brass band had passed I'd have missed it.", "t": ["soc+", "young"]},
+{"s": "I couldn't say. My eyes aren't what they were and the street lamps on this road have been out for a month.", "t": ["old"]},
+{"s": "I wish I had. It'd be a relief to be useful. But no. I had the early shift and I slept like a stone.", "t": ["mid"]}
+],
+"suspects_none": [
+{"s": "I wouldn't like to say. Everyone liked {v}, mostly.", "t": []},
+{"s": "I don't gossip, Detective. If I'd a name, I'd give it you. I haven't.", "t": ["hon+"]},
+{"s": "{v}? Everybody had a word to say about {v}, and none of it was that.", "t": ["soc+"]},
+{"s": "You'll have to ask someone who pays more attention than I do.", "t": ["soc-"]},
+{"s": "It's not my place to point. That's how this town got into the state it's in.", "t": ["pious+"]},
+{"s": "If I said a name, and I was wrong, I'd have to live next to them. No.", "t": ["bold-"]},
+{"s": "Plenty of folk had a bone to pick with {v}. Not enough of them had the stomach.", "t": ["bold+"]},
+{"s": "Whoever it was, they knew {v}. That's all I'd swear to.", "t": ["old"]},
+{"s": "Honestly? I haven't the faintest. And I've lain awake half the night looking for one.", "t": ["young"]},
+{"s": "Nobody I could name without being sorry later.", "t": ["thrift+"]}
+],
+"alibi_unknown": [
+{"s": "I couldn't tell you where {about} was. Not my business.", "t": []},
+{"s": "{about}? I've no idea. We're not close enough for me to know their nights.", "t": ["soc-"]},
+{"s": "I'd be guessing, and I won't guess about a person's whereabouts. Not to a detective.", "t": ["hon+"]},
+{"s": "No notion. Ask {about}, why don't you. People answer to their own names more honestly than to other people's.", "t": ["bold+"]},
+{"s": "Last I saw {about}, it was the afternoon, and they looked fine. After that, who knows.", "t": ["soc+"]},
+{"s": "I mind my own street, Detective. {about} lives on someone else's.", "t": ["old"]},
+{"s": "I don't keep a diary of other folks' evenings. Though I know some who do.", "t": ["thrift+"]},
+{"s": "I'd rather not say something about {about} that I can't stand behind.", "t": ["pious+", "bold-"]}
+],
+"repeat": [
+{"s": "You've asked me that already. The answer hasn't changed.", "t": []},
+{"s": "We've been over this. I haven't remembered anything new, I promise.", "t": ["soc+"]},
+{"s": "Same as before. Asking again won't make it different. Believe me, I've tried.", "t": ["hon+"]},
+{"s": "Detective, I told you. Are you doubting me, or just testing my patience?", "t": ["bold+"]},
+{"s": "Please. I'm trying to be helpful. But I've said it, and I don't have more.", "t": ["bold-"]},
+{"s": "You asked that. I said what I said. There isn't a second answer hiding behind the first.", "t": ["office"]},
+{"s": "Dear, you've asked that one. Come in and have a cup of tea and ask me something else.", "t": ["old", "soc+"]},
+{"s": "Haven't we done this? I'm not being rude, I just don't want to say it differently by mistake.", "t": ["thrift+"]},
+{"s": "I've answered that once and I'm not going to improve on it. Ask me something I haven't said.", "t": []}
+],
+"present_unknown": [
+{"s": "That isn't anything I know.", "t": []},
+{"s": "I don't know what you want me to say about that.", "t": []},
+{"s": "I've never seen it. If it's a clue, I'm sorry, it's not one I can read.", "t": ["hon+"]},
+{"s": "Is that supposed to mean something to me? Because it doesn't.", "t": ["bold+"]},
+{"s": "No. No, that's nothing to do with me. I'd tell you.", "t": ["soc+"]},
+{"s": "I couldn't say. It's not the sort of thing I'd have noticed.", "t": ["soc-"]},
+{"s": "I'm sorry. That's a mystery to me, and I don't like mysteries. They have a way of coming to the door.", "t": ["old"]},
+{"s": "Is this a test? You'll have to be plainer than that.", "t": ["office"]}
+],
+"claim_killer": [
+{"s": "I was in bed by ten. Alone, before you ask. I didn't hear a thing.", "t": []},
+{"s": "At home. I keep regular hours, Detective, and I'll tell you anyone in the street will say the same. My light went out at ten.", "t": ["hon+"]},
+{"s": "I was in the house all evening. I didn't see anyone and no one saw me. It's the quiet life I've chosen.", "t": ["soc-"]},
+{"s": "Home. I'd had a long day. If you're asking whether I went out, I didn't. I wouldn't have the energy for it.", "t": ["service", "trade"]},
+{"s": "In bed. Reading, then out. I don't need you to believe me. I need you to find the person who did it.", "t": ["bold+"]},
+{"s": "I was home. I know how it looks that I can't prove it. I don't ask for sympathy. Only for fairness.", "t": ["pious+"]},
+{"s": "Home, locked up and asleep. It's a terrible thing, what's happened. Terrible. I can't stop thinking about it.", "t": ["soc+"]},
+{"s": "Asleep. I took a tablet for the headache and I didn't wake until the cat sat on my chest.", "t": []},
+{"s": "At home with the lights off. I'll be frank, Detective: I wasn't fond of {v}, and I'm not going to pretend. I also didn't kill them.", "t": ["bold+", "hon+"]},
+{"s": "I stayed in. People are making a lot of what they think I was up to. I was up to nothing.", "t": ["thrift+"]}
+],
+"claim_secret": [
+{"s": "I was home asleep. Nothing to tell. I'm not hiding anything.", "t": []},
+{"s": "At home. In bed. I don't see why you're looking at me like that.", "t": ["bold+"]},
+{"s": "Home. All night. And I'd thank you not to ask twice.", "t": ["pious+"]},
+{"s": "I was in. Honestly. Ask... no, there's nobody to ask. I was in.", "t": ["soc+"]},
+{"s": "At home, alone, on my own sofa. I don't know what else you want from me.", "t": ["soc-"]},
+{"s": "I stayed in. It was raining, or it should have been. I stayed in, that's all.", "t": ["hon-"]},
+{"s": "Bed. By eleven. I can't help it if nobody saw me go up.", "t": ["old"]}
+],
+"claim_weak": [
+{"s": "I was at home. On my own. I know how that sounds.", "t": []},
+{"s": "I went home after work and I stayed there. There's no one to say so but me, and I understand that isn't much.", "t": ["hon+"]},
+{"s": "Home, no company, no alibi, and no reason to need one. Go on, write it down.", "t": ["bold+"]},
+{"s": "I was home. Please believe me. I'm not good at this. I've never been questioned by anyone in my life.", "t": ["bold-"]},
+{"s": "At home with a tin of soup and the radio. I could tell you the programmes, if that helps.", "t": ["old"]},
+{"s": "Home. The pub was too loud and I didn't feel like talking. So there you are: unsociable, but innocent.", "t": ["soc-"]}
+],
+"claim_verified": [
+{"s": "I was {where}, all night. Ask anyone there.", "t": []},
+{"s": "{where}, from eight until the small hours. There's a dozen people who'll say so, and half of them don't like me.", "t": ["bold+"]},
+{"s": "You can ask them. I was {where}, and I'd be offended if you didn't.", "t": ["hon+"]},
+{"s": "I was {where}. I stayed late because I couldn't face going home. I'm glad of it now.", "t": ["soc+"]},
+{"s": "{where}. The whole night, Detective. I was never alone for five minutes.", "t": []},
+{"s": "I was {where}, and that's where they'll tell you I was. I didn't know I needed a witness. I do now.", "t": ["old"]}
+],
+"victim_close": [
+{"s": "One of the best. I can't believe it.", "t": []},
+{"s": "{v} was my... they were everything to this street. I don't know who we are without them.", "t": ["soc+"]},
+{"s": "We were close. Closer than I'd ever tell anyone who wasn't a detective.", "t": ["hon+"]},
+{"s": "I keep thinking they'll walk through the door. I keep putting out two cups.", "t": ["old"]},
+{"s": "They'd have given you the coat off their back. And you tell me somebody did this? I won't have it. I won't.", "t": ["bold+"]},
+{"s": "I was going to see them tomorrow. We had plans. It was only a sandwich, but it was the plan.", "t": ["young"]}
+],
+"victim_friend": [
+{"s": "A good neighbour. A good person.", "t": []},
+{"s": "{v}? Lovely. Never a cross word. Which is why, I suppose, there has to be something wrong with it.", "t": ["soc+"]},
+{"s": "We got along. Not best friends, but friends. I'd have said hello to them every day of my life.", "t": ["hon+"]},
+{"s": "Friendly. Fair. Not one to make a fuss. I'd have called them a rock.", "t": ["old"]},
+{"s": "Decent. That word does a lot of work in this town, and in their case it was true.", "t": ["office"]},
+{"s": "{v} was good to me when I wasn't good to anybody. I'll say that.", "t": ["bold-"]}
+],
+"victim_acq": [
+{"s": "I knew them to nod to. Kept themselves to themselves.", "t": []},
+{"s": "We said good morning. We said good evening. In this town that's a friendship of a sort.", "t": ["old"]},
+{"s": "Polite. Quiet. The kind of person you only notice when they're not there.", "t": ["soc-"]},
+{"s": "Not well. Well enough to know they weren't unhappy, until lately. They'd gone quiet.", "t": ["soc+"]},
+{"s": "I saw them at the shop most weeks. They always counted their change twice.", "t": ["service", "thrift+"]}
+],
+"victim_stranger": [
+{"s": "I barely knew them.", "t": []},
+{"s": "I couldn't tell you a thing about them. I knew the name and I knew the house. That's all, honestly.", "t": ["hon+"]},
+{"s": "To me they were a nod across the road and a coat on the peg. Make of that what you will.", "t": ["soc-"]},
+{"s": "We'd never really spoken. It's a small town, but not as small as people say.", "t": ["young"]}
+],
+"victim_bad": [
+{"s": "We didn't get on, I won't lie. I wouldn't wish this on them.", "t": []},
+{"s": "We'd words. More than once. I'll own that. I didn't hate them. I just didn't like being in a room with them.", "t": ["hon+"]},
+{"s": "Everyone knows we'd fallen out. It doesn't make me glad. It makes me the first person you ask. I understand.", "t": ["bold+"]},
+{"s": "They'd a way of looking at you that made you feel like a debt. But I'm sorry they're gone.", "t": ["thrift+"]}
+],
+"victim_enemy": [
+{"s": "I won't pretend to be sorry. But I didn't do it.", "t": []},
+{"s": "You want me to say I'm sorry? I'm sorry it's you asking. I'm not sorry they're gone. But I didn't do it.", "t": ["bold+"]},
+{"s": "We hated each other. Everyone knew. That's why it'd be stupid of me. I'm not stupid.", "t": ["office"]},
+{"s": "God forgive me, a part of me is glad. A larger part of me is terrified of you. I had nothing to do with it.", "t": ["pious+", "bold-"]}
+],
+"cover_good_person": [
+{"s": "They're a good person. Whatever you've heard, you've heard it wrong.", "t": []},
+{"s": "You don't know them like I do. Whatever it looks like, you're wrong, and you'll see that.", "t": ["bold+"]},
+{"s": "I've known them my whole life. They haven't got it in them. Please. Look elsewhere.", "t": ["old"]},
+{"s": "They'd never. They get upset if they step on a snail. I'm telling you this as someone who loves them.", "t": ["soc+"]}
+],
+"rapport_refuse": [
+{"s": "{n} glances away. \"I don't know you well enough for that.\"", "t": []},
+{"s": "{n} shakes their head. \"Not to a stranger with a notebook. Come back when you've earned it.\"", "t": ["bold+"]},
+{"s": "{n} lowers their voice and then doesn't use it. \"No. I can't. Not yet.\"", "t": ["bold-"]},
+{"s": "{n} gives you a long look. \"You haven't sat at my table. I don't tell the people who haven't sat at my table.\"", "t": ["old"]}
+],
+"pressure_quiet": [
+{"s": "{n} goes quiet. They know something, and you have nothing to put in front of them yet.", "t": []},
+{"s": "{n}'s eyes flick to the door and back. There is something there. You haven't got the lever to move it.", "t": []},
+{"s": "{n} presses their lips together. The silence has weight. Whatever it is, they're keeping it from you, and the notebook is not yet thick enough to take it.", "t": []}
+],
+"refuse_damaged": [
+{"s": "{n} stands with the door open six inches. \"After what you said about me in front of the whole street? No.\" The door closes.", "t": []},
+{"s": "{n} won't look at you. \"You had your say. The whole town heard it. I've nothing to tell you.\"", "t": []},
+{"s": "{n} is in the doorway with their coat on, as if leaving. \"I'm going to my sister's. Don't follow me.\"", "t": []},
+{"s": "{n} says nothing. They put one hand flat on the door, as though to hold it up, and then the door is shut.", "t": []}
+],
+"cold_forgot": [
+{"s": "I... it's been so long. Was it the Tuesday? I really couldn't tell you now. It's all gone soft.", "t": []},
+{"s": "I thought I'd remember. I told myself I would. And now it's as if I'd dreamed it.", "t": ["soc+"]},
+{"s": "Detective, a week? You expect me to remember minutes? I can barely remember what I had for breakfast.", "t": ["old"]},
+{"s": "It was something. I know it was something. Whatever it was, it's gone, and I am sorry.", "t": []}
+]
+}

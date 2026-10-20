@@ -1,0 +1,123 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+=== chain seed 3, residents 209
+  case 0 full -> convicted
+   -> next victim after 3 nights; day 4; status open; serial=false; newcomers=1; residents=210; stress=0; custody= jail=0
+   today: ["New neighbour: Dev Reyes, 26, a hardware clerk, has moved into Kim\'s place."]
+  case 1 WRONG -> wrong | Rudy Ortega did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 2, "town": -1, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 16; status open; serial=false; newcomers=1; residents=210; stress=0; custody= jail=0
+   today: []
+  case 2 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 28; status open; serial=false; newcomers=1; residents=210; stress=0; custody= jail=0
+   today: []
+  case 3 full -> convicted
+   -> next victim after 3 nights; day 31; status open; serial=false; newcomers=2; residents=211; stress=0; custody= jail=0
+   today: ["New neighbour: Finn Kane, 41, a receptionist, has moved into Patel\'s place."]
+  case 4 WRONG -> wrong | Gemma Weiss did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 4, "town": -2, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 43; status open; serial=false; newcomers=2; residents=211; stress=0; custody= jail=0
+   today: []
+  case 5 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 55; status open; serial=false; newcomers=2; residents=211; stress=0; custody= jail=0
+   today: []
+  chronicle: [{ "day": 1, "text": "You accused Mateo Kim: convicted." }, { "day": 3, "text": "Dev Reyes moved to Little Mercy." }, { "day": 4, "text": "You accused Rudy Ortega: wrong." }, { "day": 16, "text": "You accused Mina Patel: released." }, { "day": 19, "text": "Marcy Ueda and Gemma Lang had words at pageant_green." }, { "day": 28, "text": "You accused Mina Patel: convicted." }, { "day": 30, "text": "Finn Kane moved to Little Mercy." }, { "day": 31, "text": "You accused Gemma Weiss: wrong." }, { "day": 43, "text": "You accused Dolores Vance: released." }, { "day": 48, "text": "Marcy Ueda and Adele R
+=== chain seed 14, residents 209
+  case 0 full -> convicted
+   -> next victim after 3 nights; day 4; status open; serial=false; newcomers=1; residents=210; stress=0; custody= jail=0
+   today: ["New neighbour: Aaron Ortega, 54, a dockmaster, has moved into Delgado\'s place."]
+  case 1 WRONG -> wrong | Bo Kane did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 2, "town": -1, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 16; status open; serial=false; newcomers=1; residents=210; stress=0; custody= jail=0
+   today: []
+  case 2 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 28; status open; serial=false; newcomers=1; residents=210; stress=0; custody= jail=0
+   today: []
+  case 3 full -> convicted
+   -> next victim after 3 nights; day 31; status open; serial=false; newcomers=2; residents=211; stress=0; custody= jail=0
+   today: ["New neighbour: Paloma Sorensen, 74, a retired, has moved into Alvarez\'s place."]
+  case 4 WRONG -> wrong | Amir Walsh did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 4, "town": -2, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 43; status open; serial=false; newcomers=2; residents=211; stress=0; custody= jail=0
+   today: []
+  case 5 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 55; status open; serial=false; newcomers=2; residents=211; stress=0; custody= jail=0
+   today: []
+  chronicle: [{ "day": 1, "text": "You accused Jo Brask: convicted." }, { "day": 3, "text": "Aaron Ortega moved to Little Mercy." }, { "day": 4, "text": "You accused Bo Kane: wrong." }, { "day": 16, "text": "You accused Maya Tanaka: released." }, { "day": 18, "text": "Emeka Sorensen and Ezra Valdez had words at pageant_green." }, { "day": 28, "text": "You accused Maya Tanaka: convicted." }, { "day": 30, "text": "Paloma Sorensen moved to Little Mercy." }, { "day": 31, "text": "You accused Amir Walsh: wrong." }, { "day": 39, "text": "Nadia Tanaka and Keiko Chen had words at low_water." }, { "day": 43, "text"
+=== chain seed 27, residents 206
+  case 0 full -> convicted
+   -> next victim after 3 nights; day 4; status open; serial=false; newcomers=1; residents=207; stress=0; custody= jail=0
+   today: ["New neighbour: Cass Lang, 41, a baker, has moved into Yadav\'s place."]
+  case 1 WRONG -> wrong | Marcy Chen did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 2, "town": -1, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 16; status open; serial=false; newcomers=1; residents=207; stress=0; custody= jail=0
+   today: []
+  case 2 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 28; status open; serial=false; newcomers=1; residents=207; stress=0; custody= jail=0
+   today: []
+  case 3 full -> convicted
+   -> next victim after 3 nights; day 31; status open; serial=false; newcomers=2; residents=208; stress=0; custody= jail=0
+   today: ["New neighbour: Chidi Rowe, 57, a tackle fitter, has moved into Hobbs\'s place."]
+  case 4 WRONG -> wrong | Felix Novak did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 4, "town": -2, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 43; status open; serial=false; newcomers=2; residents=208; stress=0; custody= jail=0
+   today: []
+  case 5 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 55; status open; serial=false; newcomers=2; residents=208; stress=0; custody= jail=0
+   today: []
+  chronicle: [{ "day": 1, "text": "You accused Priya Nandakumar: convicted." }, { "day": 3, "text": "Cass Lang moved to Little Mercy." }, { "day": 4, "text": "You accused Marcy Chen: wrong." }, { "day": 16, "text": "You accused Lars Hobbs: released." }, { "day": 28, "text": "You accused Lars Hobbs: convicted." }, { "day": 30, "text": "Chidi Rowe moved to Little Mercy." }, { "day": 31, "text": "You accused Felix Novak: wrong." }, { "day": 43, "text": "You accused Wes Eaton: released." }]
+=== chain seed 41, residents 189
+  case 0 full -> convicted
+   -> next victim after 3 nights; day 4; status open; serial=false; newcomers=1; residents=190; stress=0; custody= jail=0
+   today: ["New neighbour: Omar Alvarez, 37, a unemployed, has moved into Iyer\'s place."]
+  case 1 WRONG -> wrong | Inez Calloway did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 2, "town": -1, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 16; status open; serial=false; newcomers=1; residents=190; stress=0; custody= jail=0
+   today: []
+  case 2 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 28; status open; serial=false; newcomers=1; residents=190; stress=0; custody= jail=0
+   today: []
+  case 3 full -> convicted
+   -> next victim after 3 nights; day 31; status open; serial=false; newcomers=2; residents=191; stress=0; custody= jail=0
+   today: ["New neighbour: Finn Lindqvist, 47, a unemployed, has moved into Iyer\'s place."]
+  case 4 WRONG -> wrong | Etta Kane did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 4, "town": -2, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 43; status open; serial=false; newcomers=2; residents=191; stress=0; custody= jail=0
+   today: []
+  case 5 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 55; status open; serial=false; newcomers=2; residents=191; stress=0; custody= jail=0
+   today: []
+  chronicle: [{ "day": 1, "text": "You accused Priya Nandakumar: convicted." }, { "day": 3, "text": "Omar Alvarez moved to Little Mercy." }, { "day": 4, "text": "You accused Inez Calloway: wrong." }, { "day": 16, "text": "You accused Gwen Andersen: released." }, { "day": 28, "text": "You accused Gwen Andersen: convicted." }, { "day": 30, "text": "Finn Lindqvist moved to Little Mercy." }, { "day": 31, "text": "You accused Etta Kane: wrong." }, { "day": 43, "text": "You accused Bianca Dunn: released." }]
+=== chain seed 58, residents 211
+  case 0 full -> convicted
+   -> next victim after 3 nights; day 4; status open; serial=false; newcomers=1; residents=212; stress=0; custody= jail=0
+   today: ["New neighbour: Joon Lang, 46, a ad sales, has moved into Kane\'s place."]
+  case 1 WRONG -> wrong | Cass Hale did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 2, "town": -1, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 16; status open; serial=false; newcomers=1; residents=212; stress=0; custody= jail=0
+   today: []
+  case 2 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 28; status open; serial=false; newcomers=1; residents=212; stress=0; custody= jail=0
+   today: []
+  case 3 full -> convicted
+   -> next victim after 3 nights; day 31; status open; serial=false; newcomers=2; residents=213; stress=0; custody= jail=0
+   today: ["New neighbour: Seth Kim, 52, a dishwasher, has moved into Kane\'s place."]
+  case 4 WRONG -> wrong | Cass Hale did not do this. They had a secret to keep, which is not the same as a crime. The town will not forget that you said so. | rep { "sheriff": 4, "town": -2, "chapel": 0 } stress 40
+   -> next victim after 12 nights; day 43; status open; serial=false; newcomers=2; residents=213; stress=0; custody= jail=0
+   today: []
+  case 5 lazy-killer -> released cats 3 total 3
+    via game.accuse -> released status=open
+   -> next victim after 12 nights; day 55; status open; serial=false; newcomers=2; residents=213; stress=0; custody= jail=0
+   today: []
+  chronicle: [{ "day": 1, "text": "You accused Daniel Marsh: convicted." }, { "day": 3, "text": "Joon Lang moved to Little Mercy." }, { "day": 4, "text": "You accused Cass Hale: wrong." }, { "day": 16, "text": "You accused Priya Nandakumar: released." }, { "day": 28, "text": "You accused Priya Nandakumar: convicted." }, { "day": 30, "text": "Seth Kim moved to Little Mercy." }, { "day": 31, "text": "You accused Cass Hale: wrong." }, { "day": 43, "text": "You accused Zane Lang: released." }]
+UNSOLVED 20 days: day 21 status open victim r123 deaths? alive=209 objective=Examine the crime scene: Gallo's place.
+SERIAL d0 day=2 kills=1 pressure=0 status=hunting obj=Examine the crime scene: Town Hall + Clock.
+SERIAL d3 day=5 kills=2 pressure=0 status=hunting obj=Examine the crime scene: Clinic.
+SERIAL d6 day=8 kills=2 pressure=0 status=hunting obj=Examine the crime scene: Clinic.
+SERIAL d9 day=11 kills=3 pressure=40 status=hunting obj=Examine the crime scene: Paws & Reflect.  [The Nine of Clubs: 6 days. Pressure 40]
+SERIAL d12 day=14 kills=4 pressure=76 status=hunting obj=Examine the crime scene: Mercy Elementary.  [The Nine of Clubs: 3 days. Pressure 76]
+SERIAL d15 day=17 kills=5 pressure=100 status=failed obj=Examine the crime scene: Dam House.
+SERIAL d18 day=20 kills=5 pressure=100 status=failed obj=Examine the crime scene: Dam House.
+SERIAL final: failed news=9
+today: []
+alive 221 of 226

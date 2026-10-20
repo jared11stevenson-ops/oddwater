@@ -3,6 +3,7 @@ extends RefCounted
 ## death the town finds out: the paper, the radio, and a pressure meter that eats your reputation, with a deadline after which the state
 ## police take the case from you. All state lives in one dictionary (`serial`) on the game, so it saves with everything else.
 
+const Prose = preload("res://scripts/detective/prose.gd")
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const News = preload("res://scripts/detective/news.gd")
 const Data = preload("res://scripts/core/data.gd")
@@ -28,7 +29,7 @@ static func active(s: Dictionary) -> bool:
 ## Pick the killer and what they leave behind. Returns the opts CaseEngine.generate wants, merged into a fresh serial dict.
 ## `used`: signatures earlier killers have already claimed. Every serial killer gets one of their own.
 static func begin(sim: RefCounted, seed_v: int, salt: String, used: Array = []) -> Dictionary:
-	var cb: Dictionary = Data.load_json("detective/casebook.json")
+	var cb: Dictionary = Prose.json("detective/casebook.json")
 	var r := RandomNumberGenerator.new()
 	r.seed = hash("%d|serial_who|%s" % [seed_v, salt])
 	var adults: Array = CaseEngine._adults(sim)

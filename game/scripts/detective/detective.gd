@@ -26,6 +26,10 @@ var samples: Dictionary = {}        # person id -> true once their fingerprints 
 var reputation: Dictionary = {"sheriff": 0, "town": 0, "chapel": 0}
 var cases_solved := 0
 var cases_failed := 0
+var rep_log: Array = []             # every change to the three standings, newest last: [{day, event, d}]
+var asked: Dictionary = {}          # "npc|topic|about" -> how many times (a repeat question gets a different reply)
+var rank := "Detective"             # the state police can reassign you after a failure
+var funerals: Dictionary = {}       # case id -> true once you have attended
 
 
 func skill(s: String) -> int:
@@ -94,6 +98,7 @@ func rollover(prefix: String) -> void:
 	order = no
 	lab = []
 	told = {}
+	asked = {}
 	calibrated = {}
 	warrants = {}
 
@@ -115,7 +120,8 @@ func proof_against(id: String) -> Dictionary:
 func to_dict() -> Dictionary:
 	return {"name": name, "skills": skills.duplicate(), "xp": xp, "level": level, "points": points, "stress": stress, "tools": tools.duplicate(),
 		"known": known.duplicate(true), "order": order.duplicate(), "statements": statements.duplicate(true), "warrants": warrants.duplicate(),
-		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed}
+		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed,
+		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate()}
 
 
 static func from_dict(d: Dictionary) -> RefCounted:
@@ -139,4 +145,10 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	x.samples = d.get("samples", {}).duplicate()
 	x.reputation = d.get("rep", x.reputation).duplicate()
 	x.cases_solved = int(d.get("solved", 0)); x.cases_failed = int(d.get("failed", 0))
+	x.rep_log = d.get("rep_log", []).duplicate(true)
+	x.asked = d.get("asked", {}).duplicate()
+	x.rank = String(d.get("rank", "Detective"))
+	x.funerals = d.get("funerals", {}).duplicate()
+	for k in x.reputation:
+		x.reputation[k] = int(x.reputation[k])
 	return x
