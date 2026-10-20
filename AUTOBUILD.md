@@ -24,9 +24,13 @@ You are continuing UNDERSTUDY, a single-player, offline narrative mystery game i
 - Stop early if the roadmap's remaining items all need humans (see "Not achievable autonomously"): write a status summary to `NOTES-FOR-USER.md` and do nothing else.
 - Budget: one focused increment of roughly 5–20 minutes of work. Prefer depth and correctness over breadth.
 
-## Playable zips (required every pass)
-After tests pass and the pass is committed, run `tools/build_zips.sh` (Windows, Linux, Web zips into `dist/`, git-ignored),
-then force-push the zips as a single commit to the orphan `builds` branch (keeps `main` small), and send the zips to the user.
-Export templates must be installed (`~/.local/share/godot/export_templates/<version>.stable`); if missing, fetch
-`https://downloads.godotengine.org/?version=<version>&flavor=stable&slug=export_templates.tpz&platform=templates`.
-Android/iOS builds need the Android SDK / Xcode and are not produced yet.
+## Playable Android APK (required every pass)
+The user plays ONLY on a **Samsung Galaxy S25** (Android, arm64). Do NOT produce or present PC/Windows/Linux/Web builds.
+After tests pass and the pass is committed: `tools/build_apk.sh` (APK into `dist/`, git-ignored), force-push it as a single commit to the
+orphan `builds` branch (keeps `main` small), and send the APK to the user.
+One-time setup in a fresh container: latest stable Godot + its export templates
+(`https://downloads.godotengine.org/?version=<v>&flavor=stable&slug=export_templates.tpz&platform=templates` into `~/.local/share/godot/export_templates/<v>.stable/`);
+Android SDK at `/opt/android-sdk` (cmdline-tools from dl.google.com, then `sdkmanager "platform-tools" "build-tools;35.0.1" "platforms;android-35"`, accept licenses);
+JDK 21; `keytool -genkeypair -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"`;
+append to `~/.config/godot/editor_settings-4.7.tres`: `export/android/android_sdk_path`, `java_sdk_path`, `debug_keystore`, `debug_keystore_user`, `debug_keystore_pass`.
+Landscape only (`window/handheld/orientation=4`). Test on-device behaviour cannot be verified in the container, so say so.

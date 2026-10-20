@@ -1,9 +1,5 @@
-UNDERSTUDY - playable build (work in progress)
+UNDERSTUDY - Android build (Samsung Galaxy S25, arm64) - work in progress
 
-Windows: unzip, run Understudy.exe.   Linux: unzip, chmod +x Understudy.x86_64, run it.
-Web: needs a local web server (browsers block file:// for WebAssembly):
-     python -m http.server 8000     then open http://localhost:8000
-
-Controls: mouse / touch to click buttons; Tab / arrow keys + Enter also work.
-Single-player, offline. Progress is not yet saved between sessions.
-This is an early build: text and menus, no art or audio yet.
+Install: copy the .apk to the phone, open it in My Files, allow "install unknown apps" for My Files when asked, tap Install.
+Play: landscape. Tap the buttons. Single-player, offline, no permissions needed.
+Early build: text and menus, no art or audio yet; progress is not saved between sessions.
