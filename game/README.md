@@ -1,6 +1,6 @@
 # UNDERSTUDY — Godot project
 
-Engine: **Godot 4.7 stable** (GDScript), Mobile renderer. Single-player, offline.
+Engine: **Godot 4.7.2 stable** (GDScript), Mobile renderer. Single-player, offline.
 
 ## Run
 - Editor: open `game/project.godot`.
