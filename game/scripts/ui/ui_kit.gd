@@ -2,6 +2,7 @@ extends RefCounted
 ## Shared pieces of the UI polish: palette, persisted settings (text size, sound, haptics, quality, tutorial flag), haptics, safe-area
 ## margins, press feedback, stamps. Everything static so any screen can use it without wiring.
 
+const AudioMix = preload("res://scripts/world3d/audio_mix.gd")
 const INK := Color("14121c")
 const PAPER := Color("f3e9d2")
 const PAPER_DIM := Color("dccfae")
@@ -14,11 +15,12 @@ const NIGHT := Color(0.08, 0.07, 0.11, 0.9)
 
 const QUALITIES := ["low", "med", "high"]
 const QUALITY_NAMES := {"low": "Low", "med": "Medium", "high": "High"}
-const QUALITY_SCALE := {"low": 0.6, "med": 0.8, "high": 1.0}
+const QUALITY_SCALE := {"low": 0.6, "med": 0.75, "high": 0.9}
 const TEXT_SCALES := [0.9, 1.0, 1.15, 1.3]
 
 static var cfg_path := "user://ui_settings.cfg"
-static var data := {"text_scale": 1.0, "sound": true, "haptics": true, "quality": "med", "tutorial_done": false}
+static var data := {"text_scale": 1.0, "sound": true, "haptics": true, "quality": "med", "tutorial_done": false,
+	"vol_master": 0.8, "vol_sfx": 0.9, "vol_music": 0.7}
 static var loaded := false
 
 
@@ -27,10 +29,14 @@ static func load_settings() -> void:
 	loaded = true
 	var cf := ConfigFile.new()
 	if cf.load(cfg_path) != OK:
+		# first run: a phone starts on Medium (tuned for 60 fps on a Galaxy S25), a desktop on High
+		data["quality"] = "med" if OS.has_feature("mobile") or DisplayServer.get_name() == "headless" else "high"
 		return
 	for k in data.keys():
 		data[k] = cf.get_value("ui", k, data[k])
 	data["text_scale"] = clampf(float(data["text_scale"]), 0.8, 1.4)
+	for k in ["vol_master", "vol_sfx", "vol_music"]:
+		data[k] = clampf(float(data[k]), 0.0, 1.0)
 	if not QUALITIES.has(String(data["quality"])):
 		data["quality"] = "med"
 
@@ -75,14 +81,49 @@ static func apply_quality(q: String, vp: Viewport, world: Object = null) -> void
 	if world != null and world.has_method("set_quality"):
 		world.call("set_quality", q)
 	if vp != null:
-		vp.scaling_3d_scale = float(QUALITY_SCALE.get(q, 0.8))
-		vp.msaa_3d = Viewport.MSAA_4X if q == "high" else (Viewport.MSAA_2X if q == "med" else Viewport.MSAA_DISABLED)
+		if world == null or not world.has_method("set_quality"):
+			vp.scaling_3d_scale = float(QUALITY_SCALE.get(q, 0.75))
+			vp.msaa_3d = Viewport.MSAA_2X if q != "low" else Viewport.MSAA_DISABLED
 
 
+## Master mute plus the three volume buses (Master, Sfx, Music). The Sfx and Music buses are made on first use and feed the Master.
 static func apply_sound() -> void:
 	var bus := AudioServer.get_bus_index("Master")
-	if bus >= 0:
-		AudioServer.set_bus_mute(bus, not bool(get_v("sound")))
+	if bus < 0:
+		return
+	for nm in ["Sfx", "Music"]:
+		if AudioServer.get_bus_index(nm) < 0:
+			AudioServer.add_bus()
+			var i := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(i, nm)
+			AudioServer.set_bus_send(i, "Master")
+	AudioServer.set_bus_mute(bus, not bool(get_v("sound")))
+	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(float(get_v("vol_master")), 0.0001)))
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Sfx"), linear_to_db(maxf(float(get_v("vol_sfx")), 0.0001)))
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), linear_to_db(maxf(float(get_v("vol_music")), 0.0001)))
+
+
+static var _ui_player: AudioStreamPlayer
+static var _click_stream: AudioStreamWAV
+
+
+## A soft paper tick for any button. One tiny synthesised sample, played through the Sfx bus. Silent in headless runs.
+static func click(kind: String = "tap") -> void:
+	if DisplayServer.get_name() == "headless" or not bool(get_v("sound")):
+		return
+	var loop := Engine.get_main_loop() as SceneTree
+	if loop == null or loop.root == null:
+		return
+	if _ui_player == null or not is_instance_valid(_ui_player):
+		_ui_player = AudioStreamPlayer.new()
+		_ui_player.name = "UiClick"
+		_ui_player.bus = "Sfx" if AudioServer.get_bus_index("Sfx") >= 0 else "Master"
+		_ui_player.volume_db = -8.0
+		loop.root.add_child(_ui_player)
+	if _click_stream == null:
+		_click_stream = AudioMix.tone_blip(1500.0, 0.045, 0.5, 0.3)
+	_ui_player.stream = _click_stream if kind == "tap" else AudioMix.tone_blip(660.0, 0.14, 0.7, 0.1)
+	_ui_player.play()
 
 
 ## Short buzz on a handheld (new clue, lab result, accusation). Silent on desktop, in tests and when switched off.
@@ -139,6 +180,7 @@ static func press_fx(b: Button) -> void:
 	b.button_down.connect(func():
 		if not is_instance_valid(b):
 			return
+		click()
 		b.pivot_offset = b.size / 2.0
 		var tw := b.create_tween()
 		tw.tween_property(b, "scale", Vector2(0.95, 0.95), 0.05)
