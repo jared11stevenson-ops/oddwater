@@ -11,6 +11,8 @@ const Data = preload("res://scripts/core/data.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
 const Reputation = preload("res://scripts/detective/reputation.gd")
 const Confessor = preload("res://scripts/detective/confessor.gd")
+const Claims = preload("res://scripts/detective/claims.gd")
+const Reasoning = preload("res://scripts/detective/reasoning.gd")
 
 const TYPES := {"grudge": "organised", "money": "calculating", "family": "remorseful", "silence": "secretive", "passion": "volatile"}
 const LORE := [
@@ -50,20 +52,15 @@ const INNOCENT_TELLS := [
 # =========================================================================== arrest and interrogation
 static func probable_cause(det: RefCounted, target: String) -> bool:
 	var pr: Dictionary = det.proof_against(target)
-	var cats := 0
-	var total := 0
-	for k in ["opportunity", "means", "motive", "link"]:
-		if int(pr[k]) > 0:
-			cats += 1
-		total += int(pr[k])
-	return cats >= 2 and total >= 4 and int(pr["exonerate"]) < 3
+	var tl: Dictionary = Reasoning.tally(pr)
+	return int(tl["cats"]) >= 2 and int(tl["total"]) >= 4 and int(pr["exonerate"]) < 3
 
 
 ## Arrest someone. Without probable cause the arrest is thrown out and it costs you.
 static func arrest(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictionary, target: String) -> Dictionary:
 	if st.get("custody", "") != "":
 		return {"ok": false, "text": "You already have someone in custody."}
-	if Confessor.is_false(c, target) and not Confessor.untested(det, target):
+	if bool(Confessor.entry_for(det, target).get("tested", false)):
 		return {"ok": false, "text": "%s's confession has already failed the held-back test. There is nothing to arrest anyone for." % CaseEngine.name_of(sim, target)}
 	if not probable_cause(det, target):
 		Reputation.apply(det, "failed_arrest", int(sim.day))
@@ -118,14 +115,16 @@ static func interrogate(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dic
 	if guilty and float(ss["resistance"]) <= 0.0 and not det.has("confession_" + t):
 		var e := {"id": "confession_" + t, "title": "Confession: %s" % CaseEngine.first(sim, t), "kind": "confession",
 			"text": "%s breaks. \"I went round after midnight. We argued about %s. I didn't mean... %s.\" Then, quietly: \"%s.\"" % [CaseEngine.name_of(sim, t), CaseEngine.thing_about(c["motive_thing"]), "it happened so fast", c["held_back"]],
-			"source": t, "supports": [{"cat": "opportunity", "about": t, "strength": 3}, {"cat": "motive", "about": t, "strength": 2}, {"cat": "means", "about": t, "strength": 2}], "day": int(sim.day), "has_detail": true}
+			"source": t, "day": int(sim.day)}
+		e["claims"] = Claims.emit(c, [Claims.make("said", t, "confessed", "", -1.0, String(c["held_back"]), 0.95, "true")], t, String(e["text"]))
 		if det.learn(e):
 			learned.append(e)
 		text += "\n\nAnd then it comes. A true confession, with the one detail you never told anyone."
 	elif not guilty and float(ss["fatigue"]) >= 75.0 and int(ss["pressure"]) >= 2 and not det.has("confession_" + t):
 		var e2 := {"id": "confession_" + t, "title": "Confession: %s" % CaseEngine.first(sim, t), "kind": "confession",
 			"text": "%s breaks, exhausted. \"Fine. I did it. Whatever you want me to say. I went round, I... I don't remember. I just want to go home.\"" % CaseEngine.name_of(sim, t),
-			"source": t, "supports": [{"cat": "opportunity", "about": t, "strength": 3}], "day": int(sim.day), "has_detail": false, "unreliable": true}
+			"source": t, "day": int(sim.day)}
+		e2["claims"] = Claims.emit(c, [Claims.make("said", t, "confessed", "", -1.0, "", 0.7, "false")], t, String(e2["text"]))
 		if det.learn(e2):
 			learned.append(e2)
 		text += "\n\nA confession. It arrives at the exact moment %s runs out of strength. You notice that it has no detail in it you didn't hand them yourself." % name
@@ -152,66 +151,92 @@ static func _tell_and_voice(sim: RefCounted, c: Dictionary, det: RefCounted, t: 
 	else:
 		tell = String(INNOCENT_TELLS[(round_n + absi(hash(t))) % INNOCENT_TELLS.size()]).replace("{n}", name)
 	var out := tell
-	var e := {"id": "tell_%s_%d" % [t, round_n], "title": "Interview %d: %s" % [round_n, name], "kind": "testimony", "source": t, "supports": [], "day": int(sim.day), "text": tell}
+	var e := {"id": "tell_%s_%d" % [t, round_n], "title": "Interview %d: %s" % [round_n, name], "kind": "testimony", "source": t, "day": int(sim.day), "text": tell}
+	e["claims"] = Claims.emit(c, [Claims.make("seen", t, "demeanour", "", -1.0, "", 0.6)], t, tell)
 	if det.learn(e):
 		learned.append(e)
 	if guilty and round_n >= 2:
 		var ph: Array = h["philosophy"][type]
 		var line: String = ph[(round_n - 2) % ph.size()]
 		out += "\n\n%s says, without being asked: %s" % [name, line]
-		var e2 := {"id": "view_%s_%d" % [t, round_n], "title": "%s argues back" % name, "kind": "testimony", "source": t, "supports": [], "day": int(sim.day), "text": line}
+		var e2 := {"id": "view_%s_%d" % [t, round_n], "title": "%s argues back" % name, "kind": "testimony", "source": t, "day": int(sim.day), "text": line}
+		e2["claims"] = Claims.emit(c, [Claims.make("said", t, "demeanour", "", -1.0, "", 0.6)], t, line)
 		if det.learn(e2):
 			learned.append(e2)
 	return out
 
 
 # =========================================================================== trial
-## The jury's confidence, with the defence's attacks. Returns {confidence, attacks: [{text, delta}], verdict, sentence, wrongful}.
+## The jury's confidence, with the defence's attacks. The weight of the case comes from the notebook (Reasoning); what the court adds is the
+## truth about each claim: a witness who was wrong, a lie, a clock that was out. A mistaken witness can sink a right case and a false confession
+## can convict the wrong person. Returns {confidence, attacks: [{text, delta}], verdict, sentence, wrongful}.
 static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: String) -> Dictionary:
 	var pr: Dictionary = det.proof_against(target)
-	var total := mini(int(pr["opportunity"] + pr["means"] + pr["motive"] + pr["link"]), 14)
-	var cats := 0
-	for k in ["opportunity", "means", "motive", "link"]:
-		if int(pr[k]) > 0:
-			cats += 1
+	var tl: Dictionary = Reasoning.tally(pr)
+	var total := mini(int(tl["total"]), 14)
+	var cats: int = tl["cats"]
 	var conf := 28.0 + total * 5.0 + cats * 4.0   # three solid categories and six points of proof is a case a jury convicts on (70); judge() asks this same function
 	var attacks: Array = []
 	var add := func(t: String, d: float) -> void:
 		attacks.append({"text": t, "delta": d})      # (a lambda sees conf by value: the deltas are summed after the loop)
+	var partial_other := false
 	for eid in det.order:
 		var e: Dictionary = det.known[eid]
-		var about: bool = false
-		for sup in e.get("supports", []):
-			if sup["about"] == target:
-				about = true
-		if not about:
+		var mine: Array = []
+		for cl in e.get("claims", []):
+			if cl.get("subject", "") == target:
+				mine.append(cl)
+		var about_other_print := false
+		for cl in e.get("claims", []):
+			if String(cl.get("predicate", "")) == "print_match" and cl.get("subject", "") != target and float(cl.get("certainty", 1.0)) < 0.7:
+				about_other_print = true
+		if about_other_print and String(eid).begins_with("cmp_") and not partial_other:
+			partial_other = true
+			add.call("The defence: \"A print comparison pointed at someone else entirely. Where was that explored?\"", -6.0)
+		if mine.is_empty():
 			continue
-		if e.get("false_confession", false) and not e.get("tested", false):
-			add.call("The prosecution: a signed, voluntary confession, with the hour, the weapon and the wound. The jury looks at the accused and does not look away.", 14.0)
-		elif e.get("unreliable", false) and e.get("kind", "") == "confession":
-			add.call("The defence: \"This confession contains nothing only the killer would know. My client was exhausted and frightened.\"", -30.0)
-		elif e.get("unreliable", false):
-			add.call("The defence: \"A partial print. Seven points. It is 'consistent with' half the town.\"", -8.0)
 		if e.get("kind", "") == "cctv" and not e.get("calibrated", false):
 			add.call("The defence: \"The camera's clock was never checked. These times mean nothing.\"", -6.0)
-		if e.get("kind", "") == "confession" and e.get("has_detail", false):
-			add.call("The prosecution: the confession includes a detail that was never made public. The room goes quiet.", 18.0)
-		if e.get("kind", "") == "lab" and not e.get("unreliable", false) and e.get("text", "").begins_with("Conclusive"):
+		for cl in mine:
+			var tag: String = Claims.tag_of(c, cl)
+			var pred: String = String(cl.get("predicate", ""))
+			var cert: float = float(cl.get("certainty", 1.0))
+			if pred == "confessed_story":
+				if tag == "false" and not e.get("tested", false):
+					add.call("The prosecution: a signed, voluntary confession, with the hour, the weapon and the wound. The jury looks at the accused and does not look away.", 14.0)
+			elif pred == "confession_disproved":
+				add.call("The defence: \"This confession contains nothing only the killer would know. My client was exhausted and frightened.\"", -30.0)
+			elif pred == "confessed":
+				if String(cl.get("item", "")) != "" and tag == "true":
+					add.call("The prosecution: the confession includes a detail that was never made public. The room goes quiet.", 18.0)
+				elif tag == "false":
+					add.call("The defence: \"This confession contains nothing only the killer would know. My client was exhausted and frightened.\"", -30.0)
+			elif pred == "print_match" and cert < 0.7:
+				add.call("The defence: \"A partial print. Seven points. It is 'consistent with' half the town.\"", -8.0)
+			elif tag == "false" and Reasoning.RULES.has(pred):
+				add.call("The defence takes the witness apart: a grudge, a bad memory, a story that does not hold. The jury stops listening to that part.", -12.0)
+			elif tag == "misleading" and Reasoning.RULES.has(pred) and e.get("kind", "") != "cctv":
+				add.call("The defence: \"A mistake of the hour, of the place, of the person. Everyone in this room has made one.\"", -8.0)
+		if e.get("kind", "") == "lab" and String(e.get("text", "")).begins_with("Conclusive") and not mine.is_empty() and Claims.tag_of(c, mine[0]) == "true":
 			add.call("The prosecution: a conclusive print, verified by a second examiner.", 6.0)
-	# the other suspects: any you never cleared become the defence's alternative
-	for s in c["suspects"]:
-		if s == target:
+	# the other names in the notebook: any you never cleared become the defence's alternative
+	for s in Reasoning.people_named(det.known):
+		if s == target or s == "player" or s == String(c["victim"]) or s == String(c["found_by"]):
 			continue
 		var ps: Dictionary = det.proof_against(s)
-		if int(ps["exonerate"]) < 3 and int(ps["opportunity"]) + int(ps["means"]) + int(ps["motive"]) + int(ps["link"]) >= 2:
+		if int(ps["exonerate"]) < 3 and int(Reasoning.tally(ps)["total"]) >= 2:
 			add.call("The defence points across the room: \"%s had a motive and no alibi, and nobody ever ruled them out.\"" % CaseEngine.name_of(sim, s), -5.0)
-	if not Confessor.is_false(c, target):
-		for cf in Confessor.list(c):
-			if Confessor.untested(det, cf["id"]):
-				add.call("The defence: \"%s has confessed in writing. Why is my client in the dock and not them?\"" % CaseEngine.name_of(sim, cf["id"]), -8.0)
-	var look: String = c.get("lookalike", "")
-	if look != "" and det.order.any(func(e): return String(e).begins_with("cmp_") and String(e).ends_with(look) and det.known[e].get("unreliable", false)) and target != look:
-		add.call("The defence: \"A print comparison pointed at someone else entirely. Where was that explored?\"", -6.0)
+	var target_confessed := false
+	for eid in det.order:
+		for cl in det.known[eid].get("claims", []):
+			if cl.get("subject", "") == target and String(cl.get("predicate", "")) in ["confessed_story", "confession_disproved"]:
+				target_confessed = true
+	if not target_confessed:
+		for eid in det.order:
+			var ce: Dictionary = det.known[eid]
+			for cl in ce.get("claims", []):
+				if String(cl.get("predicate", "")) == "confessed_story" and not ce.get("tested", false) and cl.get("subject", "") != target:
+					add.call("The defence: \"%s has confessed in writing. Why is my client in the dock and not them?\"" % CaseEngine.name_of(sim, String(cl["subject"])), -8.0)
 	for a in attacks:
 		conf += float(a["delta"])
 	conf = clampf(conf, 0.0, 100.0)
@@ -324,7 +349,8 @@ static func visit(sim: RefCounted, c: Dictionary, det: RefCounted, inmate: Dicti
 				if i < LORE.size():
 					inmate["told"].append(i)
 					text = "\"All right. One thing, for free. %s\"" % LORE[(absi(hash(inmate["id"])) + i) % LORE.size()]
-					var e := {"id": "lore_%s_%d" % [inmate["id"], i], "title": "From %s, in jail" % name, "text": LORE[(absi(hash(inmate["id"])) + i) % LORE.size()], "kind": "lore", "source": inmate["id"], "supports": [], "day": int(sim.day)}
+					var e := {"id": "lore_%s_%d" % [inmate["id"], i], "title": "From %s, in jail" % name, "text": LORE[(absi(hash(inmate["id"])) + i) % LORE.size()], "kind": "lore", "source": inmate["id"], "day": int(sim.day)}
+					e["claims"] = Claims.emit(c, [Claims.make("said", "", "lore")], String(inmate["id"]), String(e["text"]))
 					det.learn(e)
 					det.gain_xp(25)
 				else:
@@ -342,14 +368,8 @@ static func visit(sim: RefCounted, c: Dictionary, det: RefCounted, inmate: Dicti
 static func appeal(sim: RefCounted, c: Dictionary, det: RefCounted, jail: Array, inmate: Dictionary) -> Dictionary:
 	if inmate["guilty"]:
 		return {"ok": false, "text": "There is nothing to appeal. They did it."}
-	var pr: Dictionary = det.proof_against(c["killer"])
-	var cats := 0
-	var total := 0
-	for k in ["opportunity", "means", "motive", "link"]:
-		if int(pr[k]) > 0:
-			cats += 1
-		total += int(pr[k])
-	if cats < 3 or total < 6:
+	var tl: Dictionary = Reasoning.tally(det.proof_against(c["killer"]))
+	if int(tl["cats"]) < 3 or int(tl["total"]) < 6:
 		return {"ok": false, "text": "The judge will not reopen it on a feeling. Find who really did this, and prove it."}
 	sim.people[inmate["id"]].jailed = false
 	sim.people[inmate["id"]].location = sim.people[inmate["id"]].home

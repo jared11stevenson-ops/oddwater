@@ -8,6 +8,7 @@ const Brief = preload("res://scripts/sim/brief.gd")
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
 const Places = preload("res://scripts/detective/places.gd")
+const Reasoning = preload("res://scripts/detective/reasoning.gd")
 
 const DAYS := ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -85,7 +86,7 @@ static func cold_open(sim: RefCounted, c: Dictionary) -> String:
 	var pl: Dictionary = Places.profile(c)
 	var place: String = Brief.place_name(sim, c["scene"], "")
 	var room: String = Places.where_phrase(sim, c)
-	var n: int = (c["suspects"] as Array).size()
+	var n: int = 3 + absi(hash(_salt(c, "n"))) % 3          # "a handful": the narrator does not know how many names there will be
 	var rep := {"{v}": vf, "{age}": str(v.age), "{job}": Prose.job_np(String(v.job)), "{job_cap}": Prose.sentence(Prose.job_np(String(v.job))),
 		"{time}": CaseEngine.discovery_time(c), "{f}": ff, "{rel}": c.get("found_rel", "neighbour"), "{place}": place, "{room}": room,
 		"{n}": Prose.count_word(n), "{n_cap}": Prose.sentence(Prose.count_word(n))}
@@ -119,24 +120,23 @@ static func beat(kind: String, sim: RefCounted, c: Dictionary, det: RefCounted) 
 				return {"title": "THE SCENE", "text": Prose.clean(txt)}
 		"odd_detail":
 			if det.has("c_odd"):
-				return {"title": "THE DETAIL THAT DIDN'T FIT", "text": "And then you saw it. %s.\n\nYou looked at it for a long time. The Sheriff, who is not given to drama, lowered their voice. 'Don't write that anywhere anyone can read it.'\n\nWhoever did this wanted it noticed. Or wanted it kept. And you are not yet sure which is worse." % c["held_back"]}
+				var detail := ""
+				for cl in det.known["c_odd"].get("claims", []):
+					if cl.get("predicate", "") == "odd_detail":
+						detail = String(cl.get("item", ""))
+				return {"title": "THE DETAIL THAT DIDN'T FIT", "text": "And then you saw it. %s.\n\nYou looked at it for a long time. The Sheriff, who is not given to drama, lowered their voice. 'Don't write that anywhere anyone can read it.'\n\nWhoever did this wanted it noticed. Or wanted it kept. And you are not yet sure which is worse." % detail}
 		"lie_caught":
 			for eid in det.order:
 				if eid.begins_with("cover_") or eid == "f_h1_secret":
 					return {"title": "EVERYONE LIES", "text": "Everyone lies to a detective. The real skill is knowing which lies are about the dead, and which are about the living. This one was about the living: someone ashamed, someone afraid, someone protecting a person they love. It would have been so easy to mistake it for the thing you were looking for."}
 		"footage":
 			for eid in det.order:
-				if eid.begins_with("cctv_") and det.known[eid]["supports"].size() > 0:
+				if eid.begins_with("cctv_") and (det.known[eid].get("claims", []) as Array).any(func(cl): return cl.get("subject", "") != ""):
 					return {"title": "THE FOOTAGE", "text": "The picture was grainy and the clock on it was wrong by a few minutes, which is exactly the kind of thing a good lawyer lives for. But there it was: a figure on a doorstep, at an hour when no honest person in Little Mercy is awake. They did not hurry. That, more than anything, bothered you."}
 		"turn":
 			var best := 0
-			for s in c["suspects"]:
-				var pr: Dictionary = det.proof_against(s)
-				var cats := 0
-				for k in ["opportunity", "means", "motive", "link"]:
-					if int(pr[k]) > 0:
-						cats += 1
-				best = maxi(best, cats)
+			for s in Reasoning.people_named(det.known):
+				best = maxi(best, int(Reasoning.tally(det.proof_against(s))["cats"]))
 			if best >= 3:
 				return {"title": "THE TURN", "text": "There is a moment in every case when the pieces stop being separate. For two days you have been looking at strangers. Now you look at your notebook and it is no longer a list. It is a shape. You know how it ends. What you do not yet know is whether you can prove it."}
 	return {}
@@ -162,11 +162,11 @@ static func episode(sim: RefCounted, c: Dictionary, det: RefCounted, res: Dictio
 	var parts: Array = []
 	parts.append(cold_open(sim, c))
 	parts.append("YOU WORKED IT LIKE THIS.\n" + _how(sim, c, det))
-	if res["right_person"] or res["verdict"] in ["cold", "failure", "fled"]:
+	if res["verdict"] in ["convicted", "cold", "failure", "fled"]:
 		parts.append("THE TRUTH.\n%s killed %s. It was %s: %s. %s went out at about %s and came back before dawn, and told everyone about a night in bed." % [k, v, cb["motives"][c["motive"]]["label"], c["motive_thing"], CaseEngine.first(sim, c["killer"]), _clock(float(c["hour"]) - 0.5)])
 		parts.append("THE DETAIL.\nThe one that didn't fit: %s. %s" % [c["held_back"], _detail_meaning(c)])
-	else:
-		parts.append("THE TRUTH.\nIt was not who you said. It was %s, and %s walked free for as long as it took you to notice." % [k, k])
+	elif res["verdict"] == "wrong":
+		parts.append("THE TRUTH.\nIt was not who you said. The one who did this is still in Little Mercy, and has had time to think.")
 	var voice_lines: Array = []
 	for eid in det.order:
 		if String(eid).begins_with("view_"):

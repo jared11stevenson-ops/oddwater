@@ -4,6 +4,7 @@ extends RefCounted
 ## are conclusive. Poor ones are only "similar", and similar is not the same as the same.
 
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
+const Claims = preload("res://scripts/detective/claims.gd")
 
 const SPOT_NAMES := {"door": "the door handle", "phone": "the telephone", "desk": "the desk", "floor": "the dropped item", "garden": "the gate"}
 
@@ -25,7 +26,8 @@ static func dust(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String, s
 		var q: int = clampi(int(l["quality"]) + (det.skill("forensics") - 3) * 5, 5, 98)
 		var grade := "a clear print" if q >= 60 else ("a partial print" if q >= 35 else "a smudge")
 		var e := {"id": id, "title": "Latent print: %s" % SPOT_NAMES.get(spot, spot), "text": "%s on %s (quality %d). Whose is it?" % [grade.capitalize(), SPOT_NAMES.get(spot, spot), q],
-			"kind": "print", "source": lot, "supports": [], "day": int(sim.day), "latent": l["id"], "quality": q}
+			"kind": "print", "source": lot, "day": int(sim.day), "latent": l["id"], "quality": q}
+		e["claims"] = Claims.emit(c, [Claims.make("found", "", "latent_print", lot, -1.0, spot, float(q) / 100.0)], lot, String(e["text"]))
 		if det.learn(e):
 			learned.append(e)
 			lines.append(e["text"])
@@ -98,18 +100,15 @@ static func _compare(sim: RefCounted, c: Dictionary, det: RefCounted, print_entr
 	var owner: String = lat.get("owner", "unknown")
 	var k: String = c["killer"]
 	var text := ""
-	var supports: Array = []
-	var unreliable := false
+	var claims: Array = []
+	var spot: String = String(lat.get("spot", ""))
 	if owner == target:
 		if q >= 60:
 			text = "Conclusive: the print is %s's (16 points of agreement, verified)." % tname
-			if target == k:
-				supports.append({"cat": "link", "about": k, "strength": 3})
+			claims.append(Claims.make("found", target, "print_match", String(c["scene"]), -1.0, spot, 0.95, "true" if target == k else "misleading"))
 		elif q >= 35:
 			text = "Consistent with %s (7 points). A partial: not enough to be certain." % tname
-			unreliable = true
-			if target == k:
-				supports.append({"cat": "link", "about": k, "strength": 1})
+			claims.append(Claims.make("found", target, "print_match", String(c["scene"]), -1.0, spot, 0.5, "true" if target == k else "misleading"))
 		else:
 			text = "Unsuitable for comparison: too smudged."
 	else:
@@ -117,8 +116,9 @@ static func _compare(sim: RefCounted, c: Dictionary, det: RefCounted, print_entr
 			text = "Excluded: the print is not %s's." % tname
 		elif q >= 35 and target == c.get("lookalike", "") and q < 55:
 			text = "Possible match with %s (7 points of similarity). A second examiner should verify. Partial prints can lie." % tname
-			unreliable = true
-			supports.append({"cat": "link", "about": target, "strength": 1})
+			claims.append(Claims.make("found", target, "print_match", String(c["scene"]), -1.0, spot, 0.5, "misleading"))
 		else:
 			text = "No match with %s." % tname
-	return {"id": "cmp_%s_%s" % [pe["latent"], target], "title": "Print comparison: %s" % tname, "text": text, "kind": "lab", "source": "lab", "supports": supports, "day": day, "unreliable": unreliable}
+	if claims.is_empty():
+		claims.append(Claims.make("found", target, "print_excluded", String(c["scene"])))
+	return {"id": "cmp_%s_%s" % [pe["latent"], target], "title": "Print comparison: %s" % tname, "text": text, "kind": "lab", "source": "lab", "claims": Claims.emit(c, claims, "lab", text), "day": day}

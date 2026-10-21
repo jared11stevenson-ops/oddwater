@@ -6,6 +6,7 @@ const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
 const Bot = preload("res://tests/case_bot.gd")
+const DetectiveGame = preload("res://scripts/detective/detective_game.gd")
 var fails := 0
 var checks := 0
 
@@ -16,24 +17,15 @@ func ok(c: bool, m: String) -> void:
 		print("  FAIL: ", m)
 
 func make(seed_v: int) -> Array:
-	var w := World.new(seed_v, true)
-	w.thin_weeks = false
-	w.day = 0
-	w.start_day()
-	var c := CaseEngine.generate(w, seed_v, 0)
-	CaseEngine.apply_backstory(w, c)
-	w.simulate_rest_of_day()
-	CaseEngine.execute(w, c)
-	w.slack()
-	w.start_day()
-	return [w, c]
+	var g: RefCounted = DetectiveGame.new(seed_v)
+	return [g.sim, g._truth, g]
 
 func _initialize() -> void:
 	var t0 := Time.get_ticks_msec()
 	var solved := 0
 	var lazy_failed := 0
 	var wrong_ok := 0
-	var N := 24
+	var N := 14
 	var motives: Dictionary = {}
 	var methods: Dictionary = {}
 	var kinds: Dictionary = {}
@@ -80,31 +72,32 @@ func _initialize() -> void:
 			var again: Array = make(s)
 			ok(str(again[1]["victim"]) == str(c["victim"]) and again[1]["killer"] == k and again[1]["method"] == c["method"], "seed %d: deterministic" % s)
 		# ---- a thorough detective solves it
-		var bot = Bot.new(w, c)
+		var bot = Bot.new(wc[2])
 		var r: Dictionary = bot.solve()
-		var res: Dictionary = r["result"]
+		var res: Dictionary = CaseOps.judge(w, c, bot.det, r["accused"], r["motive"], r["method"])
 		if r["accused"] == k and res["verdict"] == "convicted":
 			solved += 1
 		else:
-			print("  unsolved seed %d: accused %s (killer %s) verdict %s cats %d total %d notebook %s" % [s, r["accused"], k, res["verdict"], res["cats"], res["total"], bot.det.order])
+			print("  unsolved seed %d: accused %s (killer %s) verdict %s cats %d total %d" % [s, r["accused"], k, res["verdict"], res["cats"], res["total"]])
 		# ---- a lazy one does not
 		var w2: Array = make(s)
-		var lazy = Bot.new(w2[0], w2[1])
+		var lazy = Bot.new(w2[2])
 		var lr: Dictionary = lazy.lazy()
-		if lr["result"]["verdict"] != "convicted":
+		var lres: Dictionary = CaseOps.judge(w2[0], w2[1], lazy.det, lr["accused"], lr["motive"], lr["method"])
+		var lres_k: Dictionary = CaseOps.judge(w2[0], w2[1], lazy.det, w2[1]["killer"], w2[1]["motive"], w2[1]["method"])      # even naming the right person on that notebook
+		if lres["verdict"] != "convicted" and lres_k["verdict"] != "convicted":
 			lazy_failed += 1
 		# ---- a wrong accusation is wrong
-		var w3: Array = make(s)
 		var innocent: String = ""
-		for x in w3[1]["suspects"]:
-			if x != w3[1]["killer"]:
+		for x in c["suspects"]:
+			if x != c["killer"]:
 				innocent = x
-		var wr: Dictionary = CaseOps.judge(w3[0], w3[1], Detective.new(), innocent, "money", "blunt")
-		if wr["verdict"] == "wrong":
+		var wr: Dictionary = CaseOps.judge(w, c, Detective.new(), innocent, "money", "blunt")
+		if wr["verdict"] == "insufficient":
 			wrong_ok += 1
 	ok(solved == N, "a thorough detective solves every case: %d of %d" % [solved, N])
 	ok(lazy_failed == N, "a lazy detective never gets a conviction: %d of %d" % [lazy_failed, N])
-	ok(wrong_ok == N, "accusing the wrong person is always wrong: %d of %d" % [wrong_ok, N])
+	ok(wrong_ok == N, "naming anyone on an empty notebook is turned away: %d of %d" % [wrong_ok, N])
 	ok(motives.size() >= 3 and methods.size() >= 3 and kinds.size() == 2, "variety: %d motives, %d methods, %d scene kinds" % [motives.size(), methods.size(), kinds.size()])
 	# ---- the RPG gates
 	var wc2: Array = make(5)

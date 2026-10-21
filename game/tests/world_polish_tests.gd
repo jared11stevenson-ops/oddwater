@@ -136,7 +136,7 @@ func _initialize() -> void:
 	# window lights follow who is home: the dead leave their house dark, a newcomer lights theirs
 	var gm: RefCounted = w.game
 	var sm: RefCounted = gm.sim
-	var vic: String = gm.case["victim"]
+	var vic: String = gm._truth["victim"]
 	var vhome: String = sm.people[vic].home
 	var home_id := ""
 	for id in sm.order:

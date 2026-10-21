@@ -8,6 +8,7 @@ const Data = preload("res://scripts/core/data.gd")
 const Brief = preload("res://scripts/sim/brief.gd")
 const PathGrid = preload("res://scripts/world3d/path_grid.gd")
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
+const Claims = preload("res://scripts/detective/claims.gd")
 
 const WALK_MPS := 1.4
 
@@ -92,20 +93,19 @@ static func _closest(a: Vector2, b: Vector2, p: Vector2) -> Dictionary:
 	return {"d": q.distance_to(p), "along": t * ab.length()}
 
 
-## View one camera over a window (hours, 24+ = after midnight). Returns {events, text, supports, offset}.
-static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: float, to_h: float, calibrated: bool) -> Dictionary:
+## View one camera over a window (hours, 24+ = after midnight). `recognised` is who the detective could pick out by sight on a poor
+## picture (people already in the notebook). Returns {events, text, claims (templates), offset}.
+static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: float, to_h: float, calibrated: bool, recognised: Array = []) -> Dictionary:
 	var cam: Dictionary = camera(c, cam_id)
 	if cam.is_empty():
-		return {"events": [], "text": "No such camera.", "supports": []}
+		return {"events": [], "text": "No such camera.", "claims": []}
 	var cp: Vector2 = door_point(cam["lot"])
 	var hd: bool = cam["quality"] == "hd"
 	var shown := 0.0 if calibrated else float(cam["offset"]) / 60.0
 	var evs: Array = []
-	var supports: Array = []
 	var k: String = c["killer"]
 	# 1. people entering and leaving the place that evening (from the sim's history)
 	var d: int = int(c["day"])
-	var interesting: Array = c["suspects"] + [c["victim"], c["found_by"]]
 	var crowd := 0
 	for t in range(1, int(sim.tuning["ticks_per_day"])):
 		var h := 6.0 + float(t) * 0.5
@@ -115,8 +115,8 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 			var now: String = sim.where_was(id, d, t)
 			var before: String = sim.where_was(id, d, t - 1)
 			if now == cam["lot"] and before != cam["lot"]:
-				if hd or interesting.has(id):
-					evs.append({"t": h, "who": id, "text": "%s %s" % [(CaseEngine.name_of(sim, id) if hd else "Someone you can place as %s" % CaseEngine.name_of(sim, id)), "arrives"], "ident": true})
+				if hd or recognised.has(id):
+					evs.append({"t": h, "who": id, "text": "%s %s" % [(CaseEngine.name_of(sim, id) if hd else "Someone you can place as %s" % CaseEngine.name_of(sim, id)), "arrives"], "ident": true, "arrival": true})
 				else:
 					crowd += 1
 	# 2. the night's walks
@@ -147,8 +147,7 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 			t += (seg / WALK_MPS) / 3600.0
 		if not best_ev.is_empty():
 			evs.append(best_ev)
-			if best_ev["who"] == k:
-				supports.append({"cat": "opportunity", "about": k, "strength": 3 if best_ev["ident"] else 1})
+
 	evs.sort_custom(func(x, y): return x["t"] < y["t"])
 	var lines: Array = []
 	for e in evs:
@@ -159,29 +158,35 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 	var off_txt := ""
 	if not calibrated:
 		off_txt = "\n(The camera's own clock has not been checked against a real one.)"
-	# merge duplicate supports (keep the strongest)
-	var best := 0
-	for s in supports:
-		best = maxi(best, int(s["strength"]))
-	# a clock that is badly out puts the figure at the wrong hour: until it is checked the footage proves less than it seems
+	# what each sighting claims. A clock nobody has checked makes every time on the tape less certain; a clock that is badly out puts the
+	# figure at the wrong hour: the court (and only the court) knows when that happened.
 	var lies: bool = (not calibrated) and absi(int(cam["offset"])) >= 25
-	if lies and best > 0:
-		best = 1
-	var sup: Array = [] if best == 0 else [{"cat": "opportunity", "about": k, "strength": best}]
-	return {"events": evs, "text": text + off_txt, "supports": sup, "offset": int(cam["offset"]), "misleading": lies}
+	var claims: Array = []
+	for ev in evs:
+		var seen_at: float = float(ev["t"]) + shown          # hours, 24+ is after midnight
+		var cert: float = (0.95 if ev["ident"] else 0.8) * (1.0 if calibrated else 0.7)
+		var tag := "misleading" if lies else "true"
+		if ev["ident"]:
+			var at_scene: bool = ev.get("arrival", false) and cam["lot"] == c["scene"]
+			var pred := "seen_at_scene" if at_scene else ("arrived_at" if ev.get("arrival", false) else "seen_out_at_night")
+			claims.append(Claims.make("recorded", String(ev["who"]), pred, String(cam["lot"]), seen_at, "", cert, tag))
+		else:
+			claims.append(Claims.make("recorded", "", "figure_seen", String(cam["lot"]), seen_at, _trait_of(c, String(ev["who"])), cert, tag))
+	return {"events": evs, "text": text + off_txt, "claims": claims, "offset": int(cam["offset"])}
 
 
 ## Open a camera's recording for a window and put what it shows in the notebook.
-static func view(sim: RefCounted, c: Dictionary, det: RefCounted, cam_id: String, from_h: float, to_h: float) -> Dictionary:
+static func view(sim: RefCounted, c: Dictionary, det: RefCounted, cam_id: String, from_h: float, to_h: float, recognised: Array = []) -> Dictionary:
 	var cam: Dictionary = camera(c, cam_id)
 	if cam.is_empty():
 		return {"text": "No such camera.", "learned": [], "minutes": 0}
 	var cal: bool = det.calibrated.get(cam_id, false)
-	var f: Dictionary = footage(sim, c, cam_id, from_h, to_h, cal)
+	var f: Dictionary = footage(sim, c, cam_id, from_h, to_h, cal, recognised)
 	var id := "cctv_%s_%d_%d%s" % [cam_id, int(from_h * 10), int(to_h * 10), "_c" if cal else ""]
 	var learned: Array = []
 	var entry := {"id": id, "title": "CCTV: %s" % cam["label"], "text": "%s (%s to %s)\n%s" % [cam["label"], Brief.clock_text(fposmod(from_h, 24.0)), Brief.clock_text(fposmod(to_h, 24.0)), f["text"]],
-		"kind": "cctv", "source": cam["lot"], "supports": f["supports"], "day": int(sim.day), "calibrated": cal, "camera": cam_id, "misleading": f.get("misleading", false)}
+		"kind": "cctv", "source": cam["lot"], "day": int(sim.day), "calibrated": cal, "camera": cam_id}
+	entry["claims"] = Claims.emit(c, f["claims"] if not (f["claims"] as Array).is_empty() else [Claims.make("recorded", "", "observation", String(cam["lot"]))], String(cam["lot"]), String(entry["text"]))
 	if not f["events"].is_empty() and det.learn(entry):
 		learned.append(entry)
 		det.gain_xp(15)

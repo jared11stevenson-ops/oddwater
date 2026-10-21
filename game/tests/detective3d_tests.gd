@@ -77,7 +77,7 @@ func _initialize() -> void:
 	ok(w.inside == "" and not w.paused, "you step back out")
 	ok(g.sim.clock > 0, "the examination used up time")
 	# talk to the finder
-	var finder: String = g.case["found_by"]
+	var finder: String = g._truth["found_by"]
 	g.near = [finder]
 	hud.show_talk(finder)
 	ok(by_name(hud.box, "Q_alibi") != null and by_name(hud.box, "Q_show") != null, "the interrogation menu is there")
@@ -90,17 +90,17 @@ func _initialize() -> void:
 	hud.close_panel()
 	# a thorough run through the model, then the accusation through the HUD
 	var CaseBot = load("res://tests/case_bot.gd")
-	var bot = CaseBot.new(g.sim, g.case, g.det)
+	var bot = CaseBot.new(g)
 	var r: Dictionary = bot.solve()
 	hud.show_case("court")
 	await process_frame
-	ok(by_name(hud.box, "Arrest_" + g.case["killer"]) != null, "the court tab offers arrests")
+	ok(by_name(hud.box, "Arrest_" + g._truth["killer"]) != null, "the court tab offers arrests")
 	hud.show_case("people")
-	ok(by_name(hud.box, "Warrant_" + g.case["killer"]) != null, "the people tab has warrants")
+	ok(by_name(hud.box, "Warrant_" + g._truth["killer"]) != null, "the people tab has warrants")
 	hud.show_case("accuse")
-	hud._pick("culprit", g.case["killer"])
-	hud._pick("motive", g.case["motive"])
-	hud._pick("method", g.case["method"])
+	hud._pick("culprit", g._truth["killer"])
+	hud._pick("motive", g._truth["motive"])
+	hud._pick("method", g._truth["method"])
 	await process_frame
 	var acc := by_name(hud.box, "Accuse")
 	ok(acc != null and not acc.disabled, "the accusation is ready to make (%s %s %s %s)" % [acc != null, hud.sel_culprit, hud.sel_motive, hud.sel_method])
@@ -111,18 +111,19 @@ func _initialize() -> void:
 	# nights and mornings: you stay you
 	hud._close_card()
 	hud.show_host()
+	var day_before: int = g.sim.day
 	w.end_of_day()
 	ok(g.phase == "night" and by_name(hud.box, "Sleep") != null, "night: you can sleep")
 	hud.card = null
 	hud.next_morning()
-	ok(g.host == "player" and g.sim.day == 2 and w.player.visible, "you wake as yourself on Day 2")
+	ok(g.host == "player" and g.sim.day == day_before + 1 and w.player.visible, "you wake as yourself the next morning")
 	# continue
 	g.save()
 	var main2: Control = MainScene.instantiate()
 	get_root().add_child(main2)
 	await process_frame
 	var hud2: Control = await main2._detective_3d(1, true)
-	ok(hud2.game.case["killer"] == g.case["killer"] and hud2.game.det.cases_solved == 1, "Continue restores the investigation")
+	ok(hud2.game._truth["killer"] == g._truth["killer"] and hud2.game.det.cases_solved == 1, "Continue restores the investigation")
 	DetectiveGame.delete_save()
 	print("detective3d_tests: %d checks, %d failed" % [checks, fails])
 	quit(fails)

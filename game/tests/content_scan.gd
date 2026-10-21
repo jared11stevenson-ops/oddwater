@@ -9,20 +9,13 @@ const Narrator = preload("res://scripts/detective/narrator.gd")
 const Detective = preload("res://scripts/detective/detective.gd")
 const Lib = preload("res://tests/content_lib.gd")
 const Bot = preload("res://tests/case_bot.gd")
+const Helpers = preload("res://tests/case_bot_helpers.gd")
+const DetectiveGame = preload("res://scripts/detective/detective_game.gd")
 
 
 func make(seed_v: int) -> Array:
-	var w := World.new(seed_v, true)
-	w.thin_weeks = false
-	w.day = 0
-	w.start_day()
-	var c := CaseEngine.generate(w, seed_v, 0)
-	CaseEngine.apply_backstory(w, c)
-	w.simulate_rest_of_day()
-	CaseEngine.execute(w, c)
-	w.slack()
-	w.start_day()
-	return [w, c]
+	var g: RefCounted = DetectiveGame.new(seed_v)
+	return [g.sim, g._truth, g]
 
 
 func _initialize() -> void:
@@ -42,13 +35,14 @@ func _initialize() -> void:
 		texts.append(Narrator.cold_open(w, c))
 		texts.append(CaseEngine.discovery_text(w, c))
 		texts.append(Narrator.title(w, c))
-		var bot = Bot.new(w, c)
+		var bot = Bot.new(wc[2])
 		var d: RefCounted = bot.det
 		# scene prose
 		bot.examine_scene()
 		var pl = load("res://scripts/detective/places.gd").profile(c)
 		variety["scene_type"][pl["type"]] = int(variety["scene_type"].get(pl["type"], 0)) + 1
-		var res: Dictionary = bot.solve()
+		var plan: Dictionary = bot.solve()
+		var res := {"result": Helpers.judged(wc[2], plan)}
 		for eid in d.order:
 			texts.append(String(d.known[eid]["text"]))
 		for st in d.statements:

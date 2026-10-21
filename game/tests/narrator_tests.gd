@@ -18,7 +18,7 @@ func _initialize() -> void:
 	var titles: Dictionary = {}
 	for s in range(1, 13):
 		var g := DetectiveGame.new(s)
-		var c: Dictionary = g.case
+		var c: Dictionary = g._truth
 		var open: String = g.opening()
 		var v := CaseEngine.first(g.sim, c["victim"])
 		var kname := CaseEngine.name_of(g.sim, c["killer"])
@@ -44,24 +44,26 @@ func _initialize() -> void:
 	for b in g.pending_beats:
 		if b["title"] == "THE DETAIL THAT DIDN'T FIT":
 			odd = true
-			ok(b["text"].contains(g.case["held_back"]), "the odd detail is told in full")
+			ok(b["text"].contains(g._truth["held_back"]), "the odd detail is told in full")
 	ok(odd and g.det.has("c_odd"), "the detail that didn't fit is a real, findable clue")
 	while not g.take_beat().is_empty():
 		pass
 	ok(g.pending_beats.is_empty(), "beats can be taken one at a time")
 	# the episode
 	var CaseBot = load("res://tests/case_bot.gd")
-	var bot = CaseBot.new(g.sim, g.case, g.det)
+	var bot = CaseBot.new(g)
 	bot.solve()
-	var res: Dictionary = g.accuse(g.case["killer"], g.case["motive"], g.case["method"])
+	var res: Dictionary = g.accuse(g._truth["killer"], g._truth["motive"], g._truth["method"])
 	var ep: Dictionary = res["episode"]
-	ok(res["verdict"] == "convicted" and ep["text"].contains("THE TRUTH") and ep["text"].contains(CaseEngine.name_of(g.sim, g.case["killer"])), "the episode tells the truth at the end")
-	ok(ep["text"].contains("THE DETAIL") and ep["text"].contains(g.case["held_back"]), "and explains the detail that didn't fit")
-	ok(ep["text"].contains(Data_closer(g.case["motive"])), "and ends on a reflective thought")
+	ok(res["verdict"] == "convicted" and ep["text"].contains("THE TRUTH") and ep["text"].contains(CaseEngine.name_of(g.sim, g._truth["killer"])), "the episode tells the truth at the end")
+	ok(ep["text"].contains("THE DETAIL") and ep["text"].contains(g._truth["held_back"]), "and explains the detail that didn't fit")
+	ok(ep["text"].contains(Data_closer(g._truth["motive"])), "and ends on a reflective thought")
 	ok(g.episodes.size() == 1 and g.episodes[0]["title"] == ep["title"], "the story goes in the archive")
 	# a wrong accusation gets a different story
 	var g2 := DetectiveGame.new(8)
-	var innocent: String = g2.suspects().filter(func(x): return x != g2.case["killer"])[0]
+	var innocent: String = g2._truth["suspects"].filter(func(x): return x != g2._truth["killer"])[0]
+	var Cl = load("res://scripts/detective/claims.gd")
+	g2.det.learn({"id": "x1", "title": "x", "text": "x", "kind": "testimony", "source": "", "day": 1, "claims": Cl.emit(g2._truth, [Cl.make("seen", innocent, "seen_going_out", "", 25.0, "", 1.0, "false", 26.0), Cl.make("said", innocent, "motive_quarrel", "", -1.0, "", 1.0, "false")], "", "x")})
 	var r2: Dictionary = g2.accuse(innocent, "money", "blunt")
 	ok(r2["episode"]["text"].contains("It was not who you said"), "a wrong accusation is told as a failure, not a victory")
 	# saves keep the archive and the beats

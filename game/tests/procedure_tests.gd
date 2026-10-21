@@ -59,8 +59,9 @@ func _initialize() -> void:
 				for e in f["events"]:
 					if e["who"] == k:
 						seen_k = true
-				for sp in f["supports"]:
-					best_supp = maxi(best_supp, int(sp["strength"]))
+				for tc in f["claims"]:
+					if tc["subject"] == k:
+						best_supp = maxi(best_supp, 3)
 		if seen_k:
 			k_on_camera += 1
 		if best_supp >= 3:
@@ -91,7 +92,7 @@ func _initialize() -> void:
 						Prints.submit_compare(w, c, det, eid, k)
 				CaseOps.lab_results(w, c, det, int(w.day) + 1)
 				for eid in det.order:
-					if eid.begins_with("cmp_") and det.known[eid]["text"].begins_with("Conclusive") and det.known[eid]["supports"].size() > 0:
+					if eid.begins_with("cmp_") and det.known[eid]["text"].begins_with("Conclusive") and det.known[eid]["claims"].any(func(cl): return cl["subject"] == k and cl["predicate"] == "print_match"):
 						conclusive += 1
 						break
 			# the partial print can mislead
@@ -104,7 +105,7 @@ func _initialize() -> void:
 					Prints.submit_compare(w, c, d2, eid, look)
 				var res: Array = Prints.compare_results(w, c, d2, int(w.day) + 1)
 				for e in res:
-					if e["unreliable"]:
+					if e["claims"].any(func(cl): return cl["predicate"] == "print_match" and float(cl["certainty"]) < 0.7):
 						false_lead += 1
 		# ---- families cover for their own, until you break it
 		var rel: Array = c["relatives"].get(k, [])
@@ -117,8 +118,8 @@ func _initialize() -> void:
 				for cam in Cctv.cameras(c):
 					var v: Dictionary = Cctv.view(w, c, d3, cam["id"], 24.0, 27.0)
 					for e in v["learned"]:
-						for sp in e["supports"]:
-							if sp["about"] == k:
+						for cl in e["claims"]:
+							if cl["subject"] == k or (cl["subject"] == "" and cl["item"] == c["trait"]):
 								cctv_e = e
 					if not cctv_e.is_empty():
 						break

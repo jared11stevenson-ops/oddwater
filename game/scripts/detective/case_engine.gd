@@ -8,6 +8,10 @@ const Brief = preload("res://scripts/sim/brief.gd")
 const Relationship = preload("res://scripts/sim/relationship.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
 const Places = preload("res://scripts/detective/places.gd")
+const Claims = preload("res://scripts/detective/claims.gd")
+
+## The case file: all a detective knows at the Sheriff's call, and what the first scene settles. Nothing else crosses to the investigation.
+const PUBLIC_KEYS := ["id", "day", "seed", "victim", "scene", "scene_kind", "found_by", "found_hour", "found_rel", "status", "accusations", "accused", "closed_day"]
 
 const DAYS := ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -26,6 +30,14 @@ static func _pick(r: RandomNumberGenerator, a: Array) -> Variant:
 ## cast sizes across a run of cases stay balanced instead of lopsided.
 static func _strat(seed_v: int, day: int, stride: float, off: float) -> float:
 	return fposmod(float(seed_v) * stride + float(day) * 0.2360679775 + off, 1.0)
+
+
+static func public_file(c: Dictionary) -> Dictionary:
+	var out := {}
+	for k in PUBLIC_KEYS:
+		if c.has(k):
+			out[k] = c[k].duplicate(true) if (c[k] is Array or c[k] is Dictionary) else c[k]
+	return out
 
 
 static func dayname(c: Dictionary, offset: int) -> String:
@@ -297,23 +309,23 @@ static func _serial_tweaks(sim: RefCounted, c: Dictionary, n: int) -> void:
 	var door: Dictionary = c["clues"]["c_door"]
 	door["title"] = "A forced window"
 	door["text"] = "The back window was jimmied from outside, cleanly. Whoever came did not need a key."
-	door["supports"] = []
+	door["claims"] = [_cl("found", "", "forced_entry", c["scene"])]
 	var desk: Dictionary = c["clues"]["c_desk"]
 	if n >= 1:
 		desk["text"] = "In the desk drawer, %s. Every other name on it has a line through it, and %s's is next to last." % [c["thread"]["photo"], vname]
-		desk["supports"] = [_sup("motive", k, 1)]
+		desk["claims"] = [_cl("found", k, "motive_document", "", -1.0, c["motive"])]
 		desk["thread"] = true
 	else:
 		desk["text"] = "Papers, bills, a pen with the cap chewed. Nothing here says why anyone would want %s dead." % first(sim, v)
-		desk["supports"] = []
+		desk["claims"] = []
 	var phone: Dictionary = c["clues"]["c_phone"]
 	phone["text"] = "The phone's memory shows a call at %s from the payphone outside the post office. Nobody answered but the line stayed open a minute." % _time(float(c["hour"]) - 1.5)
-	phone["supports"] = [_sup("time", "", 1)]
+	phone["claims"] = [_cl("found", "", "call_logged", c["scene"], float(c["hour"]) - 1.5)]
 	if c["clues"].has("c_timeline"):
-		c["clues"]["c_timeline"]["supports"] = [_sup("motive", k, 1)] if n >= 2 else []
+		c["clues"]["c_timeline"]["claims"] = [_cl("found", k, "motive_document", "", -1.0, c["motive"])] if n >= 2 else []
 	var ppl: Array = sim.order.filter(func(id): return id != k and id != v and id != c["found_by"] and sim.alive(sim.people[id]) and sim.people[id].age >= 55 and not c["suspects"].has(id))
 	if not ppl.is_empty() and n >= 1:
-		_fact(c, "f_thread_motive", c["thread"]["gossip"] + " %s was one of them. So, I think, was %s." % [vname, first(sim, k)], "victim", ppl.slice(0, 2), "rapport", [_sup("motive", k, 3)], k)
+		_fact(c, "f_thread_motive", c["thread"]["gossip"] + " %s was one of them. So, I think, was %s." % [vname, first(sim, k)], "victim", ppl.slice(0, 2), "rapport", [_cl("said", k, "motive_vendetta", "", -1.0, "grudge")], k)
 	if n < 2:
 		# clean scenes: nothing dropped, no prints in the soft ground, nothing at home worth a warrant, nobody who knows the killer's things
 		for cid in ["c_dropped", "c_foot", "c_k_shoes"]:
@@ -328,16 +340,16 @@ static func _serial_tweaks(sim: RefCounted, c: Dictionary, n: int) -> void:
 	var pk_home: String = sim.people[k].home
 	var street: Array = neighbors(sim, pk_home, 3, [k, v, c["found_by"]])
 	if not street.is_empty():
-		_fact(c, "f_serial_street", "I keep odd hours myself, so I notice. %s came up the lane after two in the morning, that night, and the next morning there was a wash of grey water down the gutter from their back step." % first(sim, k), "saw", [street[0]], "free", [_sup("opportunity", k, 2), _sup("link", k, 2)], k)
+		_fact(c, "f_serial_street", "I keep odd hours myself, so I notice. %s came up the lane after two in the morning, that night, and the next morning there was a wash of grey water down the gutter from their back step." % first(sim, k), "saw", [street[0]], "free", [_cl("seen", k, "seen_going_out", pk_home, 26.0, "", 0.7, "true", 26.5), _cl("seen", k, "washed_evidence", pk_home, 26.0, "grey water down the gutter")], k)
 	if n < 1 and c["herring_ids"].size() > 0:
 		# a decoy: the first body looks like an ordinary murder with an ordinary, loud suspect
 		var d: String = c["herring_ids"][-1]
 		c["decoy_first"] = d
 		var dn := first(sim, d)
-		_fact(c, "f_decoy_row", "%s and %s had a shouting match on the green the night before. I heard the word 'sorry' and the word 'never' and I'd say they meant both." % [dn, first(sim, v)], "victim", neighbors(sim, c["scene"], 3, [k, v, d, c["found_by"]]).slice(0, 2), "free", [_sup("motive", d, 2), _sup("opportunity", d, 1)], d)
+		_fact(c, "f_decoy_row", "%s and %s had a shouting match on the green the night before. I heard the word 'sorry' and the word 'never' and I'd say they meant both." % [dn, first(sim, v)], "victim", neighbors(sim, c["scene"], 3, [k, v, d, c["found_by"]]).slice(0, 2), "free", [_cl("heard", d, "motive_quarrel", "", -1.0, "", 0.9), _cl("seen", d, "last_seen_with_victim", "", -1.0, "", 0.8)], d)
 		c["profiles"][d]["decoy_for_serial"] = true
 	if n >= 1:
-		_fact(c, "f_helper_hint", "%s came to see me the day after. Very concerned. Said you should look at the people %s had quarrelled with. A bit eager, I thought." % [first(sim, k), first(sim, v)], "suspects", [k], "free", [], k)
+		_fact(c, "f_helper_hint", "%s came to see me the day after. Very concerned. Said you should look at the people %s had quarrelled with. A bit eager, I thought." % [first(sim, k), first(sim, v)], "suspects", [k], "free", [_cl("said", k, "eager_to_help")], k)
 
 
 # --------------------------------------------------------------------------- profiles
@@ -416,18 +428,19 @@ static func _write_claims(sim: RefCounted, c: Dictionary) -> void:
 
 
 # --------------------------------------------------------------------------- facts and clues
-static func _fact(c: Dictionary, id: String, text: String, topic: String, knowers: Array, reveal: String, supports: Array, about: String = "") -> void:
-	c["facts"][id] = {"id": id, "text": text, "topic": topic, "knowers": knowers, "reveal": reveal, "supports": supports, "about": about}
+static func _fact(c: Dictionary, id: String, text: String, topic: String, knowers: Array, reveal: String, claims: Array, about: String = "") -> void:
+	c["facts"][id] = {"id": id, "text": text, "topic": topic, "knowers": knowers, "reveal": reveal, "claims": claims, "about": about}
 
 
-static func _clue(c: Dictionary, id: String, title: String, text: String, lot: String, spot: String, gate: Dictionary, supports: Array, extra: Dictionary = {}) -> void:
-	var d := {"id": id, "title": title, "text": text, "lot": lot, "spot": spot, "gate": gate, "supports": supports}
+static func _clue(c: Dictionary, id: String, title: String, text: String, lot: String, spot: String, gate: Dictionary, claims: Array, extra: Dictionary = {}) -> void:
+	var d := {"id": id, "title": title, "text": text, "lot": lot, "spot": spot, "gate": gate, "claims": claims}
 	d.merge(extra, true)
 	c["clues"][id] = d
 
 
-static func _sup(cat: String, about: String, strength: int) -> Dictionary:
-	return {"cat": cat, "about": about, "strength": strength}
+## A claim template (see claims.gd): what a source would say, with a private truth tag nobody in the investigation ever sees.
+static func _cl(kind: String, subject: String, predicate: String, place: String = "", time: float = -1.0, item: String = "", certainty: float = 1.0, tag: String = "true", until: float = -1.0) -> Dictionary:
+	return Claims.make(kind, subject, predicate, place, time, item, certainty, tag, until)
 
 
 const HOBBY_STOPPED := {"fishing": "going out fishing", "gardening": "tending the garden", "reading": "going to the library", "music": "playing", "sports": "going to the games",
@@ -458,24 +471,24 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 	var vfirst := first(sim, v)
 	var about_thing := thing_about(c["motive_thing"])
 	# ---------------- the physical scene
-	_clue(c, "c_body", "The body", "%s lies where they fell. %s. They have been dead some hours." % [vname, Prose.sentence(String(m["wound"]))], scene, "body", {"skill": "forensics", "level": 1}, [_sup("method", c["method"], 3)])
-	_clue(c, "c_odd", "The detail that doesn't fit", "%s. Nothing else in the room is out of place." % c["held_back"], scene, "body", {"skill": "observation", "level": 2}, [], {"held_back": true})
-	_clue(c, "c_time", "Time of death", "Body temperature and stiffness put the death between %s and %s." % [_time(hk - 1.0), _time(hk + 1.0)], scene, "body", {"skill": "forensics", "level": 2}, [_sup("time", "", 2)])
+	_clue(c, "c_body", "The body", "%s lies where they fell. %s. They have been dead some hours." % [vname, Prose.sentence(String(m["wound"]))], scene, "body", {"skill": "forensics", "level": 1}, [_cl("found", "", "cause_of_death", scene, -1.0, c["method"])])
+	_clue(c, "c_odd", "The detail that doesn't fit", "%s. Nothing else in the room is out of place." % c["held_back"], scene, "body", {"skill": "observation", "level": 2}, [_cl("found", "", "odd_detail", scene, -1.0, c["held_back"])], {"held_back": true})
+	_clue(c, "c_time", "Time of death", "Body temperature and stiffness put the death between %s and %s." % [_time(hk - 1.0), _time(hk + 1.0)], scene, "body", {"skill": "forensics", "level": 2}, [_cl("found", "", "time_of_death", scene, hk - 1.0, "", 1.0, "true", hk + 1.0)])
 	# the wrongness: what the room itself seems to know, and what the victim had been feeling in their last weeks (both by kind of place)
 	var unease_text := Places.unease(c, vfirst)
 	var lore := Places.lore(c, vfirst)
 	if lore != "":
 		unease_text += " " + lore
-	_clue(c, "c_unease", "The room is wrong", unease_text, scene, "body", {"skill": "empathy", "level": 3}, [], {"eerie": true})
-	_clue(c, "c_diary", "The last pages", Places.diary(c, vfirst), scene, "desk", {"skill": "empathy", "level": 2}, [], {"eerie": true})
+	_clue(c, "c_unease", "The room is wrong", unease_text, scene, "body", {"skill": "empathy", "level": 3}, [_cl("found", "", "impression", scene)], {"eerie": true})
+	_clue(c, "c_diary", "The last pages", Places.diary(c, vfirst), scene, "desk", {"skill": "empathy", "level": 2}, [_cl("found", "", "impression", scene)], {"eerie": true})
 	var keyholders := [v, k]
 	if not c["found_by"] in keyholders:
 		keyholders.append(c["found_by"])
 	c["keyholders"] = keyholders
-	_clue(c, "c_door", "No forced entry", "The locks are intact. Whoever came in was let in, or had a key. Keys are held by %s." % Prose.list_join(keyholders.map(func(x): return name_of(sim, x))), scene, "door", {"skill": "observation", "level": 2}, keyholders.map(func(x): return _sup("opportunity", x, 1)))
+	_clue(c, "c_door", "No forced entry", "The locks are intact. Whoever came in was let in, or had a key. Keys are held by %s." % Prose.list_join(keyholders.map(func(x): return name_of(sim, x))), scene, "door", {"skill": "observation", "level": 2}, keyholders.map(func(x): return _cl("found", x, "holds_key", scene)))
 	var where: String = String(_pick(r, cb["dropped_where"]))
-	_clue(c, "c_dropped", "Something dropped", "%s %s" % [where.replace("{i}", c["item"]), _pick(r, cb["dropped_state"])], scene, "floor", {"skill": "observation", "level": 2}, [_sup("link", k, 1)], {"lab": true})
-	_clue(c, "c_foot", "Footprints in the soft ground", "A clear print by the path: %s. Someone stood here a while." % c["shoes"], scene, "garden", {"skill": "observation", "level": 2}, [])
+	_clue(c, "c_dropped", "Something dropped", "%s %s" % [where.replace("{i}", c["item"]), _pick(r, cb["dropped_state"])], scene, "floor", {"skill": "observation", "level": 2}, [_cl("found", "", "item_at_scene", scene, -1.0, c["item"])], {"lab": true})
+	_clue(c, "c_foot", "Footprints in the soft ground", "A clear print by the path: %s. Someone stood here a while." % c["shoes"], scene, "garden", {"skill": "observation", "level": 2}, [_cl("found", "", "footwear_print", scene, -1.0, c["shoes"])])
 	var kf := first(sim, k)
 	var desk_text := ""
 	match c["motive"]:
@@ -484,13 +497,13 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 		"family": desk_text = "A solicitor's draft concerning %s. %s is named in the old will and struck from the new one." % [about_thing, kname]
 		"silence": desk_text = "Notes in a hand that shakes: '%s' The page is dated this week." % thing_quote(c["motive_thing"], kf)
 		"passion": desk_text = "A half-written letter: '%s'" % thing_quote(c["motive_thing"], kf)
-	var desk_sup := [_sup("motive", k, 1)]
+	var desk_sup := [_cl("found", k, "motive_document", "", -1.0, c["motive"])]
 	if h3 != "":
 		desk_text += " A second, older bundle is full of cross words about %s." % first(sim, h3)
-		desk_sup.append(_sup("motive", h3, 1))
+		desk_sup.append(_cl("found", h3, "motive_bad_blood"))
 	_clue(c, "c_desk", "The desk", desk_text, scene, "desk", {"skill": "observation", "level": 2}, desk_sup)
-	_clue(c, "c_phone", "The last call", "The phone's memory shows a call at %s from a number you don't recognise, and a scribbled reminder: 'come round after midnight, we'll talk'." % _time(hk - 1.5), scene, "phone", {"skill": "streetwise", "level": 2}, [_sup("time", "", 1)])
-	_clue(c, "c_callrecord", "The exchange's call log", "The operator's log at the post office: the %s call to %s's line came from %s's home number." % [_time(hk - 1.5), vname, kname], "post_office", "records", {"skill": "streetwise", "level": 1}, [_sup("opportunity", k, 2)], {"needs": "c_phone"})
+	_clue(c, "c_phone", "The last call", "The phone's memory shows a call at %s from a number you don't recognise, and a scribbled reminder: 'come round after midnight, we'll talk'." % _time(hk - 1.5), scene, "phone", {"skill": "streetwise", "level": 2}, [_cl("found", "", "call_logged", scene, hk - 1.5)])
+	_clue(c, "c_callrecord", "The exchange's call log", "The operator's log at the post office: the %s call to %s's line came from %s's home number." % [_time(hk - 1.5), vname, kname], "post_office", "records", {"skill": "streetwise", "level": 1}, [_cl("recorded", k, "call_from_home", scene, hk - 1.5)], {"needs": "c_phone"})
 	# ---------------- the victim's last days: who they argued with, who they feared, what they stopped doing
 	var tl: Array = []
 	tl.append("%s: a loud row with %s about %s, overheard on the street." % [dayname(c, 3), kname, about_thing])
@@ -499,13 +512,13 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 	var haunt: String = pv.haunts[0] if not pv.haunts.is_empty() else ""
 	tl.append("%s: stopped %s%s, a habit of years." % [dayname(c, 5), stopped, (" at " + Brief.place_name(sim, haunt, "")) if haunt not in ["", pv.home] else ""])
 	tl.append("From %s: the lamp stayed on all night and the door was bolted by dusk." % dayname(c, 6))
-	var tl_sup := [_sup("motive", k, 1)]
+	var tl_sup := [_cl("found", k, "motive_document", "", -1.0, c["motive"])]
 	if h3 != "":
 		tl.append("An older quarrel with %s, never settled." % first(sim, h3))
-		tl_sup.append(_sup("motive", h3, 1))
+		tl_sup.append(_cl("found", h3, "motive_bad_blood"))
 	if h4 != "":
 		tl.append("Twice that week %s was seen outside the house, watching." % first(sim, h4))
-		tl_sup.append(_sup("motive", h4, 1))
+		tl_sup.append(_cl("found", h4, "motive_bad_blood"))
 	_clue(c, "c_timeline", "The last days", "%s's last days, from the diary, the calendar and the neighbours' memory:\n%s" % [vfirst, "\n".join(tl)], scene, "phone", {"skill": "empathy", "level": 2}, tl_sup)
 	# ---------------- the weapon: in the open, or in the killer's home
 	var public_site: bool = r.randf() < 0.55 or c["method"] == "poison"
@@ -514,56 +527,55 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 		wlot = _pick(r, ["pageant_green", "marina", "launch_quay"])
 	c["weapon_at"] = {"lot": wlot, "public": public_site}
 	if public_site:
-		_clue(c, "c_weapon", "The weapon", "Hidden under the reeds: %s. Wiped, but not well." % c["weapon"], wlot, "weapon", {"skill": "observation", "level": 3}, [_sup("means", k, 1)], {"tip": true})
+		_clue(c, "c_weapon", "The weapon", "Hidden under the reeds: %s. Wiped, but not well." % c["weapon"], wlot, "weapon", {"skill": "observation", "level": 3}, [_cl("found", "", "weapon_on_grounds", wlot, -1.0, c["weapon"])], {"tip": true})
 	else:
-		_clue(c, "c_weapon", "The weapon, at home", "At the back of %s's wardrobe: %s, still sticky. The search was worth it." % [kf, c["weapon"]], pk.home, "weapon", {"skill": "observation", "level": 2, "warrant": true}, [_sup("means", k, 3)])
+		_clue(c, "c_weapon", "The weapon, at home", "At the back of %s's wardrobe: %s, still sticky. The search was worth it." % [kf, c["weapon"]], pk.home, "weapon", {"skill": "observation", "level": 2, "warrant": true}, [_cl("found", k, "weapon_in_home", pk.home, -1.0, c["weapon"])])
 	if public_site:
 		var seers := neighbors(sim, wlot, 1, used)
 		if not seers.is_empty():
 			used.append(seers[0])
-			_fact(c, "f_weapon_tip", "Late that night I saw %s by the %s, carrying something wrapped in a cloth." % [kname, Brief.place_name(sim, wlot, "")], "saw", [seers[0]], "free", [_sup("opportunity", k, 1)], k)
+			_fact(c, "f_weapon_tip", "Late that night I saw %s by the %s, carrying something wrapped in a cloth." % [kname, Brief.place_name(sim, wlot, "")], "saw", [seers[0]], "free", [_cl("seen", k, "carried_bundle", wlot, -1.0, "something wrapped in a cloth", 0.8)], k)
 	# ---------------- at the killer's home (a warrant opens these)
-	_clue(c, "c_k_shoes", "The boots in the hall", "In %s's hall: %s. The sole matches the prints exactly." % [kf, c["shoes"]], pk.home, "shoes", {"skill": "observation", "level": 2, "warrant": true}, [_sup("link", k, 3)], {"needs": "c_foot"})
-	_clue(c, "c_k_coat", "The coat", "A dark coat, hastily washed. %s on the cuff, and a stain that didn't come out." % Prose.sentence(String(c["trace"])), pk.home, "coat", {"skill": "forensics", "level": 2, "warrant": true}, [_sup("link", k, 2)])
+	_clue(c, "c_k_shoes", "The boots in the hall", "In %s's hall: %s. The sole matches the prints exactly." % [kf, c["shoes"]], pk.home, "shoes", {"skill": "observation", "level": 2, "warrant": true}, [_cl("found", k, "footwear_matches", pk.home, -1.0, c["shoes"])], {"needs": "c_foot"})
+	_clue(c, "c_k_coat", "The coat", "A dark coat, hastily washed. %s on the cuff, and a stain that didn't come out." % Prose.sentence(String(c["trace"])), pk.home, "coat", {"skill": "forensics", "level": 2, "warrant": true}, [_cl("found", k, "coat_traces", pk.home, -1.0, c["trace"])])
 	# ---------------- records
 	if m["buy"]:
-		_clue(c, "c_receipt", "A purchase", "The ledger at %s: %s bought %s five days ago, paid cash." % [Brief.place_name(sim, m["shop"], ""), kname, c["weapon"]], m["shop"], "records", {"skill": "streetwise", "level": 1}, [_sup("means", k, 2)])
+		_clue(c, "c_receipt", "A purchase", "The ledger at %s: %s bought %s five days ago, paid cash." % [Brief.place_name(sim, m["shop"], ""), kname, c["weapon"]], m["shop"], "records", {"skill": "streetwise", "level": 1}, [_cl("recorded", k, "bought_weapon", m["shop"], -1.0, c["weapon"])])
 	else:
 		var owners: Array = sim.order.filter(func(id): return id != k and id != v and id != c["found_by"] and sim.people[id].rel.has(k) and sim.alive(sim.people[id]))
 		if not owners.is_empty():
-			_fact(c, "f_owns", "%s keeps a whole set of those. The set on the mantel is one short. Funny, that." % kf, "owner", [owners[0]], "free", [_sup("means", k, 2)], k)
+			_fact(c, "f_owns", "%s keeps a whole set of those. The set on the mantel is one short. Funny, that." % kf, "owner", [owners[0]], "free", [_cl("said", k, "owns_matching_set", "", -1.0, "the set on the mantel is one short", 0.9)], k)
 	# ---------------- the lab turns a dropped item into a name
-	c["lab"] = {"c_dropped": {"text": "The lab: traces of %s on %s, and a smudge of skin oil. It was carried by someone who works with it every day." % [c["trace"], c["item"]], "supports": [_sup("link", k, 2)]}}
+	c["lab"] = {"c_dropped": {"text": "The lab: traces of %s on %s, and a smudge of skin oil. It was carried by someone who works with it every day." % [c["trace"], c["item"]], "claims": [_cl("found", "", "trace_occupation", scene, -1.0, c["trace"])]}}
 	# ---------------- testimony
 	var args: Array = sim.order.filter(func(id): return id != k and id != v and sim.alive(sim.people[id]) and (sim.people[id].work == pk.work or sim.people[id].work == pv.work) and sim.people[id].work != "" and not used.has(id))
 	if args.is_empty():
 		args = neighbors(sim, pk.home, 3, used)
 	var aw: Array = args.slice(0, 2)
 	used.append_array(aw)
-	_fact(c, "f_argument", "I saw %s and %s having a terrible row outside %s on %s. It was about %s." % [kname, vname, Brief.place_name(sim, pk.work if pk.work != "" else pk.home, ""), dayname(c, 3), about_thing], "victim", aw, "free", [_sup("motive", k, 2)], k)
-	_fact(c, "f_trait_k", "%s? You couldn't miss them. %s, always." % [kname, Prose.sentence(c["trait"])], "suspects", sim.order.filter(func(id): return sim.people[id].rel.has(k) and id != k and not used.has(id)).slice(0, 3), "free", [], k)
+	_fact(c, "f_argument", "I saw %s and %s having a terrible row outside %s on %s. It was about %s." % [kname, vname, Brief.place_name(sim, pk.work if pk.work != "" else pk.home, ""), dayname(c, 3), about_thing], "victim", aw, "free", [_cl("seen", k, "motive_quarrel", "", -1.0, c["motive"], 0.95)], k)
+	_fact(c, "f_trait_k", "%s? You couldn't miss them. %s, always." % [kname, Prose.sentence(c["trait"])], "suspects", sim.order.filter(func(id): return sim.people[id].rel.has(k) and id != k and not used.has(id)).slice(0, 3), "free", [_cl("said", k, "known_for", "", -1.0, c["trait"])], k)
 	if not vn.is_empty():
 		var wob := _witness_quality(sim, vn[0])
 		var vt := _time(hk - 0.5 + wob["shift"])
-		_fact(c, "f_vn_saw", "%sI was up with the cat. %s I saw somebody outside %s's: %s. Couldn't swear to who." % [wob["prefix"], ("About " + vt) if wob["shift"] == 0.0 else ("It was " + vt + ", or thereabouts,"), vfirst, c["trait"]], "saw", [vn[0]], "free", [_sup("opportunity", k, 1)], k)
+		_fact(c, "f_vn_saw", "%sI was up with the cat. %s I saw somebody outside %s's: %s. Couldn't swear to who." % [wob["prefix"], ("About " + vt) if wob["shift"] == 0.0 else ("It was " + vt + ", or thereabouts,"), vfirst, c["trait"]], "saw", [vn[0]], "free", [_cl("seen", "", "figure_seen", scene, hk - 0.5 + float(wob["shift"]), c["trait"], 0.8 if wob["shift"] == 0.0 else 0.5, "true" if wob["shift"] == 0.0 else "misleading")], k)
 		if wob["shift"] != 0.0:
 			c["facts"]["f_vn_saw"]["unreliable"] = true
 	if not kn.is_empty():
 		var wob2 := _witness_quality(sim, kn[0])
-		var s3 := 3 if wob2["shift"] == 0.0 else 2
 		var t1 := _time(hk - 0.75 + wob2["shift"])
 		var t2 := _time(hk + 0.8 + wob2["shift"])
-		_fact(c, "f_kn_saw", "%sI couldn't sleep. I saw %s go out at about %s and come back at about %s. Didn't think anything of it, until now." % [wob2["prefix"], kname, t1, t2], "saw", [kn[0]], "free", [_sup("opportunity", k, s3)], k)
+		_fact(c, "f_kn_saw", "%sI couldn't sleep. I saw %s go out at about %s and come back at about %s. Didn't think anything of it, until now." % [wob2["prefix"], kname, t1, t2], "saw", [kn[0]], "free", [_cl("seen", k, "seen_going_out", pk.home, hk - 0.75 + float(wob2["shift"]), "", 0.95 if wob2["shift"] == 0.0 else 0.6, "true" if wob2["shift"] == 0.0 else "misleading", hk + 0.8 + float(wob2["shift"]))], k)
 		if wob2["shift"] != 0.0:
 			c["facts"]["f_kn_saw"]["unreliable"] = true
-		_fact(c, "f_lead_kn", "If you want to know who goes where at night on this street, ask %s. Never sleeps." % first(sim, kn[0]), "suspects", sim.order.filter(func(id): return sim.people[id].home == pk.home and id != k and id != v and sim.alive(sim.people[id])).slice(0, 1) + neighbors(sim, pk.home, 1, [kn[0], k, v]), "free", [], k)
+		_fact(c, "f_lead_kn", "If you want to know who goes where at night on this street, ask %s. Never sleeps." % first(sim, kn[0]), "suspects", sim.order.filter(func(id): return sim.people[id].home == pk.home and id != k and id != v and sim.alive(sim.people[id])).slice(0, 1) + neighbors(sim, pk.home, 1, [kn[0], k, v]), "free", [_cl("said", kn[0], "knows_the_street")], k)
 	var ow: Array = sim.order.filter(func(id): return sim.people[id].rel.has(k) and id != k and id != v and id != c["found_by"] and sim.alive(sim.people[id])).slice(0, 2)
-	_fact(c, "f_owner", "That's %s's. I'd know it anywhere." % kname, "owner", ow, "free", [_sup("link", k, 2)], k)
+	_fact(c, "f_owner", "That's %s's. I'd know it anywhere." % kname, "owner", ow, "free", [_cl("said", k, "item_recognised", "", -1.0, c["item"])], k)
 	c["owner_item_knowers"] = ow
 	# a confidant who knows the real reason (rapport needed)
 	var confidants: Array = sim.order.filter(func(id): return pv.affinity(id) >= 25.0 and id != k and sim.alive(sim.people[id]) and not used.has(id))
 	if not confidants.is_empty():
-		_fact(c, "f_confidant", "%s told me last week it was coming to a head, all of it about %s. They were frightened of %s." % [vfirst, thing_about(c["motive_thing"]), kf], "victim", [confidants[0]], "rapport", [_sup("motive", k, 2)], k)
+		_fact(c, "f_confidant", "%s told me last week it was coming to a head, all of it about %s. They were frightened of %s." % [vfirst, thing_about(c["motive_thing"]), kf], "victim", [confidants[0]], "rapport", [_cl("said", k, "motive_confided", "", -1.0, c["motive"], 0.95)], k)
 	# ---------------- red herrings
 	if h1 != "":
 		var prof: Dictionary = c["profiles"][h1]
@@ -571,9 +583,9 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 		var seers2 := neighbors(sim, seer_lot, 1, used)
 		if not seers2.is_empty():
 			used.append(seers2[0])
-			_fact(c, "f_h1_seen", "Past midnight I saw %s near %s. Looked like they didn't want to be seen." % [name_of(sim, h1), Brief.place_name(sim, seer_lot, "")], "saw", [seers2[0]], "free", [], h1)
-		_fact(c, "f_h1_secret", "All right. %s (confessing): %s. I lied because %s. I had nothing to do with %s." % [first(sim, h1), prof["secret_text"], prof["secret_why"], vname], "secret", [h1], "pressure", [], h1)
-		_fact(c, "f_h1_confirm", "Yes. %s was with me, or in my sight, from before midnight until nearly four. Please keep it quiet." % first(sim, h1), "alibi", [prof["confirmer"]], "pressure", [_sup("exonerate", h1, 3)], h1)
+			_fact(c, "f_h1_seen", "Past midnight I saw %s near %s. Looked like they didn't want to be seen." % [name_of(sim, h1), Brief.place_name(sim, seer_lot, "")], "saw", [seers2[0]], "free", [_cl("seen", h1, "seen_near", seer_lot, 24.5, "", 0.9)], h1)
+		_fact(c, "f_h1_secret", "All right. %s (confessing): %s. I lied because %s. I had nothing to do with %s." % [first(sim, h1), prof["secret_text"], prof["secret_why"], vname], "secret", [h1], "pressure", [_cl("said", h1, "admits_secret", prof["secret_lot"], -1.0, prof["secret_type"])], h1)
+		_fact(c, "f_h1_confirm", "Yes. %s was with me, or in my sight, from before midnight until nearly four. Please keep it quiet." % first(sim, h1), "alibi", [prof["confirmer"]], "pressure", [_cl("said", h1, "elsewhere", prof["secret_lot"], hk - 2.2, "", 0.95, "true", hk + 1.6)], h1)
 		c["facts"]["f_h1_secret"]["needs"] = ["f_h1_seen"]
 		c["facts"]["f_h1_confirm"]["needs"] = ["f_h1_secret"]
 		if prof.get("cult", false):
@@ -582,20 +594,20 @@ static func _facts_and_clues(sim: RefCounted, c: Dictionary, cb: Dictionary, r: 
 					c["facts"][fid]["cult"] = true
 	if h2 != "":
 		var prof2: Dictionary = c["profiles"][h2]
-		_fact(c, "f_h2_confirm", "Yes, %s was %s the whole night. I saw them there at one, and again at three." % [first(sim, h2), cb["alibi_places"][prof2["alibi_lot"]]], "alibi", [prof2["confirmer"]], "free", [_sup("exonerate", h2, 3)], h2)
+		_fact(c, "f_h2_confirm", "Yes, %s was %s the whole night. I saw them there at one, and again at three." % [first(sim, h2), cb["alibi_places"][prof2["alibi_lot"]]], "alibi", [prof2["confirmer"]], "free", [_cl("said", h2, "elsewhere", prof2["alibi_lot"], hk - 3.0, "", 0.95, "true", hk + 2.0)], h2)
 	if h3 != "":
-		_fact(c, "f_h3_motive", "%s had their own reasons. They fell out with %s last year. But %s? No. Not a violent bone in them." % [name_of(sim, h3), vfirst, first(sim, h3)], "victim", sim.order.filter(func(id): return sim.people[id].rel.has(h3) and id != h3 and id != v and not used.has(id)).slice(0, 1), "free", [_sup("motive", h3, 1)], h3)
-		_fact(c, "f_h3_evening", "%s called round at about eight and left before nine, smiling. The victim was alive and well at nine, so the time of death rules them out." % first(sim, h3), "saw", [vn[1] if vn.size() > 1 else c["found_by"]], "free", [_sup("exonerate", h3, 1)], h3)
+		_fact(c, "f_h3_motive", "%s had their own reasons. They fell out with %s last year. But %s? No. Not a violent bone in them." % [name_of(sim, h3), vfirst, first(sim, h3)], "victim", sim.order.filter(func(id): return sim.people[id].rel.has(h3) and id != h3 and id != v and not used.has(id)).slice(0, 1), "free", [_cl("said", h3, "motive_bad_blood")], h3)
+		_fact(c, "f_h3_evening", "%s called round at about eight and left before nine, smiling. The victim was alive and well at nine, so the time of death rules them out." % first(sim, h3), "saw", [vn[1] if vn.size() > 1 else c["found_by"]], "free", [_cl("seen", h3, "left_before_death", scene, 20.5)], h3)
 	if h4 != "":
 		var prof4: Dictionary = c["profiles"][h4]
 		var h4n := first(sim, h4)
 		var h4_ow: Array = sim.order.filter(func(id): return sim.people[id].rel.has(h4) and id != h4 and id != v and id != k and not used.has(id)).slice(0, 1)
-		_fact(c, "f_h4_motive", "%s and %s were barely speaking. %s had a real reason to want %s gone. Everybody on the street knew." % [h4n, vfirst, h4n, vfirst], "victim", h4_ow if not h4_ow.is_empty() else [c["found_by"]], "free", [_sup("motive", h4, 2)], h4)
+		_fact(c, "f_h4_motive", "%s and %s were barely speaking. %s had a real reason to want %s gone. Everybody on the street knew." % [h4n, vfirst, h4n, vfirst], "victim", h4_ow if not h4_ow.is_empty() else [c["found_by"]], "free", [_cl("said", h4, "motive_open_hostility")], h4)
 		var h4_means: Array = sim.order.filter(func(id): return sim.people[id].rel.has(h4) and id != h4 and id != v and id != k and not used.has(id) and not h4_ow.has(id)).slice(0, 1)
-		_fact(c, "f_h4_means", "%s keeps %s in the shed. I've seen it. If it's missing, ask %s." % [h4n, "one of those" if c["method"] != "poison" else "the same stuff", h4n], "owner", h4_means if not h4_means.is_empty() else [c["found_by"]], "free", [_sup("means", h4, 2)], h4)
+		_fact(c, "f_h4_means", "%s keeps %s in the shed. I've seen it. If it's missing, ask %s." % [h4n, "one of those" if c["method"] != "poison" else "the same stuff", h4n], "owner", h4_means if not h4_means.is_empty() else [c["found_by"]], "free", [_cl("said", h4, "owns_matching_set", "", -1.0, "keeps one in the shed", 0.9)], h4)
 		var seen4 := neighbors(sim, scene, 3, used + [h4])
-		_fact(c, "f_h4_seen", "I saw %s walking up toward %s's place in the early evening, with a face like a shut door." % [h4n, vfirst], "saw", [seen4[0]] if not seen4.is_empty() else [c["found_by"]], "free", [_sup("opportunity", h4, 1)], h4)
-		_fact(c, "f_h4_clear", "%s was at my kitchen table from nine until past two, drafting a letter they didn't send. I had to put them to bed on the sofa. They couldn't have gone anywhere." % h4n, "alibi", [prof4["confirmer"]], "pressure", [_sup("exonerate", h4, 3)], h4)
+		_fact(c, "f_h4_seen", "I saw %s walking up toward %s's place in the early evening, with a face like a shut door." % [h4n, vfirst], "saw", [seen4[0]] if not seen4.is_empty() else [c["found_by"]], "free", [_cl("seen", h4, "seen_near_victim", scene, -1.0, "", 0.8)], h4)
+		_fact(c, "f_h4_clear", "%s was at my kitchen table from nine until past two, drafting a letter they didn't send. I had to put them to bed on the sofa. They couldn't have gone anywhere." % h4n, "alibi", [prof4["confirmer"]], "pressure", [_cl("said", h4, "elsewhere", prof4["alibi_lot"], hk - 1.0, "", 0.95, "true", hk + 1.0)], h4)
 		c["facts"]["f_h4_clear"]["needs"] = ["f_h4_seen"]
 
 
@@ -623,10 +635,10 @@ static func _shadow(sim: RefCounted, c: Dictionary, cb: Dictionary, r: RandomNum
 	c["profiles"][sid]["claim"] = String(load("res://scripts/detective/voice.gd").say("claim_weak", sim, c, sid, {}))
 	var watchers := neighbors(sim, c["scene"], 4, used + [sid])
 	var w1: String = watchers[0] if not watchers.is_empty() else c["found_by"]
-	_clue(c, "c_shadow", "A note in another hand", "Tucked into the appointment book, a note that isn't %s's: 'Thursday again. Bring what we agreed or I tell them all.' It is signed with a single initial, %s." % [vfirst, sn.substr(0, 1)], c["scene"], "phone", {"skill": "observation", "level": 2}, [_sup("motive", sid, 1)], {"reveals": sid})
-	_fact(c, "f_shadow_seen", "That's not all of it. %s was at %s's door twice that week. Late, and not to borrow sugar. %s didn't want it known." % [name_of(sim, sid), vfirst, sn], "victim", [w1], "free", [_sup("motive", sid, 1), _sup("opportunity", sid, 1)], sid)
+	_clue(c, "c_shadow", "A note in another hand", "Tucked into the appointment book, a note that isn't %s's: 'Thursday again. Bring what we agreed or I tell them all.' It is signed with a single initial, %s." % [vfirst, sn.substr(0, 1)], c["scene"], "phone", {"skill": "observation", "level": 2}, [_cl("found", sid, "motive_document")], {"reveals": sid})
+	_fact(c, "f_shadow_seen", "That's not all of it. %s was at %s's door twice that week. Late, and not to borrow sugar. %s didn't want it known." % [name_of(sim, sid), vfirst, sn], "victim", [w1], "free", [_cl("seen", sid, "seen_near_victim", c["scene"], -1.0, "", 0.9), _cl("seen", sid, "motive_bad_blood")], sid)
 	c["facts"]["f_shadow_seen"]["reveals"] = sid
-	_fact(c, "f_shadow_clear", "%s was here with me until past one, helping with the boiler. I walked them home myself. They couldn't have been at %s's." % [sn, vfirst], "alibi", [c["profiles"][sid]["confirmer"]], "pressure", [_sup("exonerate", sid, 3)], sid)
+	_fact(c, "f_shadow_clear", "%s was here with me until past one, helping with the boiler. I walked them home myself. They couldn't have been at %s's." % [sn, vfirst], "alibi", [c["profiles"][sid]["confirmer"]], "pressure", [_cl("said", sid, "elsewhere", sim.people[sid].home, hk - 1.0, "", 0.95, "true", hk + 1.0)], sid)
 	c["facts"]["f_shadow_clear"]["needs"] = ["f_shadow_seen"]
 	c["hidden"] = {"id": sid, "triggers": ["c_shadow", "f_shadow_seen"]}
 	c["relatives"][sid] = relatives_of(sim, sid)
@@ -647,8 +659,8 @@ static func _misdirection(sim: RefCounted, c: Dictionary, cb: Dictionary, r: Ran
 	if r.randf() < 0.5:
 		var items := ["a woollen hat", "a work glove", "a scarf with initials stitched in the corner", "a cigarette case"]
 		var it: String = items[r.randi() % items.size()]
-		_clue(c, "c_planted", "Left on the gate", "Caught on the gatepost: %s that half the street would swear is %s's." % [it, fn], c["scene"], "garden", {"skill": "observation", "level": 2}, [_sup("link", framed, 2)], {"lab": true, "planted": true})
-		c["lab"]["c_planted"] = {"text": "The lab: no dust on it, though everything round it was dusty. It is dry; the ground was wet. It was put there after the weather turned, by someone with gloves on. Whoever left it wanted it found. Planted.", "supports": [_sup("exonerate", framed, 2)]}
+		_clue(c, "c_planted", "Left on the gate", "Caught on the gatepost: %s that half the street would swear is %s's." % [it, fn], c["scene"], "garden", {"skill": "observation", "level": 2}, [_cl("found", framed, "item_resembles", c["scene"], -1.0, it, 0.8, "misleading")], {"lab": true, "planted": true})
+		c["lab"]["c_planted"] = {"text": "The lab: no dust on it, though everything round it was dusty. It is dry; the ground was wet. It was put there after the weather turned, by someone with gloves on. Whoever left it wanted it found. Planted.", "claims": [_cl("found", framed, "item_planted")]}
 	if r.randf() < 0.55:
 		var pool := neighbors(sim, c["scene"], 10, used + [framed])
 		pool = pool.filter(func(id): return sim.people[id].trait_of("honest") < 0.55)
@@ -657,12 +669,12 @@ static func _misdirection(sim: RefCounted, c: Dictionary, cb: Dictionary, r: Ran
 			used.append(liar)
 			var ln := first(sim, liar)
 			c["liar"] = liar
-			_fact(c, "f_liar_saw", "I'll say it plain: I saw %s going in at about %s. Walking quick, head down. I'd know that walk anywhere." % [name_of(sim, framed), _time(float(c["hour"]) - 0.4)], "saw", [liar], "free", [_sup("opportunity", framed, 2)], framed)
+			_fact(c, "f_liar_saw", "I'll say it plain: I saw %s going in at about %s. Walking quick, head down. I'd know that walk anywhere." % [name_of(sim, framed), _time(float(c["hour"]) - 0.4)], "saw", [liar], "free", [_cl("seen", framed, "seen_at_scene", c["scene"], float(c["hour"]) - 0.4, "", 0.7, "false")], framed)
 			c["facts"]["f_liar_saw"]["false"] = true
 			var deb := neighbors(sim, sim.people[liar].home, 2, used + [liar])
 			if not deb.is_empty():
 				used.append(deb[0])
-				_fact(c, "f_liar_exposed", "%s? They've had it in for %s ever since the business with the allotment. I wouldn't believe a word. And that night %s was at the %s with me, not on any street." % [ln, fn, ln, "Low Water" if r.randf() < 0.5 else "Pink Heron"], "suspects", [deb[0]], "pressure", [_sup("exonerate", framed, 2)], framed)
+				_fact(c, "f_liar_exposed", "%s? They've had it in for %s ever since the business with the allotment. I wouldn't believe a word. And that night %s was at the %s with me, not on any street." % [ln, fn, ln, "Low Water" if r.randf() < 0.5 else "Pink Heron"], "suspects", [deb[0]], "pressure", [_cl("said", framed, "witness_discredited")], framed)
 				c["facts"]["f_liar_exposed"]["needs"] = ["f_liar_saw"]
 
 

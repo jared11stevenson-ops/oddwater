@@ -254,7 +254,7 @@ func _initialize() -> void:
 
 	# ---- the notebook with a case worked
 	var CaseBot = load("res://tests/case_bot.gd")
-	var bot = CaseBot.new(g.sim, g.case, g.det)
+	var bot = CaseBot.new(g)
 	bot.solve()
 	hud.nb_new = {}
 	hud.show_case("case")
@@ -339,8 +339,8 @@ func _initialize() -> void:
 	ok(find(hud.box, "Person_" + nid) != null, "a new neighbour is listed in People")
 	var pc: Node = find(hud.box, "Person_" + nid)
 	ok(pc.find_child("NewBadge", true, false) != null, "and carries a NEW badge")
-	ok(find(hud.box, "Person_" + String(g.case["found_by"])) != null, "the one who found the body is listed")
-	ok(by_name(hud.box, "Warrant_" + g.case["killer"]) != null, "suspects keep their warrant and prints buttons")
+	ok(find(hud.box, "Person_" + String(g._truth["found_by"])) != null, "the one who found the body is listed")
+	ok(by_name(hud.box, "Warrant_" + g._truth["killer"]) != null, "suspects keep their warrant and prints buttons")
 
 	# ---- cctv: wrapped labels, and picking a camera collapses the list
 	hud.show_case("cctv")
@@ -361,7 +361,7 @@ func _initialize() -> void:
 	ok(String(by_name(hud.box, "Watch_18").text).contains("min"), "watching shows its cost")
 
 	# ---- interview menu
-	var finder: String = g.case["found_by"]
+	var finder: String = g._truth["found_by"]
 	hud.show_talk(finder)
 	await process_frame
 	for k in ["alibi", "victim", "suspects", "saw", "friendly"]:
@@ -379,9 +379,9 @@ func _initialize() -> void:
 
 	# ---- accusation needs a second tap
 	hud.show_case("accuse")
-	hud._pick("culprit", g.case["killer"])
-	hud._pick("motive", g.case["motive"])
-	hud._pick("method", g.case["method"])
+	hud._pick("culprit", g._truth["killer"])
+	hud._pick("motive", g._truth["motive"])
+	hud._pick("method", g._truth["method"])
 	var acc: Button = by_name(hud.box, "Accuse")
 	ok(acc != null and not acc.disabled and find(hud.box, "AccuseSummary") != null, "the accusation shows a summary before it is made")
 	hud._accuse_tap()
@@ -393,6 +393,7 @@ func _initialize() -> void:
 	# ---- the end-of-day card
 	hud.show_host()
 	g.det.lab.append({"clue": "c_dropped", "ready_day": g.sim.day + 1})
+	var day_before: int = g.sim.day
 	w.end_of_day()
 	await process_frame
 	ok(hud.card != null and hud.card_button != null and hud.card_button.text == "Sleep until morning", "the night card is a detective's day card with a Sleep button")
@@ -405,7 +406,7 @@ func _initialize() -> void:
 	ok(find(hud.card, "StressBar") != null, "with a stress bar")
 	hud.card_button.pressed.emit()
 	await process_frame
-	ok(g.sim.day == 2 and hud.card != null, "Sleep wakes you on day 2 with the morning card")
+	ok(g.sim.day == day_before + 1 and hud.card != null, "Sleep wakes you the next day with the morning card")
 	hud._close_card()
 
 	# ---- the tutorial

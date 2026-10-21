@@ -45,16 +45,16 @@ func _initialize() -> void:
 	await snap("inside_after", 8)
 	hud._dust(scene, "door")
 	hud._step_out()
-	g.near = [g.case["found_by"]]
-	hud.show_talk(g.case["found_by"])
+	g.near = [g._truth["found_by"]]
+	hud.show_talk(g._truth["found_by"])
 	await snap("talk", 8)
-	hud._q(g.case["found_by"], "victim", "")
+	hud._q(g._truth["found_by"], "victim", "")
 	hud._close_card() if hud.card != null else null
 	await snap("talk2", 8)
 	hud.show_case("notebook")
 	await snap("notes", 8)
 	var CaseBot = load("res://tests/case_bot.gd")
-	var bot = CaseBot.new(g.sim, g.case, g.det)
+	var bot = CaseBot.new(g)
 	bot.solve()
 	hud.nb_open["c_body"] = true
 	hud.show_case("notebook")
@@ -70,7 +70,7 @@ func _initialize() -> void:
 	hud._pick_cam(g.cameras()[0]["id"]); await snap("cctv_cam", 8)
 	hud.show_case("court"); await snap("court", 8)
 	hud.show_case("accuse")
-	hud._pick("culprit", g.case["killer"]); hud._pick("motive", g.case["motive"]); hud._pick("method", g.case["method"])
+	hud._pick("culprit", g._truth["killer"]); hud._pick("motive", g._truth["motive"]); hud._pick("method", g._truth["method"])
 	await snap("accuse", 8)
 	g.det.points = 2
 	hud.show_host(); await snap("sheet", 8)

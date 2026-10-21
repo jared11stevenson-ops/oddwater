@@ -34,7 +34,7 @@ func _initialize() -> void:
 	UiKit.data["text_scale"] = 1.3
 	hud._layout()
 	hud.show_case("case"); await snap("f_case_big")
-	hud.show_talk(g.case["found_by"]); await snap("f_talk_big")
+	hud.show_talk(g._truth["found_by"]); await snap("f_talk_big")
 	hud.close_panel(); await snap("f_hud_big", 20)
 	UiKit.data["text_scale"] = 1.0
 	hud._layout()

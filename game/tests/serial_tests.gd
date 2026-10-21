@@ -4,6 +4,7 @@ extends SceneTree
 const DetectiveGame = preload("res://scripts/detective/detective_game.gd")
 const Serial = preload("res://scripts/detective/serial.gd")
 const Bot = preload("res://tests/case_bot.gd")
+const Helpers = preload("res://tests/case_bot_helpers.gd")
 const Justice = preload("res://scripts/detective/justice.gd")
 const CaseOps = preload("res://scripts/detective/case_ops.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
@@ -33,11 +34,11 @@ func _initialize() -> void:
 	# --- the first case is harder
 	var g := DetectiveGame.new(11, "", true)
 	var s: Dictionary = g.serial
-	var c: Dictionary = g.case
+	var c: Dictionary = g._truth
 	ok(Serial.active(s) and c.get("serial", false) and c["killer"] == s["killer"], "a serial killer is on the loose")
 	ok(c["held_back"] == s["signature"] and (s["kills"] as Array).size() == 1, "the signature is the held-back detail; one kill so far")
 	ok(not c["facts"].has("f_kn_saw") and not c["facts"].has("f_argument") and c["relatives"][c["killer"]].is_empty(), "no neighbour saw them go, no quarrel, no family to break")
-	ok(c["clues"]["c_door"]["supports"].is_empty() and not c["clues"]["c_desk"].get("thread", false) and not c["clues"].has("c_dropped"), "a forced window, a clean first scene, and the thread that links the dead hidden until the second body")
+	ok(c["clues"]["c_door"]["claims"][0]["predicate"] == "forced_entry" and not c["clues"]["c_desk"].get("thread", false) and not c["clues"].has("c_dropped"), "a forced window, a clean first scene, and the thread that links the dead hidden until the second body")
 	ok(g.news().is_empty() and g.pressure() == 0.0, "no news until three")
 	ok(c["clues"].has("c_unease") and c["clues"].has("c_diary") and not String(c["clues"]["c_unease"]["text"]).contains("{v}"), "every scene has its wrongness and the victim's last pages")
 	g.det.skills["empathy"] = 5
@@ -52,11 +53,11 @@ func _initialize() -> void:
 	while (s["kills"] as Array).size() < 3 and guard < 12:
 		_night(g)
 		guard += 1
-		if g.case["victim"] != victims[-1]:
-			victims.append(g.case["victim"])
-			sigs[g.case["held_back"]] = true
+		if g._truth["victim"] != victims[-1]:
+			victims.append(g._truth["victim"])
+			sigs[g._truth["held_back"]] = true
 	ok(victims.size() == 3 and sigs.size() == 1, "they keep killing, and always leave the same sign: %d victims" % victims.size())
-	ok(g.case["killer"] == c["killer"] and victims.all(func(v): return not g.sim.alive(g.sim.people[v])), "the same hand; the dead stay dead")
+	ok(g._truth["killer"] == c["killer"] and victims.all(func(v): return not g.sim.alive(g.sim.people[v])), "the same hand; the dead stay dead")
 	ok(guard <= 8, "within a week they have taken three: %d nights" % guard)
 	ok(int(s["third_day"]) >= 0 and not g.news().is_empty() and g.pressure() >= 20.0, "after three: the Courier prints it, the meter starts at %d" % int(g.pressure()))
 	ok(String(g.objective()).contains(String(s["nick"])), "the objective names the killer the town has named")
@@ -87,17 +88,18 @@ func _initialize() -> void:
 		guard2 += 1
 	var pr: float = g2.pressure()
 	var town0: int = g2.det.reputation["town"]
-	var bot = Bot.new(g2.sim, g2.case, g2.det)
+	var bot = Bot.new(g2)
 	var br: Dictionary = bot.solve()
-	ok(br["result"]["verdict"] == "convicted", "the serial case is fair: a thorough detective can prove it (%s)" % br["result"]["verdict"])
-	var res: Dictionary = g2.accuse(g2.case["killer"], g2.case["motive"], g2.case["method"])
+	var brj: Dictionary = Helpers.judged(g2, br)
+	ok(brj["verdict"] == "convicted", "the serial case is fair: a thorough detective can prove it (%s)" % brj["verdict"])
+	var res: Dictionary = g2.accuse(br["accused"], br["motive"], br["method"])
 	ok(g2.serial["status"] == "caught" and g2.pressure() == 0.0, "caught: the meter drops from %d to 0" % int(pr))
 	ok(g2.det.reputation["town"] > town0 + 10, "and the town loves you for it")
-	var k0: String = g2.case["killer"]
+	var k0: String = g2._truth["killer"]
 	var stopped := true
 	for i in 8:
 		_night(g2)
-		if g2.case["killer"] == k0 and g2.case["id"] != res.get("case_id", g2.case["id"]) and not g2.solved():
+		if g2._truth["killer"] == k0 and g2._truth["id"] != res.get("case_id", g2._truth["id"]) and not g2.solved():
 			stopped = false
 	ok(g2.sim.people[k0].taken or g2.sim.people[k0].jailed, "the killer is gone")
 	ok(stopped and g2.serial.get("killer", "") != k0 or g2.serial["status"] == "caught", "no more murders by that hand")
@@ -121,22 +123,23 @@ func _initialize() -> void:
 	# --- every forced-serial case is provably solvable, through the whole road: accuse -> arrest -> trial
 	for sd in [110, 120, 101, 105, 115]:
 		var gs := DetectiveGame.new(sd, "", true)
-		var ks: String = gs.case["killer"]
-		var bs = Bot.new(gs.sim, gs.case, gs.det)
+		var ks: String = gs._truth["killer"]
+		var bs = Bot.new(gs)
 		bs.solve()
-		var missing: Array = gs.case["clues"].keys().filter(func(id): return not gs.det.has(id))
+		var missing: Array = gs._truth["clues"].keys().filter(func(id): return not gs.det.has(id))
 		ok(missing.is_empty(), "seed %d: a thorough detective finds every clue (missing %s)" % [sd, str(missing)])
-		var jr: Dictionary = Justice.trial(gs.sim, gs.case, gs.det, ks)
-		var jd: Dictionary = CaseOps.judge(gs.sim, gs.case, gs.det, ks, gs.case["motive"], gs.case["method"])
+		var jr: Dictionary = Justice.trial(gs.sim, gs._truth, gs.det, ks)
+		var jd: Dictionary = CaseOps.judge(gs.sim, gs._truth, gs.det, ks, gs._truth["motive"], gs._truth["method"])
 		ok(jd["verdict"] == "convicted" and jr["confidence"] >= 70.0, "seed %d: judge and jury agree on a flawless notebook (%s, %d)" % [sd, jd["verdict"], int(jr["confidence"])])
-		var rs: Dictionary = gs.accuse(ks, gs.case["motive"], gs.case["method"])
+		var rs: Dictionary = gs.accuse(ks, gs._truth["motive"], gs._truth["method"])
 		ok(rs["verdict"] == "convicted" and rs.get("trial", {}).get("verdict", "") == "guilty" and gs.sim.people[ks].jailed, "seed %d: convicted at trial (%s, confidence %d)" % [sd, rs["verdict"], int(rs.get("trial", {}).get("confidence", -1))])
 	# a thin notebook does not convict: judge and jury agree on that too
 	var gt := DetectiveGame.new(120, "", true)
-	var kt: String = gt.case["killer"]
-	gt.det.learn({"id": "thin", "title": "x", "text": "x", "kind": "testimony", "source": "", "supports": [{"cat": "opportunity", "about": kt, "strength": 1}, {"cat": "means", "about": kt, "strength": 1}, {"cat": "link", "about": kt, "strength": 1}], "day": 1})
-	var jt: Dictionary = CaseOps.judge(gt.sim, gt.case, gt.det, kt, gt.case["motive"], gt.case["method"])
-	ok(jt["verdict"] != "convicted" and Justice.trial(gt.sim, gt.case, gt.det, kt)["confidence"] < 70.0, "a thin case neither convicts on the judge's word nor at trial (%s)" % jt["verdict"])
+	var kt: String = gt._truth["killer"]
+	var Cl = load("res://scripts/detective/claims.gd")
+	gt.det.learn({"id": "thin", "title": "x", "text": "x", "kind": "testimony", "source": "", "day": 1, "claims": Cl.emit(gt._truth, [Cl.make("seen", kt, "carried_bundle", "", -1.0, "", 1.0), Cl.make("said", kt, "owns_matching_set", "", -1.0, "", 0.5), Cl.make("said", kt, "washed_evidence", "", -1.0, "", 0.5)], "", "x")})
+	var jt: Dictionary = CaseOps.judge(gt.sim, gt._truth, gt.det, kt, gt._truth["motive"], gt._truth["method"])
+	ok(jt["verdict"] != "convicted" and Justice.trial(gt.sim, gt._truth, gt.det, kt)["confidence"] < 70.0, "a thin case neither convicts on the judge's word nor at trial (%s)" % jt["verdict"])
 	# --- ask "know": always a meaningful reply, from everyone
 	var gk := DetectiveGame.new(110, "", true)
 	var empty_know := 0

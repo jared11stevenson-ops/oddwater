@@ -41,6 +41,8 @@ var travel_btn: Button
 var waypoint: Control
 var tab := "case"
 var sel_culprit := ""
+var acc_query := ""
+var acc_list: VBoxContainer
 var sel_motive := ""
 var sel_method := ""
 var result_text := ""
@@ -162,7 +164,7 @@ func _objective_lot() -> String:
 	var asked := {}
 	for st in det.statements:
 		asked[st["npc"]] = true
-	var order: Array = [game.case.get("found_by", "")] + game.suspects()
+	var order: Array = game.persons_of_interest()
 	for id in order:
 		if String(id) != "" and not asked.has(id) and game.sim.people.has(id):
 			var p: RefCounted = game.sim.people[id]
@@ -499,11 +501,11 @@ func _inside_panel() -> void:
 	if lot == game.scene_lot() and game.det.tools.has("fingerprint kit"):
 		_lbl(box, "DUST FOR PRINTS", 20, VIOLET)
 		var shown := {}
-		for lat in game.case["latents"]:
-			if not shown.has(lat["spot"]):
-				shown[lat["spot"]] = true
-				var pb := _btn(box, "Dust: %s  (%d min)" % [Prints.SPOT_NAMES.get(lat["spot"], lat["spot"]), COST_DUST], _dust.bind(lot, lat["spot"]), 24, 58)
-				pb.name = "Dust_" + lat["spot"]
+		for spot in game.dust_spots():
+			if not shown.has(spot):
+				shown[spot] = true
+				var pb := _btn(box, "Dust: %s  (%d min)" % [Prints.SPOT_NAMES.get(spot, spot), COST_DUST], _dust.bind(lot, spot), 24, 58)
+				pb.name = "Dust_" + spot
 	var here: Array = game.people_here()
 	if not here.is_empty():
 		_lbl(box, "HERE WITH YOU", 20, VIOLET)
@@ -721,7 +723,7 @@ func _ask_about_menu(npc: String) -> void:
 	_clear_panel()
 	_head(box, "Where was...?", 38)
 	_lbl(box, "Ask %s where someone else was last night.  (%d min each)" % [CaseEngine.first(game.sim, npc), COST_ASK], 22)
-	for sid in game.suspects():
+	for sid in game.persons_of_interest():
 		if sid != npc:
 			_btn(box, CaseEngine.name_of(game.sim, sid), _q.bind(npc, "alibi", sid), 26, 62)
 	_btn(box, "Back to the conversation", show_talk.bind(npc), 26, 60)
@@ -731,7 +733,7 @@ func _person_menu(npc: String) -> void:
 	_clear_panel()
 	_head(box, "Ask about a person", 38)
 	_lbl(box, "What does %s think of them?  (%d min each)" % [CaseEngine.first(game.sim, npc), COST_ASK], 22)
-	for sid in game.suspects() + [game.case["victim"]]:
+	for sid in game.persons_of_interest() + [game.case["victim"]]:
 		if sid != npc:
 			_btn(box, CaseEngine.name_of(game.sim, sid), _q.bind(npc, "person", sid), 26, 62)
 	_btn(box, "Back to the conversation", show_talk.bind(npc), 26, 60)
@@ -921,7 +923,7 @@ func _tab_case() -> void:
 	for st in d.statements:
 		asked[st["npc"]] = true
 	var interviewed := 0
-	for sid in game.suspects():
+	for sid in game.persons_of_interest():
 		if asked.has(sid):
 			interviewed += 1
 	var stats := HFlowContainer.new()
@@ -931,7 +933,7 @@ func _tab_case() -> void:
 	UiKit.stamp(stats, "DAY %d" % game.sim.day, VIOLET, 18)
 	UiKit.stamp(stats, "STRESS %d/100" % int(d.stress), RED if d.stress >= 70.0 else VIOLET, 18)
 	UiKit.stamp(stats, "NOTES %d" % d.order.size(), VIOLET, 18)
-	UiKit.stamp(stats, "QUESTIONED %d/%d" % [interviewed, game.suspects().size()], VIOLET, 18)
+	UiKit.stamp(stats, "QUESTIONED %d/%d" % [interviewed, game.persons_of_interest().size()], VIOLET, 18)
 	if not d.lab.is_empty():
 		UiKit.stamp(stats, "LAB PENDING %d" % d.lab.size(), RED, 18)
 	var nx := PanelContainer.new()
@@ -1212,7 +1214,7 @@ func _entry(eid: String) -> void:
 		lb.name = "Lab"
 	if e.get("latent", "") != "":
 		_lbl(box, "Compare with...", 24, VIOLET)
-		for sid in game.suspects() + [game.case["found_by"], game.case["victim"]]:
+		for sid in game.persons_of_interest() + [game.case["victim"]]:
 			if game.det.samples.get(sid, false):
 				var cb := _btn(box, CaseEngine.name_of(game.sim, sid), _compare.bind(eid, sid), 24, 56)
 				cb.name = "Cmp_" + sid
@@ -1238,7 +1240,7 @@ func _lab(eid: String) -> void:
 func _people_groups() -> Array:
 	var seen := {}
 	var sus: Array = []
-	for sid in game.suspects():
+	for sid in game.persons_of_interest():
 		seen[sid] = true
 		sus.append(sid)
 	var wit: Array = []
@@ -1257,7 +1259,7 @@ func _people_groups() -> Array:
 		if not seen.has(nid2) and game.sim.people.has(nid2):
 			seen[nid2] = true
 			fresh.append(nid2)
-	return [["SUSPECTS", sus, ""], ["WITNESSES AND OTHERS", wit, ""], ["NEW IN TOWN", fresh, "NEW"]]
+	return [["PERSONS OF INTEREST", sus, ""], ["WITNESSES AND OTHERS", wit, ""], ["NEW IN TOWN", fresh, "NEW"]]
 
 
 func _tab_people() -> void:
@@ -1275,7 +1277,7 @@ func _tab_people() -> void:
 
 func _person_card(sid: String, badge: String) -> void:
 	var q: RefCounted = game.sim.people[sid]
-	var is_suspect: bool = game.suspects().has(sid)
+	var is_suspect: bool = game.persons_of_interest().has(sid)
 	var pc := PanelContainer.new()
 	pc.name = "Person_" + sid
 	pc.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), INK, 3, 10, 10))
@@ -1371,7 +1373,7 @@ func _tab_court() -> void:
 	var t: String = game.court.get("custody", "")
 	if t == "":
 		_lbl(box, "No one in custody. Arrest needs probable cause: real evidence of more than one kind.", 22)
-		for sid in game.suspects():
+		for sid in game.persons_of_interest():
 			var b := _btn(box, "Arrest %s" % CaseEngine.name_of(game.sim, sid), _arrest.bind(sid), 22, 58)
 			b.name = "Arrest_" + sid
 	else:
@@ -1379,6 +1381,14 @@ func _tab_court() -> void:
 		_head(box, "IN CUSTODY: %s" % String(q.display).to_upper(), 28)
 		var ss: Dictionary = game.court["sess"]
 		_lbl(box, "Trial on day %d (today is day %d).  Sessions: %d   Rapport: %d   Fatigue: %d" % [game.court["trial_day"], game.sim.day, ss["sessions"], int(ss["rapport"]), int(ss["fatigue"])], 20, VIOLET)
+		var dac := PanelContainer.new()
+		dac.name = "DaRead"
+		dac.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), VIOLET, 3, 10, 10))
+		box.add_child(dac)
+		var dav := VBoxContainer.new()
+		dac.add_child(dav)
+		_lbl(dav, "THE DA'S READ", 17, VIOLET)
+		_lbl(dav, game.da_advice(t), 20).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
 		for a in [["Build rapport", "rapport"], ["Lay out the evidence", "evidence"], ["Apply pressure", "pressure"]]:
 			var ib := _btn(box, "%s  (1 h)" % a[0], _interrogate.bind(a[1]), 22, 58)
 			ib.name = "Int_" + a[1]
@@ -1417,8 +1427,8 @@ func _interrogate(approach: String) -> void:
 
 func _trial() -> void:
 	var r: Dictionary = game.run_trial()
-	var lines: Array = r["attacks"].map(func(a): return "%s  (%+d)" % [a["text"], int(a["delta"])])
-	var body := "\n\n".join(lines) + "\n\nThe jury is out. When it returns, the room is silent.\n\nVERDICT: %s  (confidence %d)" % [String(r["verdict"]).to_upper(), int(r["confidence"])]
+	var lines: Array = r["attacks"].map(func(a): return String(a["text"]))
+	var body := "\n\n".join(lines) + "\n\nThe jury is out. When it returns, the room is silent.\n\nVERDICT: %s" % String(r["verdict"]).to_upper()
 	if r.get("wrongful", false):
 		body += "\n\nYou have a bad feeling about this one."
 	close_panel()
@@ -1493,7 +1503,7 @@ func _tab_cctv() -> void:
 	if cam_sel != "":
 		var back := _btn(box, "Choose another camera", _pick_cam.bind(""), 22, 54)
 		back.name = "CamBack"
-		var cam: Dictionary = Cctv.camera(game.case, cam_sel)
+		var cam: Dictionary = game.camera(cam_sel)
 		var cal := _btn(box, ("Check the camera's clock  (%d min)" % COST_CLOCK) if not game.det.calibrated.get(cam_sel, false) else "Clock checked", _calibrate.bind(cam_sel), 22, 56)
 		cal.disabled = game.det.calibrated.get(cam_sel, false)
 		cal.name = "Calibrate"
@@ -1544,10 +1554,29 @@ func _tab_accuse() -> void:
 		return
 	_lbl(box, "Name the killer, the reason, and the method. The judge will weigh what is in your notebook.", 22)
 	_lbl(box, "WHO?", 20, VIOLET)
-	for sid in game.suspects():
+	_lbl(box, "People your notebook names, or search anyone in Little Mercy.", 18)
+	var poi: Array = game.persons_of_interest()
+	for sid in poi:
 		var b := _btn(box, CaseEngine.name_of(game.sim, sid), _pick.bind("culprit", sid), 24, 56)
 		_mark(b, sel_culprit == sid)
 		b.name = "Acc_" + sid
+	var se := LineEdit.new()
+	se.name = "AccuseSearch"
+	se.placeholder_text = "Search anyone in Little Mercy"
+	se.text = acc_query
+	se.clear_button_enabled = true
+	se.custom_minimum_size = Vector2(0, 56)
+	se.add_theme_font_size_override("font_size", UiKit.fs(22))
+	se.add_theme_color_override("font_placeholder_color", Color("6b6558"))
+	se.text_changed.connect(_acc_search)
+	box.add_child(se)
+	acc_list = VBoxContainer.new()
+	acc_list.name = "AccuseResults"
+	acc_list.add_theme_constant_override("separation", 6)
+	box.add_child(acc_list)
+	_acc_fill()
+	if sel_culprit != "" and not poi.has(sel_culprit):
+		_lbl(box, "Accusing: %s" % CaseEngine.name_of(game.sim, sel_culprit), 22, VIOLET)
 	_lbl(box, "WHY?", 20, VIOLET)
 	for k in MOTIVES:
 		var b2 := _btn(box, MOTIVES[k], _pick.bind("motive", k), 22, 54)
@@ -1558,6 +1587,15 @@ func _tab_accuse() -> void:
 		var b3 := _btn(box, METHODS[k], _pick.bind("method", k), 22, 54)
 		_mark(b3, sel_method == k)
 		b3.name = "How_" + k
+	if sel_culprit != "":
+		var dr := PanelContainer.new()
+		dr.name = "DaRead"
+		dr.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), VIOLET, 3, 10, 10))
+		box.add_child(dr)
+		var dv := VBoxContainer.new()
+		dr.add_child(dv)
+		_lbl(dv, "THE DA'S READ", 17, VIOLET)
+		_lbl(dv, game.da_advice(sel_culprit), 20).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
 	var ready: bool = sel_culprit != "" and sel_motive != "" and sel_method != ""
 	if ready:
 		var sm := PanelContainer.new()
@@ -1572,6 +1610,48 @@ func _tab_accuse() -> void:
 	go_b.name = "Accuse"
 	if _acc_armed:
 		UiKit.set_button_style(go_b, RED, INK, PAPER)
+
+
+func _acc_search(t: String) -> void:
+	acc_query = t
+	_acc_fill()
+
+
+## Anyone living in Little Mercy who matches the search and is not already listed (the notebook's names are above).
+func _acc_fill() -> void:
+	if acc_list == null or not is_instance_valid(acc_list):
+		return
+	for c in acc_list.get_children():
+		acc_list.remove_child(c)
+		c.queue_free()
+	var q := acc_query.strip_edges().to_lower()
+	if q == "":
+		return
+	var poi: Array = game.persons_of_interest()
+	var shown := 0
+	for sid in game.residents():
+		if poi.has(sid):
+			continue
+		var nm := CaseEngine.name_of(game.sim, sid)
+		var hay := (nm + " " + String(game.sim.people[sid].job)).to_lower()
+		var ok := true
+		for w in q.split(" ", false):
+			if not hay.contains(w):
+				ok = false
+		if not ok or shown >= 8:
+			continue
+		shown += 1
+		var rb := _btn(acc_list, "%s  (%s)" % [nm, game.sim.people[sid].job], _pick_found.bind(sid), 22, 54)
+		rb.name = "Acc_" + sid
+		_mark(rb, sel_culprit == sid)
+	if shown == 0:
+		_lbl(acc_list, "No one by that name.", 20, VIOLET)
+
+
+func _pick_found(sid: String) -> void:
+	game.flag_person(sid)
+	acc_query = ""
+	_pick("culprit", sid)
 
 
 ## The chosen option is shown inked in.
@@ -1603,7 +1683,7 @@ func _accuse() -> void:
 	var res: Dictionary = game.accuse(sel_culprit, sel_motive, sel_method)
 	var suspect: RefCounted = game.sim.people[sel_culprit]
 	var verdict_title: String = {"convicted": "CASE CLOSED", "released": "NOT ENOUGH", "insufficient": "NO CASE", "wrong": "WRONG PERSON"}.get(res.get("verdict", ""), "VERDICT")
-	var body: String = "%s\n\nScore: %d/100   (%d kinds of proof, %d in all)" % [res.get("text", ""), int(res.get("score", 0)), int(res.get("cats", 0)), int(res.get("total", 0))]
+	var body: String = "%s\n\nThe DA's read: %s" % [res.get("text", ""), game.da_advice(sel_culprit)]
 	if res.get("verdict", "") == "convicted":
 		body += "\n\nXP awarded. The Sheriff will remember this."
 	close_panel()

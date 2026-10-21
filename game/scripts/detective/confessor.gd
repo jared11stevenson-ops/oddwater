@@ -6,6 +6,7 @@ extends RefCounted
 
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
+const Claims = preload("res://scripts/detective/claims.gd")
 
 const MAX_PER_SERIAL := 3
 const CHANCE := 0.45
@@ -25,7 +26,12 @@ static func is_false(c: Dictionary, id: String) -> bool:
 
 
 static func entry_for(det: RefCounted, id: String) -> Dictionary:
-	return det.known.get(entry_id(id), {})
+	if det.known.has(entry_id(id)):
+		return det.known[entry_id(id)]
+	for kid in det.order:       # a new body opens a new file and the old entries keep their place under that case's name
+		if String(kid).ends_with(":" + entry_id(id)):
+			return det.known[kid]
+	return {}
 
 
 static func untested(det: RefCounted, id: String) -> bool:
@@ -89,8 +95,8 @@ static func make(sim: RefCounted, c: Dictionary, det: RefCounted, serial: Dictio
 	var walk: String = String((d["walkins"] as Array)[r.randi() % (d["walkins"] as Array).size()]).replace("{n}", nm).replace("{nick}", String(serial.get("nick", "the killer")))
 	var text := "%s\n\n%s\n\nBut %s." % [walk, tale, sign_line]
 	var e := {"id": entry_id(id), "title": "Confession: %s" % CaseEngine.first(sim, id), "kind": "confession", "source": id, "day": day, "text": text,
-		"supports": [{"cat": "opportunity", "about": id, "strength": 3}, {"cat": "means", "about": id, "strength": 1}, {"cat": "motive", "about": id, "strength": 1}],
-		"has_detail": false, "false_confession": true, "tested": false, "said_hour": said_h, "said_method": said_m, "guess": String((d["guesses"] as Array)[r.randi() % (d["guesses"] as Array).size()])}
+		"tested": false, "said_hour": said_h, "said_method": said_m, "guess": String((d["guesses"] as Array)[r.randi() % (d["guesses"] as Array).size()])}
+	e["claims"] = Claims.emit(c, [Claims.make("said", id, "confessed_story", "", said_h, "", 0.8, "false")], id, text)
 	det.learn(e)
 	if not c.has("confessors"):
 		c["confessors"] = []
@@ -122,10 +128,10 @@ static func test(sim: RefCounted, c: Dictionary, det: RefCounted, id: String) ->
 	line = line.replace("{n}", CaseEngine.first(sim, id)).replace("{guess}", String(e.get("guess", "A card"))).replace("{said_time}", CaseEngine._time(float(e["said_hour"]))).replace("{real_time}", CaseEngine._time(float(c["hour"]))) \
 		.replace("{said_method}", String(cb["methods"][e["said_method"]]["wound"])).replace("{real_method}", String(cb["methods"][c["method"]]["wound"]))
 	e["tested"] = true
-	e["unreliable"] = true
-	e["supports"] = [{"cat": "exonerate", "about": id, "strength": 3}]
-	var note := {"id": "falseconf_note_" + id, "title": "%s: not the killer" % CaseEngine.first(sim, id), "kind": "testimony", "source": id, "supports": [], "day": int(sim.day),
+	e["claims"] = Claims.emit(c, [Claims.make("said", id, "confession_disproved", "", -1.0, "", 1.0, "true")], id, String(e["text"]))
+	var note := {"id": "falseconf_note_" + id, "title": "%s: not the killer" % CaseEngine.first(sim, id), "kind": "testimony", "source": id, "day": int(sim.day),
 		"text": "The story fails the held-back test: wrong hour, wrong method, and the signature is a guess lifted from the paper. %s is lonely, not guilty." % CaseEngine.first(sim, id)}
+	note["claims"] = Claims.emit(c, [Claims.make("found", id, "observation")], id, String(note["text"]))
 	var learned: Array = []
 	if det.learn(note):
 		learned.append(note)

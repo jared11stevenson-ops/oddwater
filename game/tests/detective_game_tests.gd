@@ -14,9 +14,9 @@ func ok(c: bool, m: String) -> void:
 func _initialize() -> void:
 	var g := DetectiveGame.new(21)
 	ok(g.host == "player" and g.sim.day == 1 and g.sim.clock == 0 and g.phase == "day", "you wake as yourself on Day 1")
-	ok(g.case["status"] == "open" and g.sim.people[g.case["victim"]].dead, "a murder has already happened")
+	ok(g._truth["status"] == "open" and g.sim.people[g._truth["victim"]].dead, "a murder has already happened")
 	ok(g.briefing().contains("found") and g.briefing().contains("dead"), "the Sheriff's call: %s" % g.briefing())
-	ok(g.sim.history.has(0) and g.sim.where_was(g.case["killer"], 0, 5) != "", "last night's evening is on record")
+	ok(g.sim.history.has(0) and g.sim.where_was(g._truth["killer"], 0, 5) != "", "last night's evening is on record")
 	# the day: examine, ask, time passes in half hours
 	var t0: int = g.sim.clock
 	var sc: String = g.scene_lot()
@@ -31,7 +31,7 @@ func _initialize() -> void:
 	var ft: int = g.flush_time()
 	ok(g.sim.clock > t0 and ft > 0, "and when you step away the time has passed (%d half hours)" % ft)
 	ok(g.objective() != "", "there is always a next thread: %s" % g.objective())
-	var neighbor: String = g.case["found_by"]
+	var neighbor: String = g._truth["found_by"]
 	var a: Dictionary = g.ask(neighbor, "victim")
 	ok(a["text"] != "" and g.det.statements.size() >= 1, "people answer, and it is written down")
 	# the day ends, nobody swaps
@@ -51,8 +51,8 @@ func _initialize() -> void:
 	# save and load
 	g.save("user://dg_save.json")
 	var g3: RefCounted = DetectiveGame.load_detective("user://dg_save.json")
-	ok(g3 != null and g3.det.has("c_body") and g3.case["killer"] == g.case["killer"] and g3.sim.day == g.sim.day, "a saved investigation resumes")
-	ok(g3.sim.people[g3.case["victim"]].dead and g3.sim.history.size() >= 1, "the dead stay dead, the history stays")
+	ok(g3 != null and g3.det.has("c_body") and g3._truth["killer"] == g._truth["killer"] and g3.sim.day == g.sim.day, "a saved investigation resumes")
+	ok(g3.sim.people[g3._truth["victim"]].dead and g3.sim.history.size() >= 1, "the dead stay dead, the history stays")
 	# an accusation
 	var g4 := DetectiveGame.new(23)
 	var res: Dictionary = g4.accuse(g4.suspects()[0], "money", "blunt")

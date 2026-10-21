@@ -12,6 +12,8 @@ const Cctv = preload("res://scripts/detective/cctv.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
 const Voice = preload("res://scripts/detective/voice.gd")
 const Reputation = preload("res://scripts/detective/reputation.gd")
+const Claims = preload("res://scripts/detective/claims.gd")
+const Reasoning = preload("res://scripts/detective/reasoning.gd")
 
 const SKILL_LABEL := {"observation": "Observation", "empathy": "Empathy", "authority": "Authority", "charm": "Charm", "logic": "Logic",
 	"forensics": "Forensics", "occult": "Occult", "streetwise": "Streetwise"}
@@ -38,7 +40,16 @@ static func spots_at(sim: RefCounted, c: Dictionary, lot: String) -> Array:
 
 
 static func _entry_from_clue(c: Dictionary, clue: Dictionary, day: int) -> Dictionary:
-	return {"id": clue["id"], "title": clue["title"], "text": clue["text"], "kind": "physical", "source": clue["lot"], "supports": clue["supports"].duplicate(true), "day": day, "lab": clue.get("lab", false)}
+	return {"id": clue["id"], "title": clue["title"], "text": clue["text"], "kind": "physical", "source": clue["lot"], "claims": _claims_for(c, clue.get("claims", []), clue["lot"], clue["text"], clue["lot"]), "day": day, "lab": clue.get("lab", false)}
+
+
+## Claim templates become notebook claims here (and nowhere else): private tags go to the truth's map, an observation with no
+## particular claim still gets a structured one so every entry in the notebook is claims all the way down.
+static func _claims_for(c: Dictionary, templates: Array, source: String, text: String, place: String = "") -> Array:
+	var t: Array = templates
+	if t.is_empty():
+		t = [Claims.make("found", "", "observation", place)]
+	return Claims.emit(c, t, source, text)
 
 
 static func _gate_text(gate: Dictionary) -> String:
@@ -125,7 +136,7 @@ static func examine(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String
 
 # =========================================================================== questions
 static func _fact_entry(c: Dictionary, f: Dictionary, sim: RefCounted, npc: String) -> Dictionary:
-	return {"id": f["id"], "title": "%s says" % CaseEngine.first(sim, npc), "text": f["text"], "kind": "testimony", "source": npc, "supports": f["supports"].duplicate(true), "day": int(sim.day)}
+	return {"id": f["id"], "title": "%s says" % CaseEngine.first(sim, npc), "text": f["text"], "kind": "testimony", "source": npc, "claims": _claims_for(c, f.get("claims", []), npc, f["text"]), "day": int(sim.day)}
 
 
 static func _reveal_ok(sim: RefCounted, det: RefCounted, npc: String, f: Dictionary, c: Dictionary = {}) -> Dictionary:
@@ -193,8 +204,6 @@ static func _tell_fact(sim: RefCounted, c: Dictionary, det: RefCounted, npc: Str
 	elif f.get("unreliable", false) and det.check("logic", 3) == "pass":
 		lines.append("[Logic] The times don't sit together. Treat this as a rough guide, not a clock.")
 	var e := _fact_entry(c, f, sim, npc)
-	if f.get("unreliable", false):
-		e["unreliable"] = true
 	if det.learn(e):
 		learned.append(e)
 
@@ -266,16 +275,27 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 					lines.append("\"%s\"" % Voice.say("know_more", sim, c, npc, {"n": CaseEngine.first(sim, npc)}))
 		"suspects":
 			var named := 0
-			for sid in c["suspects"]:
-				if sid != npc and p.affinity(sid) <= -20.0 and named < 2:
-					lines.append("\"Between you and me, I don't trust %s.\"" % CaseEngine.name_of(sim, sid))
+			var dislikes: Array = []
+			for sid in p.rel:
+				if sid != npc and sid != "player" and sid != victim and sim.people.has(sid) and sim.alive(sim.people[sid]) and p.affinity(sid) <= -20.0:
+					dislikes.append(sid)
+			dislikes.sort_custom(func(a, b): return p.affinity(a) < p.affinity(b))
+			for sid in dislikes:
+				if named < 2:
+					var gtxt := "Between you and me, I don't trust %s." % CaseEngine.name_of(sim, sid)
+					lines.append("\"%s\"" % gtxt)
 					named += 1
+					var ge := {"id": "gossip_%s_%s" % [npc, sid], "title": "%s distrusts %s" % [CaseEngine.first(sim, npc), CaseEngine.first(sim, sid)], "text": gtxt, "kind": "testimony", "source": npc, "day": int(sim.day)}
+					ge["claims"] = _claims_for(c, [Claims.make("said", sid, "distrusted_by", "", -1.0, "", 0.6)], npc, gtxt)
+					if det.learn(ge):
+						learned.append(ge)
 			_facts_for(sim, c, det, npc, "suspects", lines, learned)
 			_facts_for(sim, c, det, npc, "owner", lines, learned)
 			if npc == c["killer"] and c.get("helper", false) and det.check("logic", 3) == "pass":
 				var slip := {"id": "f_helper_slip", "title": "%s knows too much" % CaseEngine.first(sim, npc), "kind": "testimony", "source": npc, "day": int(sim.day),
 					"text": "%s was eager to help and said the room had been 'arranged', every piece in its place. Nobody has told %s anything about the room." % [CaseEngine.name_of(sim, npc), CaseEngine.first(sim, npc)],
-					"supports": [{"cat": "link", "about": npc, "strength": 2}]}
+					"claims": []}
+				slip["claims"] = _claims_for(c, [Claims.make("said", npc, "knew_unreleased", "", -1.0, "arranged")], npc, slip["text"])
 				if det.learn(slip):
 					learned.append(slip)
 					lines.append("[Logic] Nobody has told %s a word about how the scene looked. They said 'arranged'." % CaseEngine.first(sim, npc))
@@ -371,7 +391,8 @@ static func present(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String
 		var target: String = _covered(c, npc)
 		var tname := CaseEngine.first(sim, target)
 		var ent := {"id": "cover_" + npc, "title": "%s's cover breaks" % CaseEngine.first(sim, npc), "text": "%s admits it: %s was not home that night. They went out and came back late. They begged you not to say they told you." % [CaseEngine.first(sim, npc), tname],
-			"kind": "testimony", "source": npc, "supports": [{"cat": "opportunity", "about": target, "strength": 2}] if target == k else [], "day": int(sim.day)}
+			"kind": "testimony", "source": npc, "claims": [], "day": int(sim.day)}
+		ent["claims"] = _claims_for(c, [Claims.make("said", target, "seen_going_out" if target == k else "was_not_home", "", -1.0, "", 0.7)], npc, ent["text"])
 		if det.learn(ent):
 			learned.append(ent)
 		text = "%s looks at the footage, then at the floor. \"...He went out. I lied. I'm sorry.\"" % CaseEngine.first(sim, npc)
@@ -400,9 +421,14 @@ static func _cover_cracks(c: Dictionary, npc: String, entry_id: String, det: Ref
 	if entry_id == "f_h1_seen" and c["profiles"][sid].get("alibi", "") == "secret":
 		return true
 	var e: Dictionary = det.known.get(entry_id, {})
-	for sup in e.get("supports", []):
-		if sup["about"] == sid and sup["cat"] in ["opportunity", "link"] and e.get("kind", "") in ["cctv", "testimony"]:
+	for cl in e.get("claims", []):
+		# a relative knows the walk and the habits of the person they are covering: a figure of that description is them
+		if cl["subject"] == "" and cl["predicate"] == "figure_seen" and sid == String(c["killer"]) and String(cl["item"]) == String(c["trait"]) and e.get("kind", "") == "cctv":
 			return true
+		if cl["subject"] == sid and e.get("kind", "") in ["cctv", "testimony"]:
+			for rule in Reasoning.RULES.get(String(cl["predicate"]), []):
+				if rule[0] in ["opportunity", "link"]:
+					return true
 	return false
 
 
@@ -436,17 +462,17 @@ static func lab_results(sim: RefCounted, c: Dictionary, det: RefCounted, day: in
 			remaining.append(l)
 		elif int(l["ready_day"]) <= day and c["lab"].has(l["clue"]):
 			var r: Dictionary = c["lab"][l["clue"]]
-			var sups: Array = r["supports"].duplicate(true)
+			var tmpl: Array = (r["claims"] as Array).duplicate(true)
 			var rtext: String = r["text"]
 			match String(l.get("quality", "good")):
 				"weak":
-					for sp in sups:
-						sp["strength"] = maxi(int(sp["strength"]) - 1, 1)
+					for tp in tmpl:
+						tp["certainty"] = float(tp["certainty"]) * 0.5
 					rtext += " (The sample had aged. Treat this as weaker than it reads.)"
 				"spoiled":
-					sups = []
+					tmpl = [Claims.make("found", "", "sample_degraded")]
 					rtext = "The lab: the sample degraded in storage. There is nothing usable on it now."
-			var e := {"id": "lab_" + l["clue"], "title": "Lab report", "text": rtext, "kind": "lab", "source": "lab", "supports": sups, "day": day}
+			var e := {"id": "lab_" + l["clue"], "title": "Lab report", "text": rtext, "kind": "lab", "source": "lab", "claims": _claims_for(c, tmpl, "lab", rtext), "day": day}
 			if det.learn(e):
 				out.append(e)
 				det.lab_done.append(l["clue"])
@@ -474,37 +500,36 @@ static func request_warrant(sim: RefCounted, c: Dictionary, det: RefCounted, tar
 
 
 # =========================================================================== the accusation
-## Weigh an accusation against what the notebook can prove. Returns {verdict, score, parts, text}.
+## Weigh an accusation. The notebook alone decides whether there is a case to charge at all (so a name said without proof is turned
+## away the same way whoever it is). Only once there is, the court looks at the truth: it is the one place claims meet what happened.
+## Returns {verdict, score, parts, text}.
 static func judge(sim: RefCounted, c: Dictionary, det: RefCounted, culprit: String, motive: String, method: String) -> Dictionary:
 	var pr: Dictionary = det.proof_against(culprit)
-	var cats := 0
-	var total := 0
-	for k in ["opportunity", "means", "motive", "link"]:
-		if int(pr[k]) > 0:
-			cats += 1
-		total += int(pr[k])
+	var tl: Dictionary = Reasoning.tally(pr)
+	var cats: int = tl["cats"]
+	var total: int = tl["total"]
 	var right_person: bool = culprit == c["killer"]
 	var right_motive: bool = motive == c["motive"]
 	var right_method: bool = method == c["method"]
 	# judge and jury must agree: the same confidence function the trial uses decides whether the case holds
 	var jury: Dictionary = {"confidence": 0.0}
-	if right_person:
+	if cats >= 2:
 		jury = load("res://scripts/detective/justice.gd").trial(sim, c, det, culprit)
 	var enough: bool = cats >= 3 and (int(pr["opportunity"]) > 0 or int(pr["link"]) > 0) and total >= 6 and float(jury["confidence"]) >= 70.0
 	var verdict := ""
 	var text := ""
-	if right_person and enough:
+	if cats < 2:
+		verdict = "insufficient"
+		text = "You name %s, and you cannot prove a word of it. The Sheriff will not let you arrest on a hunch." % CaseEngine.name_of(sim, culprit)
+	elif right_person and enough:
 		verdict = "convicted"
 		text = Prose.clean("%s breaks. The evidence holds, line by line. %s" % [CaseEngine.name_of(sim, culprit), _confession(sim, c, right_motive)])
-	elif right_person and cats >= 2:
+	elif right_person:
 		verdict = "released"
 		text = "It's the right person, but the case has holes a good lawyer walks through. %s is released pending trial, and knows you know." % CaseEngine.name_of(sim, culprit)
-	elif right_person:
-		verdict = "insufficient"
-		text = "You name the killer, and you cannot prove a word of it. The Sheriff will not let you arrest on a hunch."
 	else:
 		verdict = "wrong"
-		text = Prose.clean("%s did not do this. %s. The town will not forget that you said so." % [CaseEngine.name_of(sim, culprit), _innocence(sim, c, culprit)])
+		text = Prose.clean("%s did not do this. What you laid out does not hold against them. The town will not forget that you said so." % CaseEngine.name_of(sim, culprit))
 	var score := 0
 	score += 40 if right_person else 0
 	score += 15 if right_motive else 0
@@ -516,18 +541,6 @@ static func judge(sim: RefCounted, c: Dictionary, det: RefCounted, culprit: Stri
 static func _confession(sim: RefCounted, c: Dictionary, right_motive: bool) -> String:
 	var cb: Dictionary = Prose.json("detective/casebook.json")
 	return "It was %s: %s. %s" % [cb["motives"][c["motive"]]["label"], c["motive_thing"], "You had it exactly right." if right_motive else "Your theory of why was wrong, but the truth is the same."]
-
-
-static func _innocence(sim: RefCounted, c: Dictionary, id: String) -> String:
-	var pr: Dictionary = c["profiles"].get(id, {})
-	match String(pr.get("alibi", "")):
-		"verified": return "They were %s all night, and the people who were there will say so" % String(pr.get("where", "somewhere else"))
-		"secret": return "They had a secret to keep, which is not the same as a crime"
-		"weak": return "They have no alibi, and no reason either"
-		"shaky": return "They have a temper and a reason, and they spent the night at a friend's kitchen table"
-		"shadow": return "They had their own business with the dead, and none of it ended in blood"
-		"attention": return "They wanted to be looked at, which is not the same as having done it"
-	return "They were nowhere near it"
 
 
 ## What happens in the town as a result of a verdict that does not go through a trial. (A conviction goes through the court: see Justice.conclude.)

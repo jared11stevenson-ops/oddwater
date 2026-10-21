@@ -1,6 +1,9 @@
 extends RefCounted
 ## You: the lead (and only) detective. Skills gate how much you perceive, never whether you can finish. Stress frays them.
 ## The notebook is everything you have learned; it resists the Hush, so it is the one record in Little Mercy that cannot be edited.
+## Its entries hold CLAIMS (see claims.gd), never conclusions: what a proof is worth is worked out by Reasoning, from the claims alone.
+
+const Reasoning = preload("res://scripts/detective/reasoning.gd")
 
 const SKILLS := ["observation", "empathy", "authority", "charm", "logic", "forensics", "occult", "streetwise"]
 const LABELS := {"observation": "Observation", "empathy": "Empathy", "authority": "Authority", "charm": "Charm", "logic": "Logic",
@@ -30,6 +33,8 @@ var rep_log: Array = []             # every change to the three standings, newes
 var asked: Dictionary = {}          # "npc|topic|about" -> how many times (a repeat question gets a different reply)
 var rank := "Detective"             # the state police can reassign you after a failure
 var funerals: Dictionary = {}       # case id -> true once you have attended
+var flagged: Dictionary = {}        # person id -> true: people you have chosen to keep an eye on
+var ctx: Dictionary = {"case": {}, "jobs": {}}   # the public case file and the town's trades, set by the game (not saved: it is rebuilt)
 
 
 func skill(s: String) -> int:
@@ -107,21 +112,61 @@ func has(id: String) -> bool:
 	return known.has(id)
 
 
-## What the notebook says about one person, by category: {opportunity, means, motive, link, exonerate} -> strength.
+## What the notebook says about one person, by category: {opportunity, means, motive, link, exonerate} -> strength (see Reasoning).
 func proof_against(id: String) -> Dictionary:
-	var out := {"opportunity": 0, "means": 0, "motive": 0, "link": 0, "exonerate": 0}
-	for eid in known:
-		for sup in known[eid].get("supports", []):
-			if sup["about"] == id and out.has(sup["cat"]):
-				out[sup["cat"]] = int(out[sup["cat"]]) + int(sup["strength"])
+	return Reasoning.proof_against(known, ctx.get("case", {}), id, ctx.get("jobs", {}))
+
+
+## The DA's read of the case against one person, from the notebook alone.
+func da_read(id: String, person_name: String = "") -> String:
+	return Reasoning.da_read(known, ctx.get("case", {}), id, ctx.get("jobs", {}), person_name)
+
+
+func flag_person(id: String) -> void:
+	flagged[id] = true
+
+
+## Everyone the notebook gives a reason to look at: the one who found the body, anyone named by a claim, anyone you have questioned
+## or flagged. Nothing here knows who did it; the game filters out the dead and the gone.
+func persons_of_interest() -> Array:
+	var out: Array = []
+	var add := func(id: String) -> void:
+		if id != "" and id != "player" and id != String(ctx.get("case", {}).get("victim", "")) and not out.has(id):
+			out.append(id)
+	add.call(String(ctx.get("case", {}).get("found_by", "")))
+	for id in Reasoning.people_named(known):
+		add.call(String(id))
+	for st in statements:
+		if String(st.get("topic", "")) != "present":
+			add.call(String(st["npc"]))
+	for id in flagged:
+		add.call(String(id))
 	return out
+
+
+## An old notebook entry (from before claims) keeps what it was worth as a legacy claim, so a saved game still adds up.
+static func _migrate(e: Dictionary) -> Dictionary:
+	if e.has("claims") and not e.has("supports"):
+		return e
+	var claims: Array = []
+	for sup in e.get("supports", []):
+		if String(sup.get("cat", "")) in ["opportunity", "means", "motive", "link", "exonerate"] and String(sup.get("about", "")) != "":
+			claims.append({"kind": "said", "subject": String(sup["about"]), "predicate": "legacy_" + String(sup["cat"]), "place": "", "time": -1.0, "until": -1.0,
+				"item": str(int(sup.get("strength", 1))), "certainty": 1.0, "source": String(e.get("source", "")), "text": String(e.get("text", "")), "cid": "legacy"})
+	if claims.is_empty():
+		claims.append({"kind": "found", "subject": "", "predicate": "observation", "place": "", "time": -1.0, "until": -1.0, "item": "", "certainty": 1.0, "source": String(e.get("source", "")), "text": String(e.get("text", "")), "cid": "legacy"})
+	e["claims"] = claims
+	e.erase("supports")
+	for k in ["unreliable", "misleading", "has_detail", "false_confession"]:
+		e.erase(k)
+	return e
 
 
 func to_dict() -> Dictionary:
 	return {"name": name, "skills": skills.duplicate(), "xp": xp, "level": level, "points": points, "stress": stress, "tools": tools.duplicate(),
 		"known": known.duplicate(true), "order": order.duplicate(), "statements": statements.duplicate(true), "warrants": warrants.duplicate(),
 		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed,
-		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate()}
+		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate(), "flagged": flagged.duplicate()}
 
 
 static func from_dict(d: Dictionary) -> RefCounted:
@@ -135,6 +180,9 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	x.xp = int(d.get("xp", 0)); x.level = int(d.get("level", 1)); x.points = int(d.get("points", 0)); x.stress = float(d.get("stress", 0.0))
 	x.tools = d.get("tools", x.tools).duplicate()
 	x.known = d.get("known", {}).duplicate(true)
+	for kid in x.known:
+		x.known[kid] = _migrate(x.known[kid])
+	x.flagged = d.get("flagged", {}).duplicate()
 	x.order = d.get("order", []).duplicate()
 	x.statements = d.get("statements", []).duplicate(true)
 	x.warrants = d.get("warrants", {}).duplicate()

@@ -12,12 +12,12 @@ const GOES_COLD := 14
 
 
 static func days_open(g: RefCounted) -> int:
-	return int(g.sim.day) - int(g.case.get("day", 0)) - 1
+	return int(g.sim.day) - int(g._truth.get("day", 0)) - 1
 
 
 ## Once a morning. `g` is the DetectiveGame.
 static func tick(g: RefCounted) -> void:
-	var c: Dictionary = g.case
+	var c: Dictionary = g._truth
 	var n := days_open(g)
 	if c.get("status", "") != "open" or Serial.active(g.serial) or g.court.get("custody", "") != "" or n < 2:
 		return
@@ -66,7 +66,7 @@ static func _gone(c: Dictionary, det: RefCounted, cid: String, cond: bool) -> vo
 
 
 static func _go_cold(g: RefCounted) -> void:
-	var c: Dictionary = g.case
+	var c: Dictionary = g._truth
 	var sim: RefCounted = g.sim
 	c["status"] = "cold"
 	c["closed_day"] = int(sim.day)

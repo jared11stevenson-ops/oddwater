@@ -14,6 +14,7 @@ const Cold = preload("res://scripts/detective/cold.gd")
 const Serial = preload("res://scripts/detective/serial.gd")
 const Lib = preload("res://tests/content_lib.gd")
 const Bot = preload("res://tests/case_bot.gd")
+const Helpers = preload("res://tests/case_bot_helpers.gd")
 var fails := 0
 var checks := 0
 
@@ -24,17 +25,8 @@ func ok(c: bool, m: String) -> void:
 		print("  FAIL: ", m)
 
 func make(seed_v: int) -> Array:
-	var w := World.new(seed_v, true)
-	w.thin_weeks = false
-	w.day = 0
-	w.start_day()
-	var c := CaseEngine.generate(w, seed_v, 0)
-	CaseEngine.apply_backstory(w, c)
-	w.simulate_rest_of_day()
-	CaseEngine.execute(w, c)
-	w.slack()
-	w.start_day()
-	return [w, c]
+	var g: RefCounted = DetectiveGame.new(seed_v)
+	return [g.sim, g._truth, g]
 
 func _initialize() -> void:
 	# ---- prose helpers
@@ -67,9 +59,9 @@ func _initialize() -> void:
 		if c.has("hidden"): mis["hidden"] += 1
 		if c["cameras"].any(func(cam): return absi(int(cam["offset"])) >= 25): mis["far"] += 1
 		ok(c["clues"].has("c_timeline") and c["clues"]["c_timeline"]["text"].contains("last days"), "seed %d: the victim's last days are written" % s)
-		var bot = Bot.new(wc[0], c)
+		var bot = Bot.new(wc[2])
 		var r: Dictionary = bot.solve()
-		if r["result"]["verdict"] == "convicted" and r["accused"] == c["killer"]:
+		if Helpers.judged(wc[2], r)["verdict"] == "convicted" and r["accused"] == c["killer"]:
 			solved += 1
 		if c.has("hidden"):
 			ok(c["suspects"].has(c["hidden"]["id"]) == c.has("emerged"), "seed %d: the sixth appears only when evidence brings them in" % s)
@@ -109,35 +101,37 @@ func _initialize() -> void:
 	ok(Reputation.escalation(3) > Reputation.escalation(2) and Reputation.escalation(2) > Reputation.escalation(1), "wrong accusations cost more each time")
 	# ---- the one road: accuse -> arrest -> trial -> jail
 	var g := DetectiveGame.new(31)
-	var bot2 = Bot.new(g.sim, g.case, g.det)
+	var bot2 = Bot.new(g)
 	var br: Dictionary = bot2.solve()
 	var town0: int = g.det.reputation["town"]
-	var res: Dictionary = g.accuse(g.case["killer"], g.case["motive"], g.case["method"])
-	ok(res["verdict"] == "convicted" and g.solved() and not g.jail.is_empty() and g.jail[-1]["id"] == g.case["killer"], "a thorough case: accusation ends in a trial and a cell (%s)" % res["verdict"])
+	var res: Dictionary = g.accuse(br["accused"], br["motive"], br["method"])
+	ok(res["verdict"] == "convicted" and g.solved() and not g.jail.is_empty() and g.jail[-1]["id"] == g._truth["killer"], "a thorough case: accusation ends in a trial and a cell (%s)" % res["verdict"])
 	ok(res.has("text") and res.has("score") and res.has("cats") and res.has("total") and res.has("episode") and res.has("trial"), "accuse keeps the keys the HUD reads")
 	ok(g.det.reputation["town"] == town0 + 5 and g.det.rep_log.size() >= 1, "and the town reputation matches the trial path (+5)")
 	ok(not String(res["text"]).contains(".."), "no double full stop in the verdict")
 	ok(g.cost_of("view_camera")["minutes"] == 30 and g.cost_of("accuse")["note"] != "", "cost_of previews time")
 	# ---- wrong accusations: escalating cost, a damaged neighbour, a scandal, a limit, then the aftermath
 	var g2 := DetectiveGame.new(32)
-	var innocent: Array = g2.suspects().filter(func(s): return s != g2.case["killer"])
+	var innocent: Array = g2._truth["suspects"].filter(func(s): return s != g2._truth["killer"])
+	for ii in innocent.size():
+		Helpers.frame(g2, innocent[ii], "frame_%d" % ii)
 	var rep_a: Array = []
 	for i in 3:
 		var before: int = g2.det.reputation["sheriff"]
 		var r2: Dictionary = g2.accuse(innocent[i % innocent.size()], "money", "blunt")
 		rep_a.append(g2.det.reputation["sheriff"] - before)
 		if i == 0:
-			ok(r2["verdict"] == "wrong" and g2.case["damaged"].has(innocent[0]) and g2.case.get("alerted", false) and not g2.paper().is_empty(), "a wrong name: the accused is damaged, the killer alerted, the paper prints a scandal")
+			ok(r2["verdict"] == "wrong" and g2._truth["damaged"].has(innocent[0]) and g2._truth.get("alerted", false) and not g2.paper().is_empty(), "a wrong name: the accused is damaged, the killer alerted, the paper prints a scandal")
 			var refuse: Dictionary = g2.ask(innocent[0], "alibi")
 			ok(refuse.get("refused", false), "the wrongly accused will not talk to you for days")
 	ok(rep_a[0] > rep_a[1] and rep_a[1] > rep_a[2], "each wrong accusation costs more: %s" % [rep_a])
-	ok(g2.accusations_left() == 0 and g2.case["status"] == "failed" and g2.det.rank == "Deputy" and not g2.haunting.is_empty(), "three strikes: the state police take the file, you are reassigned, the killer lingers")
+	ok(g2.accusations_left() == 0 and g2._truth["status"] == "failed" and g2.det.rank == "Deputy" and not g2.haunting.is_empty(), "three strikes: the state police take the file, you are reassigned, the killer lingers")
 	ok(g2.accuse(innocent[0], "money", "blunt")["verdict"] == "barred", "no more accusations on a closed file")
 	ok(g2.objective().contains("Reassigned") and g2.episodes[-1]["verdict"] == "failure", "an objective for the aftermath, and a failure episode in the archive")
 	var seen_new := false
 	for i in 9:
 		g2.end_day(); g2.dawn()
-		if g2.case["status"] == "open":
+		if g2._truth["status"] == "open":
 			seen_new = true
 			break
 	ok(seen_new, "and the game goes on: a new case opens after a quiet stretch")
@@ -145,16 +139,16 @@ func _initialize() -> void:
 	var gaps := {}
 	for s in [41, 42, 43, 44, 45, 46]:
 		var gg := DetectiveGame.new(s)
-		gg.case["status"] = "solved"
+		gg._truth["status"] = "solved"
 		var nights := 0
-		while gg.case["status"] == "solved" and nights < 10:
+		while gg._truth["status"] == "solved" and nights < 10:
 			gg.end_day(); gg.dawn()
 			nights += 1
 		gaps[nights] = true
 	ok(gaps.size() >= 2, "the gap between cases varies: %s" % [gaps.keys()])
 	# ---- cold cases evolve
 	var g3 := DetectiveGame.new(33)
-	var c3: Dictionary = g3.case
+	var c3: Dictionary = g3._truth
 	g3.examine(c3["scene"], "garden")
 	for i in 14:
 		g3.end_day(); g3.dawn()
@@ -162,7 +156,7 @@ func _initialize() -> void:
 			break
 	var gone := 0
 	for cid in ["c_foot", "c_weapon", "c_k_shoes", "c_k_coat"]:
-		if g3.case.get("id") == c3.get("id") and c3["clues"].has(cid) and c3["clues"][cid].get("gone", false):
+		if g3._truth.get("id") == c3.get("id") and c3["clues"].has(cid) and c3["clues"][cid].get("gone", false):
 			gone += 1
 	ok(gone >= 2, "a cold trail loses evidence: %d clues gone" % gone)
 	ok(g3.det.reputation["sheriff"] < 0, "the Sheriff's patience drains: %d" % g3.det.reputation["sheriff"])
@@ -175,15 +169,16 @@ func _initialize() -> void:
 	var sz := FileAccess.open("user://content_size.json", FileAccess.READ).get_length()
 	ok(sz < 1500000, "the save is compact: %d bytes" % sz)
 	var back: RefCounted = DetectiveGame.load_detective("user://content_size.json")
-	ok(back != null and back.sim.history.size() == gs.sim.history.size() and back.sim.where_was(back.case["killer"], 0, 36) == gs.sim.where_was(gs.case["killer"], 0, 36), "history survives the compact save")
+	ok(back != null and back.sim.history.size() == gs.sim.history.size() and back.sim.where_was(back._truth["killer"], 0, 36) == gs.sim.where_was(gs._truth["killer"], 0, 36), "history survives the compact save")
 	DetectiveGame.delete_save("user://content_size.json")
 	# ---- the text scan
 	var bad := 0
 	for s in range(1, 9):
 		var wc3: Array = make(s)
-		var b3 = Bot.new(wc3[0], wc3[1])
+		var b3 = Bot.new(wc3[2])
 		var r3: Dictionary = b3.solve()
-		var texts: Array = [Narrator.cold_open(wc3[0], wc3[1]), CaseEngine.discovery_text(wc3[0], wc3[1]), String(r3["result"]["text"]), String(Narrator.episode(wc3[0], wc3[1], b3.det, r3["result"])["text"])]
+		var r3res: Dictionary = Helpers.judged(wc3[2], r3)
+		var texts: Array = [Narrator.cold_open(wc3[0], wc3[2].case), CaseEngine.discovery_text(wc3[0], wc3[2].case), String(r3res["text"]), String(Narrator.episode(wc3[0], wc3[1], b3.det, r3res)["text"])]
 		for eid in b3.det.order:
 			texts.append(String(b3.det.known[eid]["text"]))
 		for t in texts:
