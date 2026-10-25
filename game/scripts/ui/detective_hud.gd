@@ -14,13 +14,16 @@ const Waypoint = preload("res://scripts/ui/waypoint.gd")
 const FullMap = preload("res://scripts/ui/full_map.gd")
 const SceneView = preload("res://scripts/ui/scene_view.gd")
 const DustPad = preload("res://scripts/ui/dust_pad.gd")
+const Scrubber = preload("res://scripts/ui/cctv_scrubber.gd")
+const ChatView = preload("res://scripts/ui/chat_view.gd")
+const EvidenceBoard = preload("res://scripts/ui/evidence_board.gd")
 const TutorialOverlay = preload("res://scripts/ui/tutorial_overlay.gd")
 
 const GREEN := UiKit.GREEN
 const OXBLOOD := UiKit.OXBLOOD
 const WINDOWS := [["Evening, 6 pm to midnight", 18.0, 24.0], ["Midnight to 3 am", 24.0, 27.0], ["3 am to 6 am", 27.0, 30.0]]
 const TABS := [["Case", "case", "case"], ["Notes", "notebook", "notebook"], ["People", "people", "people"], ["News", "news", "news"],
-	["CCTV", "cctv", "cctv"], ["Court", "court", "court"], ["Accuse", "accuse", "accuse"], ["You", "you", "you"]]
+	["Board", "board", "board"], ["CCTV", "cctv", "cctv"], ["Court", "court", "court"], ["Accuse", "accuse", "accuse"], ["You", "you", "you"]]
 const NB_FILTERS := [["All", "all"], ["Evidence", "evidence"], ["Testimony", "testimony"], ["Lab", "lab"], ["Lore", "lore"]]
 const MOTIVES := {"grudge": "An old grudge", "money": "Money", "family": "Inheritance", "silence": "To keep a secret", "passion": "Jealousy"}
 const METHODS := {"blunt": "A blow to the head", "knife": "A knife", "strangle": "Strangulation", "poison": "Poison"}
@@ -37,6 +40,19 @@ const COST_WATCH := 30
 const COST_CLOCK := 10
 
 var cam_sel := ""
+var chat_log: Dictionary = {}        # person id -> [{side, text, new, expr}] the bubbles so far
+var chat_strain: Dictionary = {}     # person id -> 0-100: how hard you have leaned on them (this visit; not saved)
+var chat_tone := "firm"
+var chat_tray := false
+var chat_sel_ev := ""
+var chat_view: Control
+var board_view: Control
+var board_mode := "move"
+var board_sel := ""
+var board_read_box: VBoxContainer
+var cam_win: Array = []              # [from, to] of the stretch of tape on the scrubber
+var cam_scrub: Control
+var cam_text_open := false
 var obj_label: Label
 var obj_box: PanelContainer
 var dist_label: Label
@@ -720,48 +736,220 @@ func show_talk(npc: String) -> void:
 	box.add_theme_constant_override("separation", 6)
 	talk_npc = npc
 	var q: RefCounted = game.sim.people[npc]
+	var lg: Array = chat_log.get(npc, [])
+	if lg.is_empty():
+		var ops: Array = load("res://scripts/core/reactions.gd").openers(game.sim, npc, "player", game.sim.day)
+		lg = [{"side": "them", "text": ("\"%s\"" % ops[0]["text"]) if not ops.is_empty() else "(They look at you. They've heard what happened.)", "new": false, "expr": ""}]
+		chat_log[npc] = lg
 	var hdr := HBoxContainer.new()
 	hdr.add_theme_constant_override("separation", 10)
 	box.add_child(hdr)
-	var tone := ""
-	if not last_talk.is_empty() and last_talk.get("npc", "") == npc:
-		tone = last_talk.get("tone", "")
-	hdr.add_child(_portrait(q, 64, tone))
+	var dz := ChatView.DropZone.new()
+	dz.custom_minimum_size = Vector2(72, 94)
+	dz.armed = chat_sel_ev != ""
+	var pt: Control = _portrait(q, 64, _talk_expr(npc))
+	pt.name = "TalkPortrait"
+	pt.position = Vector2(4, 0)
+	pt.size = Vector2(64, 83)
+	dz.add_child(pt)
+	dz.dropped.connect(_present_dropped.bind(npc))
+	dz.tapped.connect(_portrait_tapped.bind(npc))
+	hdr.add_child(dz)
 	var hv := VBoxContainer.new()
+	hv.add_theme_constant_override("separation", 2)
 	hdr.add_child(hv)
-	_head(hv, q.display, 34).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
-	_lbl(hv, "%d · %s" % [q.age, q.job], 22).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
+	_head(hv, q.display, 30).custom_minimum_size = Vector2(PANEL_W - 190.0, 0)
 	var rel := String(load("res://scripts/sim/relationship.gd").describe(game.sim, "player", npc))
-	_lbl(hv, rel.capitalize(), 22, VIOLET).custom_minimum_size = Vector2(PANEL_W - 210.0, 0)
-	var line := ""
-	if not last_talk.is_empty() and last_talk.get("npc", "") == npc:
-		line = last_talk["text"]
-	else:
-		var ops: Array = load("res://scripts/core/reactions.gd").openers(game.sim, npc, "player", game.sim.day)
-		line = "\"%s\"" % ops[0]["text"] if not ops.is_empty() else "(They look at you. They've heard what happened.)"
-	_balloon(line)
+	_lbl(hv, "%d · %s · %s" % [q.age, q.job, rel], 18, VIOLET).custom_minimum_size = Vector2(PANEL_W - 190.0, 0)
+	_meter(hv, "Rapport", "RapportBar", clampf((float(q.affinity("player")) + 40.0) / 80.0, 0.0, 1.0), GREEN)
+	_meter(hv, "Strain", "StrainBar", clampf(float(chat_strain.get(npc, 0.0)) / 100.0, 0.0, 1.0), RED)
+	var chat := ChatView.new()
+	chat.font_px = UiKit.fs(20)
+	box.add_child(chat)
+	chat_view = chat
+	for item in lg.slice(-9):
+		chat.add_bubble(String(item["side"]), String(item["text"]), q if item["side"] == "them" else null, String(item.get("expr", "")), bool(item.get("new", false)))
+	# how you ask
+	var trow := HBoxContainer.new()
+	trow.add_theme_constant_override("separation", 6)
+	box.add_child(trow)
+	for tn in [["Kind", "kind"], ["Firm", "firm"], ["Press", "press"]]:
+		var tb := _btn(trow, tn[0], _set_tone.bind(npc, tn[1]), 22, 64)
+		tb.name = "Tone_" + tn[1]
+		if chat_tone == tn[1]:
+			UiKit.set_button_style(tb, INK, INK, PAPER)
+	# what you ask
 	var victim: String = CaseEngine.first(game.sim, game.case["victim"])
-	var qs := [["Where were you last night?", "alibi", COST_ASK], ["How did you know %s?" % victim, "victim", COST_ASK], ["Who do you suspect?", "suspects", COST_ASK], ["Did you see anything?", "saw", COST_ASK]]
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 6)
-	box.add_child(grid)
+	var qs := [["Where were you last night?", "alibi"], ["How did you know %s?" % victim, "victim"], ["Who do you suspect?", "suspects"], ["Did you see anything?", "saw"]]
+	var chips := HFlowContainer.new()
+	chips.add_theme_constant_override("h_separation", 6)
+	chips.add_theme_constant_override("v_separation", 6)
+	chips.custom_minimum_size = Vector2(PANEL_W - 68.0, 0)
+	box.add_child(chips)
 	for x in qs:
-		var b := _wbtn(grid, "%s  (%d min)" % [x[0], x[2]], _q.bind(npc, x[1], ""))
+		var b := _chip(chips, "%s  (%d min)" % [x[0], COST_ASK], _q.bind(npc, x[1], ""))
 		b.name = "Q_" + x[1]
-	var wb := _wbtn(grid, "Ask where someone else was...", _ask_about_menu.bind(npc))
+	var wb := _chip(chips, "Where was someone else...", _ask_about_menu.bind(npc))
 	wb.name = "Q_about"
-	var tm := _wbtn(grid, "Ask about a person...", _person_menu.bind(npc))
+	var tm := _chip(chips, "About a person...", _person_menu.bind(npc))
 	tm.name = "Q_person"
-	var sb := _wbtn(grid, "Show them evidence...", _present_menu.bind(npc))
-	sb.name = "Q_show"
-	var fb := _wbtn(grid, "Be friendly  (%d min)" % COST_FRIENDLY, _friendly.bind(npc))
+	var fb := _chip(chips, "Be friendly  (%d min)" % COST_FRIENDLY, _friendly.bind(npc))
 	fb.name = "Q_friendly"
-	var lv := _btn(box, "Done talking", _leave_talk, 26, 50)
+	var sb := _chip(chips, "Show them...", _toggle_tray.bind(npc))
+	sb.name = "Q_show"
+	if chat_tray:
+		var tbox := VBoxContainer.new()
+		tbox.name = "TrayBox"
+		tbox.add_theme_constant_override("separation", 4)
+		box.add_child(tbox)
+		box.move_child(tbox, hdr.get_index() + 1)
+		_lbl(tbox, "Drag a card onto their portrait, or tap a card and then the portrait.  (%d min)" % COST_SHOW, 17, VIOLET)
+		var tray := ScrollContainer.new()
+		tray.name = "EvidenceTray"
+		tray.custom_minimum_size = Vector2(PANEL_W - 68.0, 74)
+		tray.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		tbox.add_child(tray)
+		var tr := HBoxContainer.new()
+		tr.add_theme_constant_override("separation", 6)
+		tray.add_child(tr)
+		for eid in game.det.order:
+			if String(eid).begins_with("cmp_"):
+				continue
+			var e: Dictionary = game.det.known[eid]
+			var ch := ChatView.EvChip.new()
+			ch.eid = String(eid)
+			ch.title = String(e["title"])
+			ch.text = String(e["title"])
+			ch.name = "Show_" + String(eid)
+			ch.custom_minimum_size = Vector2(150, 64)
+			ch.clip_text = true
+			ch.add_theme_font_size_override("font_size", UiKit.fs(18))
+			UiKit.set_button_style(ch, MARIGOLD if chat_sel_ev == ch.eid else Color("fffaf0"), INK, INK)
+			ch.pressed.connect(_pick_evidence.bind(npc, ch.eid))
+			tr.add_child(ch)
+		if game.det.order.is_empty():
+			_lbl(tr, "Your notebook is empty.", 20)
+	var lv := _btn(box, "Done talking", _leave_talk, 26, 56)
 	lv.name = "Q_leave"
 	UiKit.set_button_style(lv, INK, INK, PAPER)
 	_bottom_room(8.0)
+
+
+func _chip(parent: Control, text: String, cb: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.add_theme_font_size_override("font_size", UiKit.fs(19))
+	b.custom_minimum_size = Vector2(floorf((PANEL_W - 68.0 - 6.0) / 2.0), 64)
+	b.clip_text = false
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.pressed.connect(cb)
+	UiKit.press_fx(b)
+	parent.add_child(b)
+	return b
+
+
+func _meter(parent: Control, label: String, nm: String, v: float, col: Color) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+	var l := _lbl(row, label.to_upper(), 15, VIOLET)
+	l.custom_minimum_size = Vector2(76, 0)
+	var bar := ProgressBar.new()
+	bar.name = nm
+	bar.min_value = 0.0
+	bar.max_value = 1.0
+	bar.value = v
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(PANEL_W - 190.0 - 82.0, 16)
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = col
+	fill.set_corner_radius_all(6)
+	bar.add_theme_stylebox_override("fill", fill)
+	row.add_child(bar)
+
+
+func _set_tone(npc: String, t: String) -> void:
+	chat_tone = t
+	UiKit.haptic(10)
+	show_talk(npc)
+
+
+func _toggle_tray(npc: String) -> void:
+	chat_tray = not chat_tray
+	if not chat_tray:
+		chat_sel_ev = ""
+	show_talk(npc)
+
+
+func _pick_evidence(npc: String, eid: String) -> void:
+	chat_sel_ev = "" if chat_sel_ev == eid else eid
+	show_talk(npc)
+
+
+func _portrait_tapped(npc: String) -> void:
+	if chat_sel_ev != "":
+		_present(npc, chat_sel_ev)
+	else:
+		_say("Open Show them..., then drag a card onto their portrait.")
+
+
+func _present_dropped(eid: String, npc: String) -> void:
+	_present(npc, eid)
+
+
+## The face they pull: from how much they like you and how hard you have leaned on them.
+func _talk_expr(npc: String) -> String:
+	var aff: float = game.sim.people[npc].affinity("player")
+	var st: float = float(chat_strain.get(npc, 0.0))
+	if st >= 70.0:
+		return "tired"
+	if aff <= -4.0 or (st >= 40.0 and aff < 8.0):
+		return "cross"
+	if aff >= 12.0:
+		return "happy"
+	return "neutral"
+
+
+func _said_line(topic: String, about: String, tone: String) -> String:
+	var victim: String = CaseEngine.first(game.sim, game.case["victim"])
+	var line := ""
+	match topic:
+		"alibi": line = "Where were you last night?" if about == "" else "Where was %s?" % CaseEngine.first(game.sim, about)
+		"victim": line = "How did you know %s?" % victim
+		"suspects": line = "Who do you suspect?"
+		"saw": line = "Did you see anything?"
+		"person": line = "What do you make of %s?" % CaseEngine.first(game.sim, about)
+		_: line = "Tell me more."
+	return ("Take your time. " if tone == "kind" else ("Don't dodge. " if tone == "press" else "")) + line
+
+
+## Put a reply into the chat as short bubbles: quoted speech in one, each aside (an Empathy read, a new name) in a small one.
+func _log_reply(npc: String, said: String, text: String, fresh: bool, tone: String) -> void:
+	var lg: Array = chat_log.get(npc, [])
+	if said != "":
+		lg.append({"side": "me", "text": said, "new": false})
+	var strain: float = float(chat_strain.get(npc, 0.0))
+	strain += {"kind": -10.0, "press": 22.0}.get(tone, 6.0)
+	chat_strain[npc] = clampf(strain, 0.0, 100.0)
+	var expr := _talk_expr(npc)
+	var spoken: Array = []
+	for ln in text.split("\n"):
+		var t := String(ln).strip_edges()
+		if t == "":
+			continue
+		if t.begins_with("[") or t.begins_with("(") or t.begins_with("The chapel"):
+			if not spoken.is_empty():
+				lg.append({"side": "them", "text": " ".join(spoken).trim_prefix("\"").trim_suffix("\""), "new": fresh, "expr": expr})
+				spoken = []
+			lg.append({"side": "note", "text": t, "new": false})
+		else:
+			spoken.append(t)
+	if not spoken.is_empty():
+		lg.append({"side": "them", "text": " ".join(spoken).trim_prefix("\"").trim_suffix("\""), "new": fresh, "expr": expr})
+	if lg.size() > 24:
+		lg = lg.slice(-24)
+	chat_log[npc] = lg
 
 
 ## A wrapping two-line button for the question grid.
@@ -773,9 +961,14 @@ func _wbtn(parent: Control, text: String, cb: Callable) -> Button:
 
 
 func _q(npc: String, topic: String, about: String) -> void:
-	var r: Dictionary = game.ask(npc, topic, about)
+	var tone := chat_tone
+	var r: Dictionary = game.ask(npc, topic, about, "" if tone == "firm" else tone)
 	last_talk = {"npc": npc, "text": r["text"], "tone": "neutral"}
+	var fresh: bool = not (r["learned"] as Array).is_empty()
+	_log_reply(npc, _said_line(topic, about, tone), String(r["text"]), fresh, tone)
 	_learned(r["learned"])
+	if fresh:
+		UiKit.haptic(45)
 	show_talk(npc)
 
 
@@ -783,6 +976,7 @@ func _friendly(npc: String) -> void:
 	var r: Dictionary = game.talk(npc, "compliment")
 	last_talk = {"npc": npc, "text": "\"%s\"" % r.get("text", ""), "tone": r.get("tone", "neutral")}
 	game.spend(5)
+	_log_reply(npc, "It's a good town, this.", "\"%s\"" % r.get("text", ""), false, "kind")
 	show_talk(npc)
 
 
@@ -824,7 +1018,13 @@ func _present_menu(npc: String) -> void:
 func _present(npc: String, eid: String) -> void:
 	var r: Dictionary = game.present(npc, eid)
 	last_talk = {"npc": npc, "text": r["text"], "tone": "neutral"}
+	var fresh: bool = not (r["learned"] as Array).is_empty()
+	var title: String = String(game.det.known[eid]["title"]) if game.det.known.has(eid) else "this"
+	_log_reply(npc, "Look at this: %s." % title, String(r["text"]), fresh, "press")
+	chat_sel_ev = ""
 	_learned(r["learned"])
+	if fresh:
+		UiKit.haptic(60)
 	show_talk(npc)
 
 
@@ -833,7 +1033,7 @@ func _present(npc: String, eid: String) -> void:
 func _tab_bar(current: String) -> void:
 	var grid := GridContainer.new()
 	grid.name = "TabBar"
-	grid.columns = 4
+	grid.columns = 5
 	grid.add_theme_constant_override("h_separation", 6)
 	grid.add_theme_constant_override("v_separation", 6)
 	box.add_child(grid)
@@ -902,6 +1102,7 @@ func show_case(tab_name: String = "") -> void:
 			_seen_n = int(game.det.order.size())
 		"people": _tab_people()
 		"cctv": _tab_cctv()
+		"board": _tab_board()
 		"court": _tab_court()
 		"accuse": _tab_accuse()
 
@@ -1536,14 +1737,106 @@ func _appeal(id: String) -> void:
 		_visit(id)
 
 
+# ------------------------------------------------------------------ the evidence board
+func _tab_board() -> void:
+	var cards: Array = game.board_cards(12)
+	if cards.is_empty():
+		_empty_state("An empty corkboard", "Claims you collect land here as cards. String them to the people you suspect.")
+		return
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	box.add_child(row)
+	for m in [["Move cards", "move"], ["Draw strings", "string"]]:
+		var mb := _btn(row, m[0], _board_mode.bind(m[1]), 21, 64)
+		mb.name = "Mode_" + m[1]
+		if board_mode == m[1]:
+			UiKit.set_button_style(mb, INK, INK, PAPER)
+	var people: Array = []
+	var want := {}
+	for t in game.det.theory:
+		want[t["person"]] = true
+	for cd in cards:
+		if String(cd["subject"]) != "":
+			want[cd["subject"]] = true
+	for pid in game.persons_of_interest():
+		if want.has(pid) or people.size() < 4:
+			if people.size() < 6:
+				people.append({"id": pid, "name": CaseEngine.first(game.sim, pid), "p": game.sim.people[pid]})
+	board_view = EvidenceBoard.new()
+	var bw := PANEL_W - 64.0
+	board_view.custom_minimum_size = Vector2(bw, 520)
+	board_view.size = Vector2(bw, 520)
+	board_view.mode = board_mode
+	board_view.selected_pin = board_sel
+	box.add_child(board_view)
+	var red: Array = game.board_contradictions()
+	board_view.set_data(cards, people, game.det.theory, red, game.det.board["pos"])
+	board_view.string_made.connect(_board_string)
+	_scroll_to.call_deferred(row)
+	board_view.moved.connect(func(cid: String, nx: float, ny: float): game.det.board["pos"][cid] = [nx, ny])
+	board_view.pin_tapped.connect(func(pid: String): board_sel = pid)
+	_lbl(box, "Tap a card to open it. Colours: red physical, blue testimony, purple records, green lab." if board_mode == "move" else "Drag from a card to a person (or the other way) to record your theory. Drag again to cut it.", 17, VIOLET)
+	if not red.is_empty():
+		_lbl(box, "RED THREADS: claims that cannot both stand", 16, RED)
+		for k in red:
+			_lbl(box, "%s %s." % [CaseEngine.first(game.sim, String(k["who"])), k["why"]], 18)
+	var pb := _btn(box, "Present to the DA", _board_present, 24, 64)
+	pb.name = "PresentDA"
+	board_read_box = VBoxContainer.new()
+	board_read_box.name = "BoardRead"
+	box.add_child(board_read_box)
+	_bottom_room(8.0)
+
+
+func _board_mode(m: String) -> void:
+	board_mode = m
+	show_case("board")
+
+
+func _board_string(claim: String, person: String) -> void:
+	var now: bool = game.board_theory(claim, person)
+	UiKit.haptic(25 if now else 12)
+	board_view.links = game.det.theory
+	board_view.queue_redraw()
+	_say("You string it to %s." % CaseEngine.first(game.sim, person) if now else "You cut the string.")
+
+
+## The DA's read of the case you have laid out: built from the strings you drew, for the person selected (else the one with most strings).
+func _board_present() -> void:
+	for c in board_read_box.get_children():
+		board_read_box.remove_child(c)
+		c.queue_free()
+	var who := board_sel
+	if who == "":
+		var n := {}
+		for t in game.det.theory:
+			n[t["person"]] = int(n.get(t["person"], 0)) + 1
+		var best := 0
+		for pid in n:
+			if int(n[pid]) > best:
+				best = int(n[pid])
+				who = pid
+	if who == "":
+		_lbl(board_read_box, "Nothing to present yet. Draw a string from a claim to a person.", 20, VIOLET)
+		return
+	var pc := PanelContainer.new()
+	pc.name = "DaRead"
+	pc.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), VIOLET, 3, 10, 10))
+	board_read_box.add_child(pc)
+	var v := VBoxContainer.new()
+	pc.add_child(v)
+	_lbl(v, "THE DA'S READ: %s" % CaseEngine.name_of(game.sim, who).to_upper(), 17, VIOLET)
+	_lbl(v, game.board_read(who), 19).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+
+
 # ------------------------------------------------------------------ the cameras
 func _tab_cctv() -> void:
 	if cam_sel == "":
 		_lbl(box, "Pick a camera. Clocks are rarely exact: check one before you trust its times.", 21)
 	for cam in game.cameras():
-		if cam_sel != "" and cam_sel != cam["id"]:
+		if cam_sel != "":
 			continue
-		var sel: bool = cam_sel == cam["id"]
+		var sel: bool = false
 		var pc := PanelContainer.new()
 		pc.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0") if not sel else UiKit.PAPER_DIM, INK, 3, 10, 6))
 		box.add_child(pc)
@@ -1568,28 +1861,95 @@ func _tab_cctv() -> void:
 		hb.add_child(b)
 		UiKit.stamp(hb, "FACE" if cam["quality"] == "hd" else "FIGURES", GREEN if cam["quality"] == "hd" else VIOLET, 14)
 	if cam_sel != "":
-		var back := _btn(box, "Choose another camera", _pick_cam.bind(""), 22, 54)
+		var back := _btn(box, "%s  (change camera)" % game.camera(cam_sel)["label"], _pick_cam.bind(""), 21, 56)
 		back.name = "CamBack"
 		var cam: Dictionary = game.camera(cam_sel)
-		var cal := _btn(box, ("Check the camera's clock  (%d min)" % COST_CLOCK) if not game.det.calibrated.get(cam_sel, false) else "Clock checked", _calibrate.bind(cam_sel), 22, 56)
-		cal.disabled = game.det.calibrated.get(cam_sel, false)
-		cal.name = "Calibrate"
+		var wrow := HBoxContainer.new()
+		wrow.add_theme_constant_override("separation", 6)
+		box.add_child(wrow)
 		for w in WINDOWS:
-			var wb := _btn(box, "Watch: %s  (%d min)" % [w[0], COST_WATCH], _watch.bind(cam_sel, w[1], w[2]), 21, 60)
+			var wb := _btn(wrow, "%s\n%d min" % [String(w[0]).split(",")[0], COST_WATCH], _watch.bind(cam_sel, w[1], w[2]), 19, 72)
 			wb.name = "Watch_%d" % int(w[1])
+			wb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			wb.clip_text = false
-			wb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			if cam_win.size() == 2 and is_equal_approx(float(cam_win[0]), float(w[1])):
+				UiKit.set_button_style(wb, INK, INK, PAPER)
+		if cam_win.size() == 2:
+			var fr: Dictionary = game.camera_frames(cam_sel, float(cam_win[0]), float(cam_win[1]))
+			if not (fr["frames"] as Array).is_empty():
+				cam_scrub = Scrubber.new()
+				for pid in game.persons_of_interest():
+					cam_scrub.names[pid] = CaseEngine.name_of(game.sim, pid)
+				cam_scrub.set_data(fr, String(cam["label"]))
+				cam_scrub.dot_tapped.connect(_tag_dot)
+				box.add_child(cam_scrub)
+				var brow := HBoxContainer.new()
+				brow.add_theme_constant_override("separation", 6)
+				box.add_child(brow)
+				var fz := _btn(brow, "Freeze frame", _freeze, 21, 64)
+				fz.name = "Freeze"
+				fz.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				var cal := _btn(brow, ("Check clock (%d min)" % COST_CLOCK) if not game.det.calibrated.get(cam_sel, false) else "Clock checked", _calibrate.bind(cam_sel), 21, 64)
+				cal.disabled = game.det.calibrated.get(cam_sel, false)
+				cal.name = "Calibrate"
+				cal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				_lbl(box, "Drag the handle along the tape. Tap a figure on the map to tag them.", 17, VIOLET)
+				_scroll_to.call_deferred(cam_scrub)
+		if cam_win.size() != 2 or cam_scrub == null:
+			var cal2 := _btn(box, ("Check the camera's clock  (%d min)" % COST_CLOCK) if not game.det.calibrated.get(cam_sel, false) else "Clock checked", _calibrate.bind(cam_sel), 22, 64)
+			cal2.disabled = game.det.calibrated.get(cam_sel, false)
+			cal2.name = "Calibrate"
 		if result_text != "":
-			var rp := PanelContainer.new()
-			rp.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), INK, 3, 10, 10))
-			box.add_child(rp)
-			var rl := _lbl(rp, result_text, 21)
-			rl.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+			var rb := _btn(box, "Hide the log" if cam_text_open else "Read the log", _toggle_cam_text, 20, 64)
+			rb.name = "CamText"
+			if cam_text_open:
+				var rp := PanelContainer.new()
+				rp.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), INK, 3, 10, 10))
+				box.add_child(rp)
+				_lbl(rp, result_text, 20).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
 		_lbl(box, "%s" % cam["label"], 16, VIOLET)
+
+
+func _scroll_to(c: Control) -> void:
+	if not is_inside_tree():
+		return
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(c) and c.is_inside_tree():
+		scroll.scroll_vertical = maxi(int(c.global_position.y - box.global_position.y) - 6, 0)
+
+
+func _first_line(t: String) -> String:
+	var l := t.split("\n")[0]
+	return (l if l.length() < 70 else l.substr(0, 68) + "...") + ("  (tap for the log)" if t.contains("\n") else "")
+
+
+func _toggle_cam_text() -> void:
+	cam_text_open = not cam_text_open
+	show_case("cctv")
+
+
+func _tag_dot(key: String, at: float) -> void:
+	var r: Dictionary = game.tag_figure(cam_sel, float(cam_win[0]), float(cam_win[1]), at, key)
+	_say(String(r["text"]))
+	if r["ok"]:
+		cam_scrub.tagged[key] = true
+		cam_scrub.queue_redraw()
+		if bool(r.get("new", false)):
+			UiKit.haptic(40 if String(r["who"]) != "" else 20)
+
+
+func _freeze() -> void:
+	var r: Dictionary = game.freeze_frame(cam_sel, float(cam_win[0]), float(cam_win[1]), cam_scrub.at_time())
+	_say(String(r["text"]))
+	if r["ok"] and bool(r.get("new", false)):
+		UiKit.haptic(30)
 
 
 func _pick_cam(id: String) -> void:
 	cam_sel = id
+	cam_win = []
+	cam_text_open = false
 	result_text = ""
 	show_case("cctv")
 
@@ -1603,6 +1963,8 @@ func _calibrate(id: String) -> void:
 func _watch(id: String, a: float, b: float) -> void:
 	var r: Dictionary = game.view_camera(id, a, b)
 	result_text = r["text"]
+	cam_win = [a, b]
+	cam_text_open = false
 	_learned(r["learned"])
 	show_case("cctv")
 

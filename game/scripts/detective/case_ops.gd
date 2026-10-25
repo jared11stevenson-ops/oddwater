@@ -209,7 +209,9 @@ static func _tell_fact(sim: RefCounted, c: Dictionary, det: RefCounted, npc: Str
 
 
 ## Ask someone a question. Topics: alibi (about = who; "" means themselves), victim, suspects, saw.
-static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, topic: String, about: String = "") -> Dictionary:
+## `tone` ("", "kind", "firm" or "press") is how it is asked: kind earns a little rapport (which opens rapport-gated answers), press costs rapport and
+## wears on you; "" and "firm" behave exactly as before.
+static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, topic: String, about: String = "", tone: String = "") -> Dictionary:
 	var learned: Array = []
 	var lines: Array = []
 	var p: RefCounted = sim.people[npc]
@@ -221,6 +223,11 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 	if dmg.has(npc) and int(sim.day) < int(dmg[npc]["until"]) and topic != "person":
 		var rr := {"text": Voice.say("refuse_damaged", sim, c, npc, {"n": CaseEngine.first(sim, npc)}), "learned": [], "minutes": 3, "refused": true}
 		return _finish(sim, c, det, rr, "dm|%s" % npc)
+	if tone == "kind" and npc != victim:
+		p.bump("player", 3.0, 1.0)
+	elif tone == "press" and npc != victim:
+		p.bump("player", -3.0, -1.0)
+		det.add_stress(1.0)
 	var key := "%s|%s|%s" % [npc, topic, about]
 	var asked_before: bool = int(det.asked.get(key, 0)) > 0
 	det.asked[key] = int(det.asked.get(key, 0)) + 1
@@ -324,6 +331,10 @@ static func ask(sim: RefCounted, c: Dictionary, det: RefCounted, npc: String, to
 	if lines.is_empty():
 		lines.append("%s thinks about it. \"I've told you what I've got. Ask me something particular and I'll try.\"" % CaseEngine.first(sim, npc))
 	var text := "\n".join(lines)
+	if tone == "press" and p.affinity("player") < 0.0:
+		text = "%s bristles. %s" % [CaseEngine.first(sim, npc), text]
+	elif tone == "kind" and p.affinity("player") >= 10.0:
+		text = "%s relaxes a little. %s" % [CaseEngine.first(sim, npc), text]
 	_log(det, sim, npc, topic, about, text)
 	if not learned.is_empty():
 		det.gain_xp(12 * learned.size())

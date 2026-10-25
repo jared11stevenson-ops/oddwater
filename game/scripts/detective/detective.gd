@@ -35,6 +35,8 @@ var rank := "Detective"             # the state police can reassign you after a 
 var funerals: Dictionary = {}       # case id -> true once you have attended
 var flagged: Dictionary = {}        # person id -> true: people you have chosen to keep an eye on
 var board: Dictionary = {"pos": {}, "links": []}   # the evidence board: card positions (0..1) and the strings YOU drew: [a, b, kind]; your theory, not the truth
+var watched: Dictionary = {}        # "cam|from|to" -> true once you have sat through that stretch of tape (the scrubber opens on it)
+var theory: Array = []              # your theory on the evidence board: [{claim: claim id, person: person id}]; what YOU think, not what is true
 var visited: Dictionary = {}        # lot id -> true once you have stood at its door (fast travel remembers them)
 var ctx: Dictionary = {"case": {}, "jobs": {}}   # the public case file and the town's trades, set by the game (not saved: it is rebuilt)
 
@@ -108,6 +110,8 @@ func rollover(prefix: String) -> void:
 	asked = {}
 	calibrated = {}
 	warrants = {}
+	watched = {}
+	theory = []
 
 
 func has(id: String) -> bool:
@@ -126,6 +130,43 @@ func da_read(id: String, person_name: String = "") -> String:
 
 func flag_person(id: String) -> void:
 	flagged[id] = true
+
+
+## Toggle a string on the evidence board from a claim to a person: your theory. Returns true if it now stands.
+func set_theory(claim: String, person: String) -> bool:
+	for i in theory.size():
+		if theory[i]["claim"] == claim and theory[i]["person"] == person:
+			theory.remove_at(i)
+			return false
+	theory.append({"claim": claim, "person": person})
+	flagged[person] = true
+	return true
+
+
+## The DA's read of your theory: only the claims you strung to this person count (a trace nobody is named on is read as theirs), plus the
+## case's own facts (time of death and the like). Qualitative, from the notebook alone.
+func board_read(person: String, person_name: String = "") -> String:
+	var linked := {}
+	for t in theory:
+		if t["person"] == person:
+			linked[t["claim"]] = true
+	var sub: Array = []
+	for eid in order:
+		var e: Dictionary = known[eid]
+		var keep: Array = []
+		for cl in e.get("claims", []):
+			var pred := String(cl.get("predicate", ""))
+			if pred in ["time_of_death", "weapon_on_grounds", "known_for"]:
+				keep.append(cl)
+			elif linked.has(String(cl.get("cid", ""))) and String(cl.get("subject", "")) in ["", person]:
+				var c2: Dictionary = (cl as Dictionary).duplicate()
+				c2["subject"] = person
+				keep.append(c2)
+		if not keep.is_empty():
+			var e2: Dictionary = (e as Dictionary).duplicate()
+			e2["claims"] = keep
+			sub.append(e2)
+	return Reasoning.da_read(sub, ctx.get("case", {}), person, ctx.get("jobs", {}), person_name)
 
 
 func visit(lot: String) -> void:
@@ -185,7 +226,7 @@ func to_dict() -> Dictionary:
 		"known": known.duplicate(true), "order": order.duplicate(), "statements": statements.duplicate(true), "warrants": warrants.duplicate(),
 		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed,
 		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate(), "flagged": flagged.duplicate(),
-		"board": board.duplicate(true), "visited": visited.duplicate()}
+		"board": board.duplicate(true), "watched": watched.duplicate(), "theory": theory.duplicate(true), "visited": visited.duplicate()}
 
 
 static func from_dict(d: Dictionary) -> RefCounted:
@@ -204,6 +245,8 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	x.flagged = d.get("flagged", {}).duplicate()
 	x.board = d.get("board", {"pos": {}, "links": []}).duplicate(true)
 	x.visited = d.get("visited", {}).duplicate()
+	x.watched = d.get("watched", {}).duplicate()
+	x.theory = d.get("theory", []).duplicate(true)
 	x.order = d.get("order", []).duplicate()
 	x.statements = d.get("statements", []).duplicate(true)
 	x.warrants = d.get("warrants", {}).duplicate()

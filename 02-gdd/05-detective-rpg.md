@@ -61,6 +61,13 @@ Everything above in the loop is playable in the 3D town, plus the following laye
 - **New HUD and tutorial.** Objective tracker with costs in minutes, notebook, people, lab, jail and the Gallery, the paper, and a first-case tutorial overlay.
 - **Procedural town and performance.** The 3D town is built from the lot layout, baked into chunked meshes and multimeshes, with a draw-distance budget, pooled lamp lights, and window lights that follow who is home (a small top-down map repainted each half hour; the dead leave their house dark, a newcomer lights theirs).
 
+## Hands-on screens (2026-10-25)
+
+Three walls of text became things you touch (all read only the case file and the notebook; the firewall tests still pass).
+- **CCTV scrubber** (`cctv_scrubber.gd`): after Watch, drag a 72 px handle along the tape; a top-down map shows a dot per figure the camera recorded (`Cctv.frames` / `DetectiveGame.camera_frames`: only what the lens covers, names only where the footage already gave one, stamp on the camera's own clock; locked until that window has been watched). An unchecked clock shows a warning bar, never the size of the drift. Tap a dot to tag it (`tag_figure`: a `tagged_on_tape` claim, and a person of interest if named); Freeze frame saves a snapshot claim; Check clock stays on the screen.
+- **Evidence board** (`Board` tab, `evidence_board.gd`): one card per notebook claim, grouped by place and time, coloured by channel (physical, testimony, records, lab); tap to expand, drag to move (positions kept in `det.board.pos`). Draw strings mode drags a string from a card to a person pin and stores the theory in `det.theory = [{claim, person}]` (saved). Red threads come from `Reasoning.contradictions`. Present to the DA runs `da_read` over only the claims strung to that person (`Detective.board_read`).
+- **Chat interviews** (`chat_view.gd`): short bubbles (detective right, person left with a live expression), Rapport and Strain meters, Kind / Firm / Press tones (`ask(..., tone)`: kind earns affinity, press costs it and your nerves, default unchanged), topic chips, tap-to-expand long answers, a haptic buzz on a real reveal. Show them... is a tray of notebook cards you drag onto the portrait, or tap a card then the portrait.
+
 ## Remaining roadmap (honest)
 - Cult and lake case strata, and the overarching 1961 flood conspiracy, are only hinted at (lore lines, the 4:12 case detail). No case is yet *about* them.
 - Office and upgrades (lab, map, informant network); interiors for scenes; more crime types beyond murder.

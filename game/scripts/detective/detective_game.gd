@@ -218,8 +218,8 @@ func examine(lot: String, spot: String) -> Dictionary:
 	return r
 
 
-func ask(npc: String, topic: String, about: String = "") -> Dictionary:
-	var r: Dictionary = CaseOps.ask(sim, _truth, det, npc, topic, about)
+func ask(npc: String, topic: String, about: String = "", tone: String = "") -> Dictionary:
+	var r: Dictionary = CaseOps.ask(sim, _truth, det, npc, topic, about, tone)
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
 	return r
@@ -273,9 +273,119 @@ func dust_spots() -> Array:
 
 func view_camera(cam_id: String, from_h: float, to_h: float) -> Dictionary:
 	var r: Dictionary = Cctv.view(sim, _truth, det, cam_id, from_h, to_h, persons_of_interest())
+	det.watched[_wkey(cam_id, from_h, to_h)] = true
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
 	return r
+
+
+## The tape of a stretch you have sat through, frame by frame (see Cctv.frames). Free to scrub, but only for a window you have watched.
+const FRAME_STEP := 0.05
+
+func camera_frames(cam_id: String, from_h: float, to_h: float, step: float = FRAME_STEP) -> Dictionary:
+	if not det.watched.has(_wkey(cam_id, from_h, to_h)):
+		return {"frames": [], "clock_checked": false, "radius": 0.0, "step": step, "locked": true}
+	return Cctv.frames(sim, _truth, cam_id, from_h, to_h, step, det.calibrated.get(cam_id, false), persons_of_interest())
+
+
+func _wkey(cam_id: String, a: float, b: float) -> String:
+	return "%s|%d|%d" % [cam_id, int(a * 10), int(b * 10)]
+
+
+## Tag a figure on the tape (by its track key at the camera-clock time `at`): a claim in the notebook, and a person of interest if the
+## picture was good enough to name them. Returns {ok, text, who}.
+func tag_figure(cam_id: String, from_h: float, to_h: float, at: float, key: String) -> Dictionary:
+	var fr: Dictionary = camera_frames(cam_id, from_h, to_h)
+	var cam: Dictionary = camera(cam_id)
+	var best: Dictionary = {}
+	var bd := 1e9
+	for f in fr["frames"]:
+		var d := absf(float(f["at"]) - at)
+		if d > FRAME_STEP * 1.6 or d >= bd:
+			continue
+		for fg in f["figures"]:
+			if fg["key"] == key:
+				best = fg
+				bd = d
+	if best.is_empty() or cam.is_empty():
+		return {"ok": false, "text": "Nobody there to tag.", "who": ""}
+	var who: String = String(best["who"])
+	var clock := Brief.clock_text(fposmod(at, 24.0))
+	var eid := "tag_%s_%s_%d" % [cam_id, key, int(at * 20)]
+	var nm: String = CaseEngine.name_of(sim, who) if who != "" else String(best["note"])
+	var txt := "Tagged on %s at %s (camera clock): %s." % [cam["label"], clock, nm.capitalize() if who == "" else nm]
+	var e := {"id": eid, "title": "Tagged: %s" % (nm if who != "" else "a figure"), "text": txt, "kind": "cctv", "source": cam["lot"], "day": int(sim.day), "camera": cam_id}
+	var cert := 0.9 if who != "" else 0.5
+	e["claims"] = Claims.emit(_truth, [Claims.make("recorded", who, "tagged_on_tape" if who != "" else "figure_seen", String(cam["lot"]), at, "" if who != "" else String(best["note"]).replace("a figure with ", ""), cert)], String(cam["lot"]), txt)
+	var isnew: bool = det.learn(e)
+	if who != "":
+		flag_person(who)
+	_after_op()
+	return {"ok": true, "text": txt if isnew else "Already tagged.", "who": who, "new": isnew}
+
+
+## Save the frame at `at` as a snapshot claim (what was on screen, by the camera's own clock).
+func freeze_frame(cam_id: String, from_h: float, to_h: float, at: float) -> Dictionary:
+	var fr: Dictionary = camera_frames(cam_id, from_h, to_h)
+	var cam: Dictionary = camera(cam_id)
+	if fr["frames"].is_empty() or cam.is_empty():
+		return {"ok": false, "text": "No tape to freeze."}
+	var best: Dictionary = fr["frames"][0]
+	for f in fr["frames"]:
+		if absf(float(f["at"]) - at) < absf(float(best["at"]) - at):
+			best = f
+	var n: int = (best["figures"] as Array).size()
+	var named: Array = []
+	for fg in best["figures"]:
+		if fg["who"] != "":
+			named.append(CaseEngine.name_of(sim, String(fg["who"])))
+	var clock := Brief.clock_text(fposmod(float(best["at"]), 24.0))
+	var txt := "Frozen frame, %s at %s (camera clock): %s%s." % [cam["label"], clock, "no one in view" if n == 0 else "%d figure%s in view" % [n, "" if n == 1 else "s"], (", including " + ", ".join(named)) if not named.is_empty() else ""]
+	var e := {"id": "frame_%s_%d" % [cam_id, int(float(best["at"]) * 20)], "title": "Frame at %s" % clock, "text": txt, "kind": "cctv", "source": cam["lot"], "day": int(sim.day), "camera": cam_id}
+	e["claims"] = Claims.emit(_truth, [Claims.make("recorded", "", "observation", String(cam["lot"]), float(best["at"]), "", 0.9 if det.calibrated.get(cam_id, false) else 0.7)], String(cam["lot"]), txt)
+	var isnew: bool = det.learn(e)
+	_after_op()
+	return {"ok": true, "text": txt if isnew else "You already saved that frame.", "new": isnew}
+
+
+## The evidence board's cards: one per claim in the notebook (newest `limit`), by channel and place/time, from the notebook alone.
+func board_cards(limit: int = 12) -> Array:
+	var out: Array = []
+	for eid in det.order:
+		var e: Dictionary = det.known[eid]
+		var kind := String(e.get("kind", ""))
+		if kind in ["lore", "scandal"] or String(eid).begins_with("cmp_"):
+			continue
+		var ch := "records"
+		match kind:
+			"testimony", "confession": ch = "testimony"
+			"physical", "print", "found": ch = "physical"
+			"lab": ch = "lab"
+		for cl in e.get("claims", []):
+			var t: float = float(cl.get("time", -1.0))
+			var place := String(cl.get("place", "")) if String(cl.get("place", "")) != "" else String(e.get("source", ""))
+			var pl: String = place_name(place) if layout.by_id.has(place) else ""
+			var pred := String(cl.get("predicate", "")).replace("_", " ")
+			out.append({"cid": String(cl.get("cid", "")), "eid": String(eid), "title": String(e.get("title", "")), "sub": pred if pred != "observation" else "noted",
+				"text": String(e.get("text", "")), "channel": ch, "group": pl if pl != "" else "Elsewhere", "time": t, "subject": String(cl.get("subject", ""))})
+	if out.size() > limit:
+		out = out.slice(out.size() - limit)
+	out.sort_custom(func(a, b): return a["group"] < b["group"] or (a["group"] == b["group"] and float(a["time"]) < float(b["time"])))
+	return out
+
+
+## Contradictions the rules of evidence find in the notebook (never the truth): [{a, b, who, why}] by entry id.
+func board_contradictions() -> Array:
+	return Reasoning.contradictions(det.known, case)
+
+
+## String a claim to a person (or cut the string). Returns true if the string now stands.
+func board_theory(claim: String, person: String) -> bool:
+	return det.set_theory(claim, person)
+
+
+func board_read(person: String) -> String:
+	return det.board_read(person, CaseEngine.first(sim, person) if sim.people.has(person) else "")
 
 
 func calibrate_camera(cam_id: String) -> Dictionary:

@@ -362,7 +362,7 @@ func _initialize() -> void:
 	for c in cams:
 		if by_name(hud.box, "Cam_" + c["id"]) != null:
 			left += 1
-	ok(left == 1 and by_name(hud.box, "CamBack") != null, "choosing a camera collapses the list so the controls fit")
+	ok(left == 0 and by_name(hud.box, "CamBack") != null, "choosing a camera collapses the list to one change-camera button so the controls fit")
 	ok(String(by_name(hud.box, "Watch_18").text).contains("min"), "watching shows its cost")
 
 	# ---- interview menu

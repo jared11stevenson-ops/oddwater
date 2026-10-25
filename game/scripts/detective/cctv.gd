@@ -175,6 +175,76 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 	return {"events": evs, "text": text + off_txt, "claims": claims, "offset": int(cam["offset"])}
 
 
+## The recording as a series of frames, for scrubbing: every `step` hours from `from_h` to `to_h`, who the camera would have on tape and where
+## (metres from the camera, +x east, +y south). Only what the camera records: a figure is in a frame only inside its radius, a name only
+## where footage() would give one, and the stamp is the camera's own clock. Returns {frames: [{at, figures: [{key, x, y, dx, dy, ident,
+## who, note}]}], clock_checked, radius, step}. (How far out the clock is stays hidden until it has been checked.) `key` is an opaque track id so a dot can be followed.
+static func frames(sim: RefCounted, c: Dictionary, cam_id: String, from_h: float, to_h: float, step: float, calibrated: bool, recognised: Array = []) -> Dictionary:
+	var cam: Dictionary = camera(c, cam_id)
+	if cam.is_empty() or step <= 0.0:
+		return {"frames": [], "clock_checked": calibrated, "radius": 0.0, "step": step}
+	var cp: Vector2 = door_point(cam["lot"])
+	var hd: bool = cam["quality"] == "hd"
+	var rad := float(cam["radius"])
+	var shown := 0.0 if calibrated else float(cam["offset"]) / 60.0
+	var k: String = c["killer"]
+	var tracks: Array = []        # [{key, who, ident, note, pts: [Vector2], t: [hour at each point]}]
+	var wi := 0
+	for w in walks(sim, c):
+		wi += 1
+		if w["who"] == k and c.get("avoids_cams", false):
+			continue
+		var pts: Array = w["pts"]
+		var ts: Array = []
+		var t := float(w["t0"])
+		for i in pts.size():
+			ts.append(t)
+			if i < pts.size() - 1:
+				t += ((pts[i] as Vector2).distance_to(pts[i + 1]) / WALK_MPS) / 3600.0
+		tracks.append({"key": "f%d" % (absi(hash("%s|%d|%s" % [w["who"], wi, cam_id])) % 9000), "who": String(w["who"]), "pts": pts, "t": ts, "trait": _trait_of(c, String(w["who"]))})
+	var arrivals: Array = []      # [{who, h}]
+	var d: int = int(c["day"])
+	for tk in range(1, int(sim.tuning["ticks_per_day"])):
+		var h := 6.0 + float(tk) * 0.5
+		if h < from_h - 0.3 or h > to_h:
+			continue
+		if not (hd or not recognised.is_empty()):
+			break
+		for id in sim.order:
+			if (hd or recognised.has(id)) and sim.where_was(id, d, tk) == cam["lot"] and sim.where_was(id, d, tk - 1) != cam["lot"]:
+				arrivals.append({"who": id, "h": h})
+	var out: Array = []
+	var n := int(floor((to_h - from_h) / step + 0.0001))
+	for si in range(n + 1):
+		var h := from_h + float(si) * step
+		var figs: Array = []
+		for tr in tracks:
+			var ts2: Array = tr["t"]
+			var pts2: Array = tr["pts"]
+			if pts2.size() < 2 or h < float(ts2[0]) or h > float(ts2[ts2.size() - 1]):
+				continue
+			var j := 0
+			while j < ts2.size() - 2 and float(ts2[j + 1]) < h:
+				j += 1
+			var span := float(ts2[j + 1]) - float(ts2[j])
+			var u := 0.0 if span <= 0.0 else clampf((h - float(ts2[j])) / span, 0.0, 1.0)
+			var a: Vector2 = pts2[j]
+			var b: Vector2 = pts2[j + 1]
+			var pos := a.lerp(b, u)
+			var dist := pos.distance_to(cp)
+			if dist > rad:
+				continue
+			var face: bool = hd and dist <= rad * 0.7
+			var dir := (b - a).normalized()
+			figs.append({"key": tr["key"], "x": pos.x - cp.x, "y": pos.y - cp.y, "dx": dir.x, "dy": dir.y, "ident": face,
+				"who": tr["who"] if face else "", "note": "" if face else "a figure with %s" % tr["trait"]})
+		for ar in arrivals:
+			if h >= float(ar["h"]) and h < float(ar["h"]) + 0.2:
+				figs.append({"key": "a%d" % (absi(hash("%s|%s" % [ar["who"], cam_id])) % 9000), "x": 0.0, "y": -rad * 0.12, "dx": 0.0, "dy": 1.0, "ident": true, "who": String(ar["who"]), "note": ""})
+		out.append({"at": h + shown, "figures": figs})
+	return {"frames": out, "clock_checked": calibrated, "radius": rad, "step": step}
+
+
 ## Open a camera's recording for a window and put what it shows in the notebook.
 static func view(sim: RefCounted, c: Dictionary, det: RefCounted, cam_id: String, from_h: float, to_h: float, recognised: Array = []) -> Dictionary:
 	var cam: Dictionary = camera(c, cam_id)
