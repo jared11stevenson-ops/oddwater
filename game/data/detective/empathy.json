@@ -1,0 +1,132 @@
+{
+  "rows": [
+    {"key": "routine", "pred": "victim_routine", "label": "THEIR DAYS"},
+    {"key": "loved", "pred": "victim_loved", "label": "WHO THEY LOVED"},
+    {"key": "kindness", "pred": "victim_kindness", "label": "A SMALL KINDNESS"},
+    {"key": "planning", "pred": "victim_planning", "label": "WHAT THEY WERE PLANNING"}
+  ],
+  "routine": [
+    "{v} was up before the milk, and on the step with the first tea by {w}. {h} was the other half of the day: the same chair, the same window, the same two sugars.",
+    "People set clocks by {v}. Out the door at {w}, work until the whistle, then {h} for an hour before the long walk home the back way.",
+    "{v} kept a timetable nobody had asked for and everyone relied on: {w} for waking, {h} for resting, and a call to somebody every Sunday without fail.",
+    "A creature of habit, they say of {v}, and say it fondly. Up at {w}. Out at the same corner. {h} after, where the staff kept a cup for them."
+  ],
+  "loved": {
+    "spouse": "{v} and {n} had been together long enough to stop finishing each other's sentences and start finishing each other's crossword.",
+    "child": "{n} was the centre of it. {v} had a photograph of {n} in the glove box and another at work, and would show either to anyone who stood still.",
+    "parent": "{n} raised {v} and {v} never stopped saying thank you in small ways: a casserole on a Tuesday, a lift to the clinic, a hand on the back of a chair.",
+    "sibling": "{n} was the one person who could make {v} laugh until they had to sit down. They fought like children and phoned every night.",
+    "friend": "{n} was {v}'s oldest friend, the kind you do not explain yourself to. They had a table at the same place for twenty years.",
+    "colleague": "At work it was {n} that {v} ate lunch with. Not close, exactly. Reliable. Which, in a small town, is a form of love.",
+    "neighbour": "{n} lived over the fence, and {v} had been looking over that fence for years. They traded tomatoes in August and gossip all year round."
+  },
+  "kindness": [
+    "{v} kept a jar of boiled sweets by the door for the children who came to the wrong house, and never once told them it was the wrong house.",
+    "Every winter {v} left a flask of something hot on the bench by the bus stop. Nobody ever saw them do it. Everybody knew.",
+    "{v} once drove forty minutes to bring a stranger's lost dog home and refused the reward, then accepted a slice of cake.",
+    "The porch light at {v}'s place stayed on all night so the late-shift nurse could find her way up the lane.",
+    "{v} paid the deposit on a funeral nobody could afford, and let the family think the chapel had waived it.",
+    "When the Pruitt boy's bicycle was stolen, {v} turned up a week later with a second-hand one and said it had been in the shed for years.",
+    "{v} remembered everyone's name, and the name of their dog, and which of the two was the difficult one."
+  ],
+  "planning": [
+    "{v} had put a deposit on a small rowing boat and told no one except the man who sold it, who told everyone.",
+    "{v} was learning the cornet in secret, in the shed, with a towel stuffed down the bell. The neighbours had heard. Nobody said.",
+    "A letter in {v}'s coat asks the town hall about the lease on the empty shop. {v} meant to open something, and had not yet decided what.",
+    "{v} had been saving for a trip to the coast: the first in thirty years. A calendar by the phone had one date circled twice.",
+    "{v} meant to ask someone to dinner. The list of places to try is in {v}'s handwriting, with ticks and crosses and one word underlined: 'brave'.",
+    "{v} was going to retire in the spring and had already started the garden that would be the whole of it."
+  ],
+  "keepsake": [
+    "a green thermos, dented at the base, with the initials scratched into the lid",
+    "a pocket almanac with the tides marked in pencil",
+    "a pair of reading glasses held together with a bent paperclip",
+    "a tin of buttons sorted by colour, each with a little paper tag",
+    "a knitted scarf, one end finished and one end not",
+    "a cassette in a handwritten sleeve, 'for the long road'",
+    "a key ring with a brass fish and three keys that fit nothing you can find",
+    "a small enamel pin from a long-closed picture house",
+    "a spoon with a bent handle that had been somebody's favourite for fifty years"
+  ],
+  "keepsake_found": [
+    "Among the dead's things there is one that does not belong with the evidence: {i}. The Sheriff looks the other way. You put it in your pocket and tell yourself it is for the family.",
+    "{i}. It is of no use to the case. It is in your coat before you have thought about why. Someone should have it, and it is not a locker.",
+    "You find {i} and cannot make yourself log it as an exhibit. It goes in your pocket, and stays there, and you feel it every time you sit down."
+  ],
+  "keepsake_return": {
+    "spouse": "{n} opens the door before you knock. You hold out {i}. {n} takes it with both hands and does not say anything for a long time, and then says, \"He used to leave it everywhere.\" It is the nearest thing to a verdict the case will get.",
+    "child": "{n} turns {i} over in small, careful hands. \"It was in the car,\" {n} says. \"I looked for it.\" You nod. Some things stay the same size however much else changes.",
+    "parent": "{n} holds {i} in the lap of an apron, and the kitchen is very quiet. \"I gave them that,\" says {n}, and you let it be true.",
+    "sibling": "{n} laughs once, a wet sound, at {i}. \"They always said they'd lose it.\" You say you know. You do not, but you say it.",
+    "friend": "{n} weighs {i} in one palm. \"I'll keep it where I can see it,\" says {n}. The chair across the table has not been moved in a month.",
+    "colleague": "{n} takes {i} at the counter, in front of nobody, and puts it somewhere safe. \"Thank you for thinking of it,\" {n} says. \"Nobody thinks of that.\"",
+    "neighbour": "{n} stands at the fence with {i} in both hands and looks across the garden toward the empty house. \"I'll look after the tomatoes,\" {n} says, which is not what they were asked."
+  },
+  "tell": {
+    "spouse": {
+      "direct": ["You say it plainly on the step. {n} sits down on the stairs, quite slowly, as if the stairs had been moved.", "You say the words. {n} says, \"No,\" the way you correct a small mistake, and then again, with no air in it."],
+      "gentle": ["You ask if you can come in. You put the kettle on yourself, because {n}'s hands will not. When the tea is on the table {n} tells you how {v} took the milk, as if it mattered, and it does.", "You sit, and say nothing for a minute. Then you tell it. {n} listens with a hand pressed flat against the table, and when the crying comes it comes quietly, and you stay."],
+      "ask": ["You begin with questions. {n} answers every one in short flat sentences, and when you leave there is the smallest hardening in the way the door closes."]
+    },
+    "child": {
+      "direct": ["You tell {n} as simply as you can. {n} looks past you at the road, as if {v} might be on it, and the silence goes on much too long.", "\"{v} isn't coming home,\" you say, and that is the best you can do. {n} nods, and nods, and does not stop nodding."],
+      "gentle": ["You crouch to {n}'s height and ask who else is in the house. You wait until somebody is. Then you tell it in small true pieces, and {n} asks the questions children ask, and you answer every one.", "You find a chair and sit with {n}. You say you are sorry, and that it was not anyone's fault in this room. {n} leans against your arm without seeming to notice."],
+      "ask": ["You ask your questions. {n} answers them like homework, carefully and with no expression, and hands you a drawing on the way out that you do not know what to do with."]
+    },
+    "parent": {
+      "direct": ["You tell {n} at the door. The old hands go up and then do not know what to do, and finally hold the frame.", "{n} hears it, and says, \"But I made them a sandwich on Thursday,\" as though that were an argument."],
+      "gentle": ["You help {n} to a chair, and kneel to be level, and say it slowly. {n} asks if {v} was cold. You say you think not. It is the first kind lie you have told in this job and it will not be the last.", "You sit beside {n} on the settee and let the clock fill the room. When {n} is ready, {n} talks about {v} at six, at sixteen, at forty, as if all the ages were in the room."],
+      "ask": ["You ask your questions across the kitchen table. {n} answers them with great dignity, and with a stillness that is worse than tears."]
+    },
+    "sibling": {
+      "direct": ["You say it. {n} swears, once, and then covers their mouth with a hand, as if {v} might have heard.", "{n} takes it standing up, jaw working. \"I was going to ring tonight,\" {n} says. \"I was going to ring tonight.\""],
+      "gentle": ["You ask {n} to sit. You tell it, and wait. {n} starts to laugh, helplessly, at some memory of {v}, and the laugh goes wrong, and you stay for all of it.", "You sit beside {n} on the back step. {n} tells you about the time {v} fell off the pier in their good coat, and keeps telling you, and keeps telling you."],
+      "ask": ["You ask your questions. {n} gives answers in a hard, rapid voice, looking at the wall, and does not offer you a drink."]
+    },
+    "friend": {
+      "direct": ["You say it, and {n} sits very still. \"We were going to the pictures on Friday,\" {n} says, as if that would be a thing to change.", "{n} takes the news like a slap, then like a stone, then like a thing that has always been coming. \"Thank you for telling me yourself,\" {n} says."],
+      "gentle": ["You ask {n} to sit with you, and buy two coffees you both let go cold. {n} tells you what {v} was like on a good day, and you let it be a good day for as long as it lasts.", "You tell {n} in the quiet corner of the Pink Heron, and nobody comes near. {n} orders {v}'s drink by habit, and then sits holding it."],
+      "ask": ["You begin with questions. {n} meets each one with a look that says what the look says. They answer, and the answers are short, and so is the goodbye."]
+    },
+    "colleague": {
+      "direct": ["You tell {n} over the counter, in front of a customer, because it is where you found them. {n} puts down what they were holding with great care.", "{n} hears it and goes on wiping the same square of counter for what feels like a minute. \"I'll cover their shifts,\" {n} says finally, and that is how {n} says everything else."],
+      "gentle": ["You ask {n} for five minutes in the back, and shut the door. You tell it there. {n} sits on a crate and says what a good colleague {v} was, a little at a time, as if it were a list, and then not as a list.", "You wait until the shop is empty and turn the sign yourself. {n} cries without ceremony, standing up, and apologises for it, and you tell {n} not to."],
+      "ask": ["You ask your questions across the counter. {n} answers politely. At the door, {n} says, \"They were a person, you know,\" and goes back to work."]
+    },
+    "neighbour": {
+      "direct": ["You say it on the doorstep. {n} says, \"But I saw the light on,\" and then says nothing at all, looking across the fence.", "{n} takes the news with a hand on the gatepost and says, quite politely, that they will need to sit down in a minute."],
+      "gentle": ["You ask {n} to sit on the porch, and sit with them, and watch the street go by. {n} tells you about the borrowed ladder and the shared hedge, and you let the hedge be as important as it is.", "You bring {n} indoors. {n} makes tea out of habit and then sits with the cup untouched, saying the dead person's name now and then, to see if it still fits."],
+      "ask": ["You ask your questions on the step. {n} answers carefully, as if aware of being a witness for the first time in a long life."]
+    }
+  },
+  "tell_after": {
+    "direct": "It lands. You did not soften it, and {n} will remember that you did not.",
+    "gentle": "You stay longer than you meant to. {n} is not alone with it for the first hour, and that is all you can give.",
+    "ask": "You got your answers. You did not get anything else."
+  },
+  "tell_gift": [
+    "At the door, {n} stops you. \"There's something I haven't said to anyone,\" {n} says. \"I didn't think it mattered. I think it does now.\"",
+    "\"You were kind,\" {n} says, finding a handkerchief. \"I'll tell you what I wouldn't have told you an hour ago.\"",
+    "{n} holds your sleeve a moment too long. \"Ask me again,\" {n} says. \"I'll answer this time.\""
+  ],
+  "tell_closed": ["You have already sat with {n} about this. There is nothing new to bring, and it would be cruel to make them hear it twice.", "{n} has been told, and there is nothing to add."],
+  "refuse": [
+    "{n} turns the cup in its saucer. \"Not yet,\" says {n}. \"I can't talk about {v} like that yet. Come back when I have had someone sit with me.\"",
+    "{n} shakes their head. \"Ask me something else,\" says {n}. \"Not that. Not until somebody has told me properly.\""
+  ],
+  "remember": {
+    "routine": ["\"{v}?\" says {n}. \"{w}, every day. You could set a clock by it.\" A small smile, quickly put away.", "{n} shrugs, and then, as it comes back, doesn't. \"Same corner. Same time. {v} was the most predictable person I know, and I'd give a great deal for an unpredictable day.\""],
+    "loved": ["\"{v} lit up around {m}. You'd know it if you saw it. Everybody did.\"", "{n} says, carefully, \"The one {v} talked about was {m}. Not to {m}, mind. About {m}.\""],
+    "kindness": ["\"I'll tell you something {v} did,\" says {n}. \"They'd have hated me telling you.\"", "{n} thinks, and then tells it like a story told many times to oneself."],
+    "planning": ["{n} looks away. \"There was something {v} meant to do. They'd not said, but you could tell.\"", "\"They were going to,\" says {n}, \"you know. Do something about it. Soon.\""]
+  },
+  "eulogy": [
+    "The pastor reads out what the town already knows: {v} was early to everything and late to nothing. A boy at the back is crying quietly into his sleeve. You find that you are looking for who is not crying.",
+    "Someone sings a hymn a half-tone flat, and nobody minds, and the whole chapel sings it flat with them.",
+    "The pastor says {v} left the world a little smaller and warmer than {v} found it. Nobody argues. Rain starts on the roof."
+  ],
+  "dossier_empty": "You know how they died. You do not yet know who they were. Ask the people who loved them.",
+  "carry_none": "You carry nothing of theirs yet.",
+  "carry": "You carry {i}. It belongs to {n}.",
+  "returned": "You gave {i} back to {n}."
+}

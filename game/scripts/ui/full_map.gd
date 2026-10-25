@@ -5,6 +5,7 @@ extends Control
 ## It reads only what MapData allows (case file, notebook, directory), never the private truth.
 
 signal travel_requested(lot: String)
+signal watch_requested(lot: String)
 signal closed
 
 const UiKit = preload("res://scripts/ui/ui_kit.gd")
@@ -367,6 +368,17 @@ func show_card(id: String) -> void:
 	UiKit.set_button_style(b, RED if id == scene else INK, INK, PAPER)
 	b.pressed.connect(func(): travel_requested.emit(id))
 	v.add_child(b)
+	if game.phase == "day" and game.stakeout_hours() > 0 and MapData.travel_known(game, l):
+		var wb := Button.new()
+		wb.name = "MapWatch"
+		wb.clip_text = false
+		wb.add_theme_font_size_override("font_size", UiKit.fs(24))
+		wb.custom_minimum_size = Vector2(0, 64)
+		wb.text = "Stake out this place"
+		UiKit.set_button_style(wb, PAPER, INK, INK)
+		UiKit.press_fx(wb)
+		wb.pressed.connect(func(): watch_requested.emit(id))
+		v.add_child(wb)
 	card.size = Vector2(card.custom_minimum_size.x, 10)
 	queue_redraw()
 

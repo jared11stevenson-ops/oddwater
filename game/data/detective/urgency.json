@@ -1,0 +1,34 @@
+{
+  "lab_weak": ["{what} is in your notebook and not yet at the lab. It will be weaker if it waits past {n} more day{s}.", "The lab can still get a clean result from {what}, but only for {n} more day{s}."],
+  "lab_spoil": ["{what} will spoil in {n} day{s} and the lab will have nothing to say about it.", "After {n} more day{s}, {what} is no use to anyone."],
+  "witness": ["{n} has not been questioned. Memories start to go on the third day, and every day after costs a little more.", "Ask {n} soon. People forget the way snow melts: quietly, and then all at once."],
+  "tracks": ["Outdoor tracks wash out around the third day. Weapons are put away by the fifth or seventh, and clothes are thrown out by the sixth.", "What the scene held is already going. By day six, what the killer wore will be in a bin or a fire."],
+  "cold": ["The file goes cold in {n} day{s}. After that the killer runs, or waits.", "{n} day{s} until the Sheriff writes the case off."],
+  "strike": ["If the pattern holds, the killer strikes again between night {a} and night {b}.", "The dead are two or three nights apart. The next could fall between night {a} and night {b}."],
+  "custody": ["The trial is set for day {d}. Everything you want in court has to be in the notebook by then.", "Day {d} is the trial. After that what you have is what you have."],
+  "deadline": ["The state police take the case in {n} day{s}.", "{n} day{s} before the Sheriff hands the file to the state."],
+  "urgent_tag": "NOW",
+  "warn_tag": "SOON",
+  "calm_tag": "WATCH",
+  "morning": {
+    "lab_weak": ["Warning: {what} is close to the point where the lab will treat it as weak.", "A day left before {what} starts to age."],
+    "lab_spoil": ["Warning: {what} spoils tomorrow if it is not at the lab.", "The lab says {what} will not keep past tomorrow."],
+    "witness": ["{n} may start to forget today. If you mean to ask, ask today."],
+    "cold": ["Tomorrow the file has been open for thirteen days. After that the Sheriff stops asking."],
+    "strike": ["The pattern says tonight or tomorrow night. Nobody has told the town. You cannot stop looking at the clock."],
+    "custody": ["The trial is tomorrow. Whatever is not in the notebook by then is not in court."],
+    "deadline": ["The state police are one day off. The Sheriff has not slept."]
+  },
+  "sheriff": {
+    "low": ["The Sheriff calls before breakfast. \"Just checking in,\" the Sheriff says. It is the first time \"just\" has ever sounded like a warning.", "The Sheriff leaves a note on your door: \"People are asking.\" It is not signed. It does not need to be."],
+    "mid": ["The Sheriff rings at six. \"The Courier has a photographer outside the station. I want something to say by noon.\"", "\"I need movement,\" the Sheriff says, on the phone, before you have said hello. \"Real movement. The mayor has been in twice.\""],
+    "high": ["The Sheriff does not say good morning. \"The state police are asking for the file,\" the Sheriff says. \"Give me a reason to say no.\"", "The phone rings before you are awake. \"They have started locking their doors,\" says the Sheriff. \"The whole town. Do you understand? I can hear it from here.\""]
+  },
+  "news": {
+    "low": ["THE COURIER: Residents are asking when the detective will say something.", "THE COURIER: A quiet unease on Mercy Street. Doors that were never locked are locked."],
+    "mid": ["THE COURIER: Parents are walking children to school. The word 'safe' is on the lips of everyone and in the heart of no one.", "THE COURIER: The hardware store has sold out of locks. The pastor has added a second evening service."],
+    "high": ["THE COURIER: Little Mercy sleeps with the lights on. The detective has 'no comment'.", "THE COURIER: Three nights, three bolted doors on every street. The town is counting days with you."]
+  },
+  "panel_title": "GOING COLD",
+  "panel_empty": "Nothing is about to slip away that you can see. That is not the same as nothing slipping away."
+}

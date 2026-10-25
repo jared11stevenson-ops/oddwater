@@ -1,0 +1,54 @@
+{
+  "park": [
+    "You park across from {place} with the engine off and a thermos you do not want.",
+    "You find a spot with a clear line to {place}, turn the lights off, and let the car cool around you.",
+    "The car ticks as it cools. {place} sits across the way, doing nothing at all, which is what you came to watch.",
+    "You settle down in the front seat opposite {place}, the notebook on your knee and the engine silent."
+  ],
+  "arrived": [
+    "{n} comes up the path at {t}, key already in hand.",
+    "At {t} {n} turns in at {place}, head down against nothing.",
+    "{n} arrives at {t} and does not look at the street, which is itself a way of looking.",
+    "A door at {place} opens at {t} and {n} goes in, quick and quiet."
+  ],
+  "left": [
+    "{n} leaves at {t} and walks away without a backward glance.",
+    "At {t} {n} comes out of {place}, pulls the door shut, and tries the handle twice.",
+    "{n} is out of the door at {t}, buttoning a coat on the step.",
+    "{n} slips out at {t} and takes the long way round the block."
+  ],
+  "unseen_in": [
+    "Somebody goes in at about {t}. The light is too poor to say who.",
+    "At about {t} a figure turns in at {place}. Hat, coat, no face you could swear to."
+  ],
+  "unseen_out": [
+    "A door closes at about {t}, and someone is gone down the dark side of the street before you can see them.",
+    "At about {t} a figure comes out of {place} and is lost in the shadow of the hedge."
+  ],
+  "kept": [
+    "No one comes or goes. The lamp in the front room stays on, and a shadow crosses it twice.",
+    "The curtains do not move. Whoever is inside stays inside for the whole of your watch.",
+    "The house keeps itself to itself. A radio plays low behind the glass, and nobody leaves."
+  ],
+  "quiet": [
+    "Nothing moves. A cat crosses the road twice and a clock somewhere strikes the hour.",
+    "Nobody comes, nobody goes. You write down that nobody comes or goes, because that is what watching is.",
+    "The street gives you nothing but a bicycle and a dog. You write down both."
+  ],
+  "bundle": [
+    "At {t} {n} comes out with a bundle wrapped in a sheet and carries it round the back of the house.",
+    "{n} leaves at {t} carrying something heavy in a coat, walking the way people walk when they want to look as if they are not carrying anything."
+  ],
+  "spotted": [
+    "The curtain at the front window moves and does not settle. You have been seen.",
+    "A porch light snaps on. Whoever is behind it is looking straight at your car.",
+    "Someone stands at an upstairs window for a long minute. Then the blind comes down. You have been seen.",
+    "A dog starts up, then a man's voice, then a face at the glass that knows the shape of your car."
+  ],
+  "tired": [
+    "Your eyes burn. You have started to see movement in things that are not moving.",
+    "Hours in a parked car make a person into a part of it. You are stiff, and cold, and a little less patient than you were.",
+    "The thermos is empty and so is the notebook page. You wonder how anyone does this for a living."
+  ],
+  "figures": ["someone tall in a dark coat", "a figure with a hat pulled low", "someone small and quick in a pale scarf", "a broad shape under an umbrella", "someone in a long cardigan, walking slowly", "a figure in work boots and a canvas jacket"]
+}

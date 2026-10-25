@@ -7,6 +7,7 @@ extends RefCounted
 const CaseEngine = preload("res://scripts/detective/case_engine.gd")
 const Brief = preload("res://scripts/sim/brief.gd")
 const Reasoning = preload("res://scripts/detective/reasoning.gd")
+const Sheet = preload("res://scripts/detective/sheet.gd")
 
 var g: RefCounted
 var sim: RefCounted
@@ -15,6 +16,7 @@ var log: Array = []
 var _spoken: Dictionary = {}       # npc -> number of full interviews
 var _shown: Dictionary = {}        # "npc|entry" -> true
 var _focus: Array = []
+const KIT_RESERVE := 5             # uses of the evidence kit the bot keeps in hand
 
 
 func _init(game: RefCounted) -> void:
@@ -145,9 +147,18 @@ func surveillance_and_prints() -> void:
 			g.view_camera(cam["id"], w[0], w[1])
 	for spot in g.dust_spots():
 		g.dust(scene(), spot)
-	var who: Array = g.persons_of_interest() + [String(g.case["victim"])]
+	# the kit is scarce: the victim and the finder first, then whoever the notebook weighs hardest, keeping a little back
+	var who: Array = [String(g.case["victim"]), String(g.case["found_by"])]
+	for r in ranking():
+		if not who.has(r["id"]):
+			who.append(r["id"])
+	var sampled: Array = []
 	for s in who:
+		if int(det.res.get("kit", 0)) <= KIT_RESERVE:
+			break
 		g.take_sample(s)
+		sampled.append(s)
+	who = sampled
 	for eid in det.order.duplicate():
 		if det.known[eid].get("latent", "") != "":
 			for s in who:
@@ -181,10 +192,12 @@ func ranking() -> Array:
 	return out
 
 
-func warrant_and_search(target: String) -> void:
+func warrant_and_search(target: String) -> bool:
 	var r: Dictionary = g.warrant(target)
 	if r["ok"]:
-		g.examine(sim.people[target].home, "search")
+		var found: Dictionary = g.examine(sim.people[target].home, "search")
+		return not (found["learned"] as Array).is_empty()
+	return false
 
 
 func theory(best: String) -> Dictionary:
@@ -221,8 +234,9 @@ func solve() -> Dictionary:
 		press_everyone()
 	test_confessions()
 	var ranked: Array = ranking()
-	for i in mini(2, ranked.size()):
-		warrant_and_search(ranked[i]["id"])
+	for i in mini(2, ranked.size()):         # warrants are scarce: the second is only asked for if the first house gave nothing
+		if warrant_and_search(ranked[i]["id"]):
+			break
 	lab()
 	press_everyone()
 	ranked = ranking()
@@ -236,3 +250,19 @@ func lazy() -> Dictionary:
 	var pois: Array = g.persons_of_interest()
 	var guess: String = pois[1] if pois.size() > 1 else pois[0]
 	return {"accused": guess, "motive": "money", "method": "blunt"}
+
+
+## Fill in the case sheet for `plan`'s person from the public notebook: the scene the case file names, the hour band holding the middle of the
+## body's own time of death, the wound and motive the notes point to, and every card in the notebook that is about that person or about the body.
+func fill_sheet(plan: Dictionary) -> void:
+	var who: String = String(plan["accused"])
+	g.sheet_set("who", who)
+	g.sheet_set("where", String(g.case["scene"]))
+	var win: Array = Reasoning.death_window(det.known)
+	g.sheet_set("when", Sheet.band_of_hour((float(win[0]) + float(win[1])) / 2.0))
+	g.sheet_set("how", String(plan["method"]))
+	g.sheet_set("why", String(plan["motive"]))
+	for field in Sheet.FIELDS:
+		for card in g.sheet_cards(field):
+			if String(card["subject"]) == who or String(card["predicate"]) in ["time_of_death", "cause_of_death"]:
+				g.sheet_cite(field, String(card["cid"]), true)

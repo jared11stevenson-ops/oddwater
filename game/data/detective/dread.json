@@ -1,0 +1,100 @@
+{
+  "levels": ["steady", "uneasy", "frayed", "breaking"],
+  "level_line": ["", "Your hands are not quite still.", "The edges of the page will not stay put.", "You are not sure how long you have been awake."],
+  "whisper": [
+    "You have written {n}'s name {k} times in this book and still cannot say why.",
+    "Every page has {v}'s name on it. You counted. Nobody asked you to.",
+    "There are {k} entries in here about {n}. You do not remember wanting that many.",
+    "The notebook cannot be edited. You checked, twice, just in case.",
+    "Somewhere between page {k} and the last, the handwriting starts to look like someone else's. It is only tiredness, you decide.",
+    "You read the last line aloud to see if it sounds true. It sounds like a thing you would say."
+  ],
+  "ideas": {
+    "raw_search": {
+      "text": ["It would take ten minutes. {n}'s door has a lock like a biscuit tin. Nobody needs to sign for what you already know.", "You could be in and out of {n}'s house before the lamp goes on. A warrant is paper. You are tired."],
+      "label": "Go through {n}'s house, no warrant",
+      "risk": "Anything you find is tainted, and the defence will say so at trial. {n} will know."
+    },
+    "press": {
+      "text": ["Lean on {n}. Lean until it gives. People break. That is what people are for.", "{n} knows. {n} is sitting at home knowing. All it needs is the right kind of silence in the right kind of room."],
+      "label": "Lean on {n} until they crack",
+      "risk": "It costs you trust with {n} and strains your nerves. A frightened person says whatever ends it."
+    },
+    "name_first": {
+      "text": ["It is {n}. It is always the first name you wrote down. Why make it harder than it is?", "You know who it is. You have known since you wrote {n}'s name at the top of the page. The rest is paperwork."],
+      "label": "Write {n} on the sheet",
+      "risk": "It fills WHO with {n} and wipes what you cited. A sheet you did not earn will not be stamped."
+    }
+  },
+  "idea_dismiss": "You let it go by. It does not go far.",
+  "events": {
+    "followed": {
+      "title": "FOOTSTEPS",
+      "scene": [
+        "Somebody was behind you on the way home. You are fairly sure. Round the corner at {place} you stopped, and the steps stopped a moment after, and somewhere a gate clicked. It was about {t}. You saw {fig} against the last lamp, and smelled {trace} in the cold air.",
+        "You looked back twice. The second time there was a shape at the end of the road, {fig}, quite still, at about {t}. When you walked toward it the street was empty and smelled faintly of {trace}."
+      ],
+      "claim": "A figure followed you home"
+    },
+    "note": {
+      "title": "A NOTE AT YOUR DOOR",
+      "scene": [
+        "There is a folded paper under the door at {place}, left some time after {t}. Four words in a hand that tried to be nobody's: \"{msg}\". The paper smells of {trace}.",
+        "Pinned to the doorframe by a drawing pin: \"{msg}\". The pin was pressed in by a thumb; you can see the print of it. It reeks of {trace}."
+      ],
+      "msgs": ["LEAVE IT ALONE", "THEY WERE ASKING FOR IT", "YOU ARE LOOKING IN THE WRONG PLACE", "YOU SLEEP TOO WELL", "I SEE YOUR LIGHT"],
+      "claim": "A note was left at your door"
+    },
+    "silence": {
+      "title": "THE LINE OPENS",
+      "scene": [
+        "The phone rang at about {t}. You said your name and the line stayed open: breath, a room with a clock in it, and then nothing. The exchange has the call logged from {place}.",
+        "At {t} the phone rang once and was picked up by your hand before you woke. Someone was on the other end. Neither of you spoke. The exchange log says {place}."
+      ],
+      "claim": "A call with no voice"
+    },
+    "lamp": {
+      "title": "THE LAMP",
+      "scene": [
+        "The lamp outside {place} went out at about {t}. It was not burnt out. Somebody had given the bulb a quarter-turn in its socket, and left a thumbprint of {trace} on the glass.",
+        "At {t} the lamp at your gate went dark. In the morning you find the bulb unscrewed and set on the wall, neatly, as if someone were being considerate. It smells of {trace}."
+      ],
+      "claim": "Your lamp was put out"
+    }
+  },
+  "choices": {
+    "report": {"label": "Tell the Sheriff", "events": ["You tell the Sheriff. The Sheriff writes it down without comment, which is a comment. A deputy will sit in a car at the end of your road for a few nights.", "You file it. Somebody sits outside your house with a flask and a magazine. It helps more than it should."]},
+    "watch": {"label": "Say nothing, and watch", "events": ["You say nothing. You leave the porch light on and the curtain a hand's width open and sit up in the dark with the notebook on your knee. It costs you sleep. It may cost more.", "You change nothing and watch everything. If it comes back, you will be looking."]},
+    "ignore": {"label": "Put it out of your mind", "events": ["You put it away in the part of your mind where you keep things you do not look at. That part is getting full.", "You bolt the door and say nothing to anyone. It is a small thing. You tell yourself that three times."]}
+  },
+  "watch_payoff": "It came back, and this time you were looking: {n}, caught in the porch light, going away down the lane at about {t}.",
+  "letters": {
+    "serial": {
+      "title": "A SIGN ON YOUR STEP",
+      "scene": [
+        "On your step this morning, set down square to the doorway: {sig}. Tucked under it, a half-sheet of ruled paper. \"You have been to see them,\" it says. \"I saw you at {place}. I thought you should have this.\"",
+        "{sig}. It is on the mat, where the milk should be, placed with care. The note says only: \"You are the first who looked. Keep looking.\" The paper smells of {trace}.",
+        "You open the door to {sig}. Under it, a line in capitals, slow and neat: \"THIS IS HOW I KNOW YOU. THIS IS HOW YOU KNOW ME.\""
+      ],
+      "claim": "The killer left you their sign"
+    },
+    "plain": {
+      "title": "A LETTER, UNSIGNED",
+      "scene": [
+        "A white envelope with your name typed on it, no stamp. Inside, one sheet: \"You made a mistake. I know what was left at the scene: {held}. You never printed that. You never needed to.\" The paper smells of {trace}.",
+        "It arrived by hand some time after dark. The note is brief: \"Do you keep it up all night, the thing with the {held}? I do. I thought you would want to know that someone does.\"",
+        "Someone has pushed a note through the flap. \"{held},\" it says. \"You were wrong about me, and you know it. That is the worst of it.\""
+      ],
+      "claim": "An unsigned letter that knew the unreleased detail"
+    },
+    "choices": {
+      "report": {"label": "Bring it to the Sheriff", "result": ["You carry it to the Sheriff in an evidence bag, holding the corner like a dead bird. The lab finds a trace on the paper at once: {trace}. It is not an answer. It is a direction.", "The Sheriff reads it twice and says nothing for a minute, then gives it to the lab. The paper holds {trace}. The Sheriff looks at you, and you both look away."]},
+      "answer": {"label": "Answer it in the Courier", "result": ["You place three lines in the personals, in words only one reader will understand. By noon the whole town has read them and nobody has understood. The pressure rises, and the killer's patience falls.", "The notice runs on the second page. You do not sleep. Somewhere a person reads it with a pencil and counts the nights."]},
+      "ignore": {"label": "Say nothing", "result": ["You do not answer. You put the letter in the drawer with the other things you cannot do anything about. The drawer is full now.", "You say nothing to anyone. The silence is your answer, and you hope it reads as one."]}
+    },
+    "reply": {
+      "title": "THE REPLY",
+      "scene": ["A second letter, on the same paper, in the same patient capitals: \"THANK YOU FOR YOUR TIME. THE NEXT ONE WILL BE EARLIER.\" Something has gone wrong with the hand; where the pen pressed hard there is {trace} in the paper's grain.", "It came in the night. \"YOU DID NOT HAVE TO WRITE BACK. I AM GLAD YOU DID.\" There is {trace} on the fold of it. Whoever wrote this has been careless, once."]
+    }
+  }
+}

@@ -52,6 +52,25 @@ func _initialize() -> void:
 			if not bt.is_empty():
 				texts.append(String(bt["text"]))
 		texts.append(String(res["result"]["text"]))
+		# the sheet, the hunch, the dossier, the trails, a night watch: the newer prose
+		var gx: RefCounted = DetectiveGame.new(s)
+		var bx = Bot.new(gx)
+		var px: Dictionary = bx.solve()
+		bx.fill_sheet(px)
+		var chk: Dictionary = gx.sheet_check()
+		for gid in chk["lines"]:
+			texts.append(String(chk["lines"][gid]["text"]))
+		texts.append(String(gx.sheet_hunch()["text"]))
+		texts.append(String(gx.sheet_test_theory()["text"]))
+		for tr in gx.trails():
+			texts.append(String(tr["text"]))
+		var fam: Array = gx.family_circle()
+		if not fam.is_empty():
+			texts.append(String(gx.remember_them(String(fam[0]["id"]))["text"]))
+			texts.append(String(gx.tell_family(String(fam[0]["id"]), ["direct", "gentle", "ask"][s % 3])["text"]))
+		texts.append(gx.carrying())
+		if not gx.persons_of_interest().is_empty():
+			texts.append(String(gx.stakeout(String(gx.sim.people[gx.persons_of_interest()[0]].home), 1)["text"]))
 		var ep: Dictionary = Narrator.episode(w, c, d, res["result"])
 		texts.append(String(ep["text"]))
 		# wrong accusations and the other verdicts' prose

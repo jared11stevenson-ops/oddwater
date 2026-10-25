@@ -226,7 +226,7 @@ func _initialize() -> void:
 	await process_frame
 	await process_frame
 	var tabs := ["case", "notebook", "people", "news", "cctv", "court", "accuse", "you"]
-	var labels := {"case": "Case", "notebook": "Notes", "people": "People", "news": "News", "cctv": "CCTV", "court": "Court", "accuse": "Accuse", "you": "You"}
+	var labels := {"case": "Case", "notebook": "Notes", "people": "People", "news": "News", "cctv": "CCTV", "court": "Court", "accuse": "Charge", "you": "You"}
 	var font: Font = hud.get_theme_default_font()
 	for k in tabs:
 		var b: Button = by_name(hud.box, "Tab_" + k)
@@ -260,7 +260,7 @@ func _initialize() -> void:
 	# ---- the notebook with a case worked
 	var CaseBot = load("res://tests/case_bot.gd")
 	var bot = CaseBot.new(g)
-	bot.solve()
+	var bot_plan: Dictionary = bot.solve()
 	hud.nb_new = {}
 	hud.show_case("case")
 	hud.show_case("notebook")
@@ -382,17 +382,25 @@ func _initialize() -> void:
 	ok(hdr.text.contains("this visit"), "the header shows time spent this visit (%s)" % hdr.text)
 	hud.close_panel()
 
-	# ---- accusation needs a second tap
+	# ---- the charge goes through the case sheet: stamps first, then the filing
 	hud.show_case("accuse")
-	hud._pick("culprit", g._truth["killer"])
-	hud._pick("motive", g._truth["motive"])
-	hud._pick("method", g._truth["method"])
-	var acc: Button = by_name(hud.box, "Accuse")
-	ok(acc != null and not acc.disabled and find(hud.box, "AccuseSummary") != null, "the accusation shows a summary before it is made")
-	hud._accuse_tap()
-	ok(by_name(hud.box, "Accuse").text.contains("sure") and not g.solved(), "the first tap only asks 'are you sure'")
-	hud._accuse()
-	ok(g.solved() and hud.card != null, "the accusation still goes through the game API")
+	ok(by_name(hud.box, "OpenSheet") != null and by_name(hud.box, "OpenSheet").custom_minimum_size.y >= 64.0, "the Charge tab opens the case sheet with a big button")
+	bot.fill_sheet(bot_plan)
+	hud.open_sheet()
+	await process_frame
+	ok(hud.sheet_screen != null, "the case sheet is a screen of its own")
+	var small_sheet := 0
+	for b in hud.sheet_screen.find_children("*", "Button", true, false):
+		if (b as Button).visible and (b as Button).size.y < 63.0 and not String((b as Button).name).begins_with("Cite_"):
+			small_sheet += 1
+			print("   small sheet button: ", b.name, " ", (b as Button).size)
+	ok(small_sheet == 0, "every pick and action on the sheet is a 64 px target (%d small)" % small_sheet)
+	var fb: Button = by_name(hud.sheet_screen, "SheetFile")
+	ok(fb != null and fb.disabled and fb.text == "Check first", "filing waits for the stamps")
+	hud.sheet_screen._on_check()
+	ok(by_name(hud.sheet_screen, "SheetFile").text.begins_with("File:") and not g.solved(), "checking stamps the groups; nothing is filed yet")
+	hud.sheet_screen._on_file()
+	ok(g.solved() and hud.card != null and hud.sheet_screen == null, "filing goes through the game API")
 	hud._close_card()
 
 	# ---- the end-of-day card

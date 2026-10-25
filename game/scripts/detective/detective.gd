@@ -38,6 +38,13 @@ var board: Dictionary = {"pos": {}, "links": []}   # the evidence board: card po
 var watched: Dictionary = {}        # "cam|from|to" -> true once you have sat through that stretch of tape (the scrubber opens on it)
 var theory: Array = []              # your theory on the evidence board: [{claim: claim id, person: person id}]; what YOU think, not what is true
 var visited: Dictionary = {}        # lot id -> true once you have stood at its door (fast travel remembers them)
+var res: Dictionary = {}            # scarce resources (see resources.gd): warrants, kit, favours, hunches, the lab's day
+var sheet: Dictionary = {}          # the case sheet you are filling in (see sheet.gd): your answers, the claims you cite, the stamps
+var keepsake: Dictionary = {}       # the small object you carry for the dead: {case, item, family, returned}
+var compassion: Dictionary = {}     # person id -> true once you sat with them before you asked
+var dread: Dictionary = {}          # night events and the killer's letters so far (see dread.gd)
+var contacts: Array = []            # people the street has told you will trade tips (see informants.gd)
+var deals: Array = []               # plea deals struck: [{target, day, kind, wrongful}]
 var ctx: Dictionary = {"case": {}, "jobs": {}}   # the public case file and the town's trades, set by the game (not saved: it is rebuilt)
 
 
@@ -112,6 +119,8 @@ func rollover(prefix: String) -> void:
 	warrants = {}
 	watched = {}
 	theory = []
+	sheet = {}
+	compassion = {}
 
 
 func has(id: String) -> bool:
@@ -226,7 +235,9 @@ func to_dict() -> Dictionary:
 		"known": known.duplicate(true), "order": order.duplicate(), "statements": statements.duplicate(true), "warrants": warrants.duplicate(),
 		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed,
 		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate(), "flagged": flagged.duplicate(),
-		"board": board.duplicate(true), "watched": watched.duplicate(), "theory": theory.duplicate(true), "visited": visited.duplicate()}
+		"board": board.duplicate(true), "watched": watched.duplicate(), "theory": theory.duplicate(true), "visited": visited.duplicate(),
+		"res": res.duplicate(true), "sheet": sheet.duplicate(true), "keepsake": keepsake.duplicate(true), "compassion": compassion.duplicate(), "dread": dread.duplicate(true),
+		"contacts": contacts.duplicate(), "deals": deals.duplicate(true)}
 
 
 static func from_dict(d: Dictionary) -> RefCounted:
@@ -247,6 +258,13 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	x.visited = d.get("visited", {}).duplicate()
 	x.watched = d.get("watched", {}).duplicate()
 	x.theory = d.get("theory", []).duplicate(true)
+	x.res = d.get("res", {}).duplicate(true)
+	x.sheet = d.get("sheet", {}).duplicate(true)
+	x.keepsake = d.get("keepsake", {}).duplicate(true)
+	x.compassion = d.get("compassion", {}).duplicate()
+	x.dread = d.get("dread", {}).duplicate(true)
+	x.contacts = d.get("contacts", []).duplicate()
+	x.deals = d.get("deals", []).duplicate(true)
 	x.order = d.get("order", []).duplicate()
 	x.statements = d.get("statements", []).duplicate(true)
 	x.warrants = d.get("warrants", {}).duplicate()

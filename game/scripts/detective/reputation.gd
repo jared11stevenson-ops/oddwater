@@ -31,7 +31,12 @@ const TABLE := {
 	"sermon": {"sheriff": 0, "town": 0, "chapel": 1},
 	"business_solved": {"sheriff": 1, "town": 2, "chapel": 0},
 	"business_failed": {"sheriff": 0, "town": -1, "chapel": 0},
-	"false_confession_jailed": {"sheriff": -3, "town": -6, "chapel": -1}
+	"false_confession_jailed": {"sheriff": -3, "town": -6, "chapel": -1},
+	"keepsake": {"sheriff": 0, "town": 2, "chapel": 1},
+	"spotted_watching": {"sheriff": 0, "town": -1, "chapel": 0},
+	"dirty_search": {"sheriff": -1, "town": -1, "chapel": 0},
+	"letter_reported": {"sheriff": 2, "town": 0, "chapel": 0},
+	"wrong_plea": {"sheriff": -4, "town": -6, "chapel": -1}
 }
 
 const LIMIT := 100

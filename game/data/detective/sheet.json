@@ -1,0 +1,118 @@
+{
+  "confirmed": {
+    "night": [
+      "The night holds together. Who, where and when stand up as one thing.",
+      "That group is confirmed: the hour, the place and the person fit what you have written down.",
+      "Stamped. The night, as you have it, is the night."
+    ],
+    "act": [
+      "The act is confirmed: the wound and the hands that could have made it agree.",
+      "Stamped. How it was done and who could have done it stand together.",
+      "That group is confirmed. The means and the wound tell one story."
+    ],
+    "reason": [
+      "The reason is confirmed: what they wanted and what was done are the same thing.",
+      "Stamped. The why and the who fit, and your notes carry it.",
+      "That group is confirmed. It was never only about the night."
+    ]
+  },
+  "unsupported": {
+    "night": [
+      "Not yet supported. The sheet does not hold the night together yet.",
+      "Not yet supported. Something on this line will not take weight.",
+      "The stamp stays blank on the night. Not yet supported."
+    ],
+    "act": [
+      "Not yet supported. The act is not nailed down.",
+      "Not yet supported. The stamp will not take on this line.",
+      "The stamp stays blank on the act. Not yet supported."
+    ],
+    "reason": [
+      "Not yet supported. The reason does not hold yet.",
+      "Not yet supported. The ink will not dry on this line.",
+      "The stamp stays blank on the reason. Not yet supported."
+    ]
+  },
+  "open": [
+    "Fill in every line of the group first.",
+    "There are still blanks on this group.",
+    "A group needs all its lines before it can be checked."
+  ],
+  "charge": {
+    "murder": [
+      "Charged with murder. Every part of the sheet stands, and the Sheriff has nothing to add.",
+      "The sheet is complete and the charge is the full one. Murder."
+    ],
+    "killing": [
+      "Charged with unlawful killing. The night is proved; the rest is not yet, and the charge is only what you can support.",
+      "A lesser charge, and an honest one: unlawful killing. Bring the rest to the trial if you can."
+    ],
+    "held": [
+      "Held on suspicion. One part of the sheet stands and the rest does not, so the law will hold them and no more.",
+      "Held. The Sheriff will sign for a hold on what you can support and nothing larger."
+    ],
+    "unconfirmed": [
+      "No part of the sheet is confirmed. You may still lay a charge on your own judgement, and answer for it if it fails.",
+      "Nothing is stamped. A charge now is a guess with a badge on it."
+    ]
+  },
+  "no_cause": "The Sheriff will not take a name on this. Two kinds of proof first, and enough of each.",
+  "theory_none": [
+    "Nothing in your notebook contradicts the sheet. That does not make it true.",
+    "You go through it line by line and find no seam. A sheet without a seam can still be wrong.",
+    "No contradiction turns up in the notes. Only in the world, if at all."
+  ],
+  "theory_open": [
+    "You test the sheet against the notebook. These are the places it pulls:",
+    "You lay the sheet over your notes and hold it to the light. It pulls here:"
+  ],
+  "lead": {
+    "tape": [
+      "The tape from {cam} has not been watched for {band}.",
+      "Nobody has sat through the {cam} footage for {band}."
+    ],
+    "alibi": [
+      "{n} has not said where they were that night.",
+      "Nobody has asked {n} for their evening, and {n} has not volunteered it."
+    ],
+    "hour": [
+      "Nobody has accounted for {band} on {street}.",
+      "Your notes say nothing about {band} on {street}. Somebody was up and about."
+    ],
+    "place": [
+      "You have not been to {place}, and your notes keep turning toward it.",
+      "{place} is named in your notes and you have never stood at its door."
+    ],
+    "friend": [
+      "Nobody has told you who {v} was close to.",
+      "You know where {v} died and very little about who {v} had been."
+    ],
+    "none": [
+      "Your notebook has no obvious holes. That is not the same as having none.",
+      "You find nothing missing on paper. The gaps may be the kind paper does not show."
+    ]
+  },
+  "lead_hedge": [
+    "It might be the hour either side.",
+    "Your gut is not sure of the hour, and says so.",
+    "That is only a feeling about where to look, and feelings are often a little off.",
+    "It could be a street over. It could be nothing."
+  ],
+  "lead_more": [
+    "There may be more than that, but it will not come clear.",
+    "Something else is in there with it, just out of reach."
+  ],
+  "hunch_out": "You are out of hunches for this file. A new case, or a new level, will bring them back.",
+  "theory_cost": "You spend the best part of an hour at the desk with the notebook and a pencil.",
+  "streets": {
+    "shore_drive": "Shore Drive",
+    "mercy_street": "Mercy Street",
+    "hill_road": "Hill Road",
+    "orchard_lane": "Orchard Lane",
+    "back_lane": "Back Lane"
+  },
+  "pattern": [
+    "The reason stays blank. But the same sign at more than one scene is a pattern, and the state will take the pattern in a killer's motive's place.",
+    "Not yet supported. No one knows why. The same sign at two scenes is enough for the court to charge the whole thing."
+  ]
+}

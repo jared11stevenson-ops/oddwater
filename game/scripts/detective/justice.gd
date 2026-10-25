@@ -171,7 +171,21 @@ static func _tell_and_voice(sim: RefCounted, c: Dictionary, det: RefCounted, t: 
 ## truth about each claim: a witness who was wrong, a lie, a clock that was out. A mistaken witness can sink a right case and a false confession
 ## can convict the wrong person. Returns {confidence, attacks: [{text, delta}], verdict, sentence, wrongful}.
 static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: String) -> Dictionary:
-	var pr: Dictionary = det.proof_against(target)
+	# Evidence from a search with no warrant is challenged: about half of it is thrown out, the rest the jury is told to weigh warily.
+	var kept: Dictionary = det.known
+	var tainted_out: Array = []
+	var tainted_weak: Array = []
+	for teid in det.order:
+		if det.known[teid].get("tainted", false):
+			if absi(hash("%s|taint|%s" % [c.get("id", ""), teid])) % 100 < 50:
+				tainted_out.append(teid)
+			else:
+				tainted_weak.append(teid)
+	if not tainted_out.is_empty():
+		kept = det.known.duplicate()
+		for teid2 in tainted_out:
+			kept.erase(teid2)
+	var pr: Dictionary = Reasoning.proof_against(kept, det.ctx.get("case", {}), target, det.ctx.get("jobs", {})) if not tainted_out.is_empty() else det.proof_against(target)
 	var tl: Dictionary = Reasoning.tally(pr)
 	var total := mini(int(tl["total"]), 14)
 	var cats: int = tl["cats"]
@@ -180,6 +194,10 @@ static func trial(sim: RefCounted, c: Dictionary, det: RefCounted, target: Strin
 	var add := func(t: String, d: float) -> void:
 		attacks.append({"text": t, "delta": d})      # (a lambda sees conf by value: the deltas are summed after the loop)
 	var partial_other := false
+	for teid3 in tainted_out:
+		add.call("The defence: \"No warrant, no search. Everything found in that house is the fruit of a trespass.\" The judge agrees: \"%s\" is excluded." % String(det.known[teid3].get("title", "that evidence")), 0.0)
+	for teid4 in tainted_weak:
+		add.call("The defence: \"This was found with no warrant.\" The judge lets it stand, but tells the jury how it was got.", -10.0)
 	for eid in det.order:
 		var e: Dictionary = det.known[eid]
 		var mine: Array = []
@@ -255,8 +273,9 @@ static func conclude(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictio
 		"guilty":
 			p.jailed = true
 			p.location = ""
-			var inmate := {"id": t, "case": c["id"], "guilty": t == c["killer"], "sentence": res["sentence"], "type": TYPES[c["motive"]], "rapport": 0.0, "told": [], "day": day, "freed": false}
+			var inmate := {"id": t, "case": c["id"], "guilty": t == c["killer"], "sentence": mini(int(res["sentence"]), int(st.get("sentence_cap", 99))), "type": TYPES[c["motive"]], "rapport": 0.0, "told": [], "day": day, "freed": false}
 			jail.append(inmate)
+			st.erase("sentence_cap")
 			if t == c["killer"]:
 				c["status"] = "solved"
 				det.cases_solved += 1
@@ -278,6 +297,7 @@ static func conclude(sim: RefCounted, c: Dictionary, det: RefCounted, st: Dictio
 			Reputation.apply(det, "hung_jury", day)
 			det.add_stress(6.0)
 		_:
+			st.erase("sentence_cap")
 			p.needs["comfort"] = clampf(float(p.needs["comfort"]) - 15.0, 0.0, 100.0)
 			if t == c["killer"]:
 				c["alerted"] = true

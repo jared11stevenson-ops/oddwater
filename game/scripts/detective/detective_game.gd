@@ -19,6 +19,14 @@ const Places = preload("res://scripts/detective/places.gd")
 const Prose = preload("res://scripts/detective/prose.gd")
 const Claims = preload("res://scripts/detective/claims.gd")
 const Reasoning = preload("res://scripts/detective/reasoning.gd")
+const Resources = preload("res://scripts/detective/resources.gd")
+const Sheet = preload("res://scripts/detective/sheet.gd")
+const Leads = preload("res://scripts/detective/leads.gd")
+const Stakeout = preload("res://scripts/detective/stakeout.gd")
+const Informants = preload("res://scripts/detective/informants.gd")
+const Empathy = preload("res://scripts/detective/empathy.gd")
+const Urgency = preload("res://scripts/detective/urgency.gd")
+const Dread = preload("res://scripts/detective/dread.gd")
 
 const ACCUSE_LIMIT := 3
 
@@ -63,6 +71,7 @@ func _init(seed_value: int = 1961, _first_host: String = "", force_serial: bool 
 	seed_v = seed_value
 	_force_serial = force_serial
 	det = Detective.new()
+	Resources.ensure(det)
 	serial = Serial.none()
 	sim.release_control()
 	if not skip_prelude:
@@ -119,6 +128,7 @@ func _sync_case() -> void:
 ## After anything you do: has the story reached a moment worth telling?
 func _after_op() -> void:
 	_sync_case()
+	Empathy.tick(self)
 	for kind in ["first_scene", "odd_detail", "lie_caught", "footage", "turn"]:
 		if beats_seen.has(kind):
 			continue
@@ -149,6 +159,8 @@ func flush_time() -> int:
 		_minutes -= 30
 		realtime_tick(me().location, false)
 		ticks += 1
+	if sim.hour_now() >= 21.0 and phase == "day":
+		Dread.state(det)["late"] = int(sim.day)       # you kept dark hours; the night may notice
 	return ticks
 
 
@@ -327,6 +339,8 @@ func tag_figure(cam_id: String, from_h: float, to_h: float, at: float, key: Stri
 ## Save the frame at `at` as a snapshot claim (what was on screen, by the camera's own clock).
 func freeze_frame(cam_id: String, from_h: float, to_h: float, at: float) -> Dictionary:
 	var fr: Dictionary = camera_frames(cam_id, from_h, to_h)
+	if not fr["frames"].is_empty() and not Resources.has(det, "kit", 1):
+		return {"ok": false, "text": "The kit is empty: no film left for the camera. It is restocked a little each morning."}
 	var cam: Dictionary = camera(cam_id)
 	if fr["frames"].is_empty() or cam.is_empty():
 		return {"ok": false, "text": "No tape to freeze."}
@@ -344,6 +358,8 @@ func freeze_frame(cam_id: String, from_h: float, to_h: float, at: float) -> Dict
 	var e := {"id": "frame_%s_%d" % [cam_id, int(float(best["at"]) * 20)], "title": "Frame at %s" % clock, "text": txt, "kind": "cctv", "source": cam["lot"], "day": int(sim.day), "camera": cam_id}
 	e["claims"] = Claims.emit(_truth, [Claims.make("recorded", "", "observation", String(cam["lot"]), float(best["at"]), "", 0.9 if det.calibrated.get(cam_id, false) else 0.7)], String(cam["lot"]), txt)
 	var isnew: bool = det.learn(e)
+	if isnew:
+		Resources.spend(det, "kit", 1)
 	_after_op()
 	return {"ok": true, "text": txt if isnew else "You already saved that frame.", "new": isnew}
 
@@ -359,7 +375,7 @@ func board_cards(limit: int = 12) -> Array:
 		var ch := "records"
 		match kind:
 			"testimony", "confession": ch = "testimony"
-			"physical", "print", "found": ch = "physical"
+			"physical", "print", "found", "watch": ch = "physical"
 			"lab": ch = "lab"
 		for cl in e.get("claims", []):
 			var t: float = float(cl.get("time", -1.0))
@@ -396,6 +412,13 @@ func calibrate_camera(cam_id: String) -> Dictionary:
 
 
 func dust(lot: String, spot: String, effort: float = -1.0) -> Dictionary:
+	var key := "%s|%s" % [lot, spot]
+	Resources.ensure(det)
+	var fresh: bool = lot == String(_truth["scene"]) and not (det.res["dusted"] as Dictionary).has(key)
+	if fresh and not Resources.spend(det, "kit", 1):
+		return {"text": "The kit is empty: no powder, no lifting tape. It is restocked a little each morning.", "learned": [], "minutes": 0, "ticks": 0, "blocked": "kit"}
+	if fresh:
+		det.res["dusted"][key] = true
 	var r: Dictionary = Prints.dust(sim, _truth, det, lot, spot, effort)
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
@@ -403,7 +426,12 @@ func dust(lot: String, spot: String, effort: float = -1.0) -> Dictionary:
 
 
 func take_sample(npc: String) -> Dictionary:
+	var had: bool = bool(det.samples.get(npc, false))
+	if not had and not Resources.has(det, "kit", 1):
+		return {"ok": false, "text": "The kit is empty: no ink, no cards. It is restocked a little each morning.", "minutes": 0, "ticks": 0, "blocked": "kit"}
 	var r: Dictionary = Prints.take_sample(sim, _truth, det, npc)
+	if not had and bool(det.samples.get(npc, false)):
+		Resources.spend(det, "kit", 1)
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
 	return r
@@ -416,15 +444,34 @@ func compare_print(print_entry: String, target: String) -> Dictionary:
 	return r
 
 
-func submit_lab(clue_id: String) -> Dictionary:
+## `rush`: call in a favour when the day's lab slots are gone (the technician stays late).
+func submit_lab(clue_id: String, rush: bool = false) -> Dictionary:
+	var day := int(sim.day)
+	var already: bool = det.lab.any(func(l): return String(l.get("clue", "")) == clue_id) or det.lab_done.has(clue_id)
+	var via_favour := false
+	if not already and det.has(clue_id) and Resources.lab_free(det, day) <= 0:
+		if rush and Resources.spend(det, "favours", 1):
+			via_favour = true
+		else:
+			return {"text": "The lab has its %d jobs for today and no more. Tomorrow, or call in a favour and the technician will stay late." % Resources.lab_slots(det), "minutes": 0, "ticks": 0, "blocked": "lab"}
 	var r: Dictionary = CaseOps.submit_to_lab(sim, _truth, det, clue_id)
+	if not already and det.lab.any(func(l): return String(l.get("clue", "")) == clue_id):
+		if not via_favour:
+			Resources.use_lab(det, day)
+		else:
+			r["text"] = String(r["text"]) + " (A favour spent: the technician stays late.)"
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
 	return r
 
 
 func warrant(target: String) -> Dictionary:
+	if not det.warrants.get(target, false) and not Resources.has(det, "warrants", 1):
+		return {"ok": false, "text": "Judge Moss shakes their head. \"You have used the warrants I can justify on this file. Bring me something I can't ignore, and wait.\"", "minutes": 0, "ticks": 0, "blocked": "warrants"}
+	var had: bool = bool(det.warrants.get(target, false))
 	var r: Dictionary = CaseOps.request_warrant(sim, _truth, det, target)
+	if not had and bool(det.warrants.get(target, false)):
+		Resources.spend(det, "warrants", 1)
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
 	return r
@@ -523,29 +570,43 @@ func can_accuse() -> bool:
 ## Name the killer: a formal charge. It runs the one road: judge -> arrest -> interview -> trial -> a cell, with the same reputation ledger
 ## as the court tab. A right name on a case that holds goes to trial at once; a wrong name costs more each time, and you only get three.
 ## Returns {verdict, text, score, cats, total, episode, left, ...}.
-func accuse(culprit: String, motive: String, method: String) -> Dictionary:
+## `charge` is the rung of the charge ladder the case sheet allows (see Sheet.charge_level): "" and "murder" run the whole road at once; "killing"
+## and "held" lay a smaller charge, hold the accused and set the trial three days on, with a shorter sentence if it ends in a conviction.
+func accuse(culprit: String, motive: String, method: String, charge: String = "") -> Dictionary:
+	var lesser: bool = charge in ["killing", "held"]
 	if not can_accuse():
 		return {"verdict": "barred", "text": "The Sheriff will not hear another accusation on this file.", "score": 0, "cats": 0, "total": 0, "left": 0}
 	if not sim.people.has(culprit) or culprit == "player" or not sim.alive(sim.people[culprit]) or culprit == String(_truth["victim"]):
 		return {"verdict": "barred", "text": "There is no one in Little Mercy by that name to accuse.", "score": 0, "cats": 0, "total": 0, "left": accusations_left()}
 	var res: Dictionary = CaseOps.judge(sim, _truth, det, culprit, motive, method)
+	if lesser:
+		court["sentence_cap"] = int(Sheet.SENTENCE[charge])
 	_truth["accusations"] = int(_truth.get("accusations", 0)) + 1
 	(_truth["accused"] as Array).append(culprit)
 	var theory: bool = res["right_motive"] and res["right_method"]
 	match String(res["verdict"]):
 		"convicted":
-			var ch: Dictionary = Justice.formal_charge(sim, _truth, det, court, jail, culprit, theory, true)
-			var tr: Dictionary = ch["trial"]
-			res["trial"] = tr
-			res["interview"] = ch["interview"]
-			if tr["verdict"] == "guilty":
-				var pk: RefCounted = sim.people[culprit]
-				sim.log_event("arrest", culprit, "%s was arrested for the murder of %s." % [pk.display, CaseEngine.name_of(sim, _truth["victim"])])
-				res["text"] = Prose.clean(String(res["text"]) + "\n\nCharged, questioned and tried: the jury returns in an hour. Guilty. %s is taken down." % CaseEngine.first(sim, culprit))
+			if lesser:
+				var lc: Dictionary = Justice.formal_charge(sim, _truth, det, court, jail, culprit, false, false)
+				res["interview"] = lc["interview"]
+				res["verdict"] = "charged"
+				res["text"] = Prose.clean("%s is charged with %s, and held. The trial is set for day %d. You have until then to prove the rest." % [CaseEngine.name_of(sim, culprit), String(Sheet.CHARGES[charge]).to_lower(), int(court.get("trial_day", 0))])
+				det.gain_xp(40)
 			else:
-				res["verdict"] = "released"
-				res["text"] = "The case reached court and the jury would not convict. %s walks, or is held for a retrial, and knows exactly how close it was." % CaseEngine.name_of(sim, culprit)
-				CaseOps.apply_outcome(sim, _truth, det, res, culprit)
+				var ch: Dictionary = Justice.formal_charge(sim, _truth, det, court, jail, culprit, theory, true)
+				var tr: Dictionary = ch["trial"]
+				res["trial"] = tr
+				res["interview"] = ch["interview"]
+				if charge == "murder" and tr["verdict"] == "guilty":
+					det.gain_xp(40)
+				if tr["verdict"] == "guilty":
+					var pk: RefCounted = sim.people[culprit]
+					sim.log_event("arrest", culprit, "%s was arrested for the murder of %s." % [pk.display, CaseEngine.name_of(sim, _truth["victim"])])
+					res["text"] = Prose.clean(String(res["text"]) + "\n\nCharged, questioned and tried: the jury returns in an hour. Guilty. %s is taken down." % CaseEngine.first(sim, culprit))
+				else:
+					res["verdict"] = "released"
+					res["text"] = "The case reached court and the jury would not convict. %s walks, or is held for a retrial, and knows exactly how close it was." % CaseEngine.name_of(sim, culprit)
+					CaseOps.apply_outcome(sim, _truth, det, res, culprit)
 		"released":
 			Justice.formal_charge(sim, _truth, det, court, jail, culprit, theory, false)
 			CaseOps.apply_outcome(sim, _truth, det, res, culprit)
@@ -568,7 +629,7 @@ func accuse(culprit: String, motive: String, method: String) -> Dictionary:
 	episodes.append(ep)
 	res["episode"] = ep
 	chronicle.append({"day": sim.day, "text": "You accused %s: %s." % [CaseEngine.name_of(sim, culprit), res["verdict"]]})
-	if _truth.get("status", "") == "open" and accusations_left() == 0 and res["verdict"] != "released":
+	if _truth.get("status", "") == "open" and accusations_left() == 0 and not (res["verdict"] in ["released", "charged"]):
 		_aftermath("spent")
 		res["aftermath"] = true
 	_false_conviction_check()
@@ -602,6 +663,307 @@ func cost_of(action: String, args: Dictionary = {}) -> Dictionary:
 		"go":
 			mins = int(distance(me().location, String(args.get("place", me().location))) / 450.0) * 30
 	return {"minutes": mins, "ticks": int(ceil(float(mins) / 30.0)), "label": "%d min" % mins, "stress": stress, "note": note}
+
+
+# ------------------------------------------------------------------ the case sheet (fill in the case)
+func sheet() -> Dictionary:
+	return Sheet.ensure(det)
+
+
+## What each group's stamp says on the page. The text never says which part is wrong.
+func sheet_lines() -> Dictionary:
+	var d: Dictionary = Prose.json("detective/sheet.json")
+	var sh: Dictionary = sheet()
+	var out := {}
+	for g in Sheet.GROUPS:
+		var gid: String = g["id"]
+		var st: String = String(sh["stamps"].get(gid, "open"))
+		var bank: Array = d["open"] if st == "open" else d["confirmed" if st == "confirmed" else "unsupported"][gid]
+		var line: String = String(bank[absi(hash("%s|%s|%s|%d" % [case.get("id", ""), gid, st, int(sh.get("checks", 0))])) % bank.size()])
+		if gid == "reason" and st == "unsupported" and Sheet.pattern(det) and String(sh["stamps"].get("night", "")) == "confirmed" and String(sh["stamps"].get("act", "")) == "confirmed":
+			line = String(d["pattern"][absi(hash("%s|pat" % case.get("id", ""))) % d["pattern"].size()])
+		out[gid] = {"stamp": st, "text": line}
+	return out
+
+
+## Set one line of the sheet ("" clears it). Changing an answer takes the stamp off every group it belongs to.
+func sheet_set(field: String, value: String) -> void:
+	var sh: Dictionary = sheet()
+	if not (field in Sheet.FIELDS):
+		return
+	if String(sh[field]) != value:
+		sh[field] = value
+		_sheet_dirty(field)
+		if field == "who" and value != "" and sim.people.has(value):
+			flag_person(value)
+
+
+func _sheet_dirty(field: String) -> void:
+	var sh: Dictionary = sheet()
+	for g in Sheet.GROUPS:
+		if field in g["fields"] or field == "cites":
+			sh["stamps"][g["id"]] = "open"
+
+
+## Cite (or stop citing) a notebook claim as support for one line.
+func sheet_cite(field: String, cid: String, on: bool) -> void:
+	var sh: Dictionary = sheet()
+	if not (field in Sheet.FIELDS):
+		return
+	var arr: Array = sh["cites"][field]
+	if on and not arr.has(cid) and Sheet.index(det).has(cid):
+		arr.append(cid)
+	elif not on:
+		arr.erase(cid)
+	for g in Sheet.GROUPS:
+		if field in g["fields"] or field == "who":
+			sh["stamps"][g["id"]] = "open"
+
+
+## The claims in the notebook a line could cite, as cards (the newest first), with whether each is cited under that line.
+func sheet_cards(field: String) -> Array:
+	var sh: Dictionary = sheet()
+	var cites: Array = sh["cites"].get(field, [])
+	var out: Array = []
+	var seen := {}
+	for eid in det.order:
+		var e: Dictionary = det.known[eid]
+		if String(e.get("kind", "")) in ["lore", "scandal"]:
+			continue
+		for cl in e.get("claims", []):
+			var cid := String(cl.get("cid", ""))
+			if cid == "" or seen.has(cid) or String(cl.get("predicate", "")) in ["observation", "legacy"]:
+				continue
+			seen[cid] = true
+			var t: float = float(cl.get("time", -1.0))
+			var subj := String(cl.get("subject", ""))
+			out.append({"cid": cid, "eid": String(eid), "title": String(e.get("title", "")), "text": String(e.get("text", "")), "pred": String(cl.get("predicate", "")).replace("_", " "), "predicate": String(cl.get("predicate", "")),
+				"subject": subj, "who": CaseEngine.first(sim, subj) if subj != "" and sim.people.has(subj) else "", "time": t, "cited": cites.has(cid),
+				"clock": Brief.clock_text(fposmod(t, 24.0)) if t >= 0.0 else "", "place": place_name(String(cl.get("place", ""))) if layout.by_id.has(String(cl.get("place", ""))) else ""})
+	out.reverse()
+	return out
+
+
+## Press CHECK: the stamps. Costs time, more for the third and later check in a day (a detective who guesses at the sheet is told so by the clock).
+func sheet_check() -> Dictionary:
+	var sh: Dictionary = sheet()
+	var day := int(sim.day)
+	var key := "checks_day"
+	if int(sh.get(key + "_d", -1)) != day:
+		sh[key + "_d"] = day
+		sh[key] = 0
+	sh[key] = int(sh[key]) + 1
+	var n: int = int(sh[key])
+	var mins: int = 30 * maxi(1, n - 1)
+	if n >= 3:
+		det.add_stress(2.0)
+	sh["checks"] = int(sh.get("checks", 0)) + 1
+	sh["stamps"] = Sheet.adjudicate(det, case, det.ctx.get("jobs", {}), sh, _truth)
+	var r := {"stamps": sh["stamps"].duplicate(), "lines": sheet_lines(), "level": Sheet.charge_level(sh["stamps"], Sheet.pattern(det)), "minutes": mins}
+	r["ticks"] = spend(mins)
+	_after_op()
+	return r
+
+
+func sheet_level() -> String:
+	var sh: Dictionary = sheet()
+	for gid in sh["stamps"]:
+		if sh["stamps"][gid] == "open" and Sheet.group_complete(sh, gid):
+			return "unchecked"
+	return Sheet.charge_level(sh["stamps"], Sheet.pattern(det))
+
+
+## Test theory: the timeline and links against the recorded observations. Returns only the contradictions found in the notebook.
+func sheet_test_theory() -> Dictionary:
+	var sh: Dictionary = sheet()
+	var d: Dictionary = Prose.json("detective/sheet.json")
+	var r: Dictionary = Sheet.test_theory(sim, det, case, det.ctx.get("jobs", {}), sh, layout.by_id, func(id: String) -> String: return CaseEngine.name_of(sim, id))
+	var lead_in: String = String(d["theory_open"][absi(hash("%s|th|%d" % [case.get("id", ""), det.order.size()])) % d["theory_open"].size()])
+	var lines: Array = r["lines"]
+	var text := ""
+	if lines.is_empty() or (lines.size() == 1 and String(lines[0]).begins_with("There is no name")):
+		text = String(d["theory_none"][absi(hash("%s|tn|%d" % [case.get("id", ""), det.order.size()])) % d["theory_none"].size()]) if sh["who"] != "" else String(lines[0])
+	else:
+		text = lead_in + "\n- " + "\n- ".join(lines)
+	var out := {"lines": lines, "count": int(r["count"]), "text": Prose.clean(text), "minutes": 45}
+	out["ticks"] = spend(45)
+	det.add_stress(1.0)
+	_after_op()
+	return out
+
+
+## A hunch: one point of gut for a LEAD. Never a verdict; may be incomplete, may be an hour out.
+func sheet_hunch() -> Dictionary:
+	if not Resources.has(det, "hunches", 1):
+		return {"ok": false, "text": String(Prose.json("detective/sheet.json")["hunch_out"]), "minutes": 0}
+	Resources.spend(det, "hunches", 1)
+	var lead: Dictionary = Leads.lead(self, int(det.dread.get("hunches_used", 0)))
+	det.dread["hunches_used"] = int(det.dread.get("hunches_used", 0)) + 1
+	var r := {"ok": true, "text": String(lead["text"]), "kind": String(lead["kind"]), "minutes": 15}
+	r["ticks"] = spend(15)
+	return r
+
+
+## File the sheet. The charge is what the stamps allow. With nothing confirmed you may still press a charge on your own judgement, if the
+## notebook gives probable cause, and answer for it if it fails (the same road as ever).
+func sheet_file(force: bool = false) -> Dictionary:
+	var sh: Dictionary = sheet()
+	var d: Dictionary = Prose.json("detective/sheet.json")
+	if String(sh["who"]) == "":
+		return {"verdict": "blank", "text": "There is no name on the sheet."}
+	var lv: String = sheet_level()
+	if lv == "unchecked":
+		return {"verdict": "unchecked", "text": "Press CHECK first: the stamps are not current."}
+	var text := ""
+	if lv == "unconfirmed":
+		if not force:
+			return {"verdict": "unconfirmed", "text": String(d["charge"]["unconfirmed"][0])}
+		if not Justice.probable_cause(det, String(sh["who"])):
+			return {"verdict": "no_cause", "text": String(d["no_cause"])}
+	var r: Dictionary = accuse(String(sh["who"]), String(sh["why"]), String(sh["how"]), "" if lv == "unconfirmed" else lv)
+	r["level"] = lv
+	if lv != "unconfirmed":
+		text = String(d["charge"][lv][absi(hash("%s|ch" % case.get("id", ""))) % d["charge"][lv].size()])
+		r["text"] = text + "\n\n" + String(r.get("text", ""))
+	sh["stamps"] = {"night": "open", "act": "open", "reason": "open"}
+	return r
+
+
+# ------------------------------------------------------------------ stakeouts, informants, deals
+func stakeout(lot: String, hours: int) -> Dictionary:
+	var r: Dictionary = Stakeout.run(self, lot, hours)
+	if bool(r.get("spotted", false)):
+		Reputation.apply(det, "spotted_watching", int(sim.day))
+	_after_op()
+	return r
+
+
+func stakeout_hours() -> int:
+	return Stakeout.hours_available(self)
+
+
+func street_contacts() -> Array:
+	return Informants.contacts(self)
+
+
+func informant_tip(contact: String) -> Dictionary:
+	var r: Dictionary = Informants.tip(self, contact)
+	r["ticks"] = spend(int(r.get("minutes", 0)))
+	_after_op()
+	return r
+
+
+## A plea for the person in custody: a reduced sentence for a statement. Wrong, and an innocent is in a cell while the killer walks.
+func plea_deal(target: String) -> Dictionary:
+	var r: Dictionary = Informants.deal(self, target)
+	if not bool(r.get("accepted", false)):
+		r["ticks"] = spend(30 if bool(r.get("ok", false)) else 0)
+		_after_op()
+		return r
+	var res: Dictionary = r["res"]
+	Justice.conclude(sim, _truth, det, court, jail, res)
+	if bool(res.get("wrongful", false)):
+		_truth["false_conviction"] = target
+		Reputation.apply(det, "wrong_plea", int(sim.day))
+	var ep: Dictionary = Narrator.episode(sim, _truth, det, {"verdict": "convicted" if not bool(res.get("wrongful", false)) else "wrong", "score": 0, "right_person": not bool(res.get("wrongful", false))})
+	episodes.append(ep)
+	chronicle.append({"day": sim.day, "text": "%s took a plea." % CaseEngine.name_of(sim, target)})
+	_false_conviction_check()
+	_check_caught()
+	r["ticks"] = spend(45)
+	_sync_case()
+	return r
+
+
+# ------------------------------------------------------------------ empathy
+func dossier() -> Dictionary:
+	return Empathy.dossier(self)
+
+
+func remember_them(npc: String) -> Dictionary:
+	var r: Dictionary = Empathy.remember(self, npc)
+	r["ticks"] = spend(int(r.get("minutes", 0)))
+	_after_op()
+	return r
+
+
+func can_tell(npc: String) -> bool:
+	return Empathy.can_tell(self, npc)
+
+
+func tell_family(npc: String, approach: String) -> Dictionary:
+	var r: Dictionary = Empathy.tell(self, npc, approach)
+	r["ticks"] = spend(int(r.get("minutes", 0)))
+	_after_op()
+	return r
+
+
+func family_circle() -> Array:
+	return Empathy.circle(self).map(func(x): return {"id": x["id"], "rel": x["rel"]})
+
+
+func carrying() -> String:
+	return Empathy.carrying(self)
+
+
+func can_return_keepsake() -> bool:
+	return Empathy.can_return(self)
+
+
+func return_keepsake() -> Dictionary:
+	var r: Dictionary = Empathy.return_keepsake(self)
+	r["ticks"] = spend(int(r.get("minutes", 0)))
+	_after_op()
+	return r
+
+
+# ------------------------------------------------------------------ urgency and dread
+func trails() -> Array:
+	return Urgency.trails(self)
+
+
+func resource_line() -> String:
+	return Resources.summary(det, int(sim.day))
+
+
+func resource_rows() -> Array:
+	return Resources.rows(det, int(sim.day))
+
+
+func dread_level() -> int:
+	return Dread.level(det, sim.hour_now())
+
+
+func dread_name() -> String:
+	return Dread.level_name(dread_level())
+
+
+func dread_whisper() -> String:
+	return Dread.whisper(self)
+
+
+func dread_intrusion() -> Dictionary:
+	return Dread.intrusion(self)
+
+
+func dread_take(idea: String, who: String) -> Dictionary:
+	var r: Dictionary = Dread.accept(self, idea, who)
+	_after_op()
+	return r
+
+
+func dread_dismiss() -> String:
+	return Dread.dismiss(self)
+
+
+func dread_pending() -> Dictionary:
+	return Dread.pending(det)
+
+
+func dread_respond(choice: String) -> Dictionary:
+	var r: Dictionary = Dread.respond(self, choice)
+	_after_op()
+	return r
 
 
 # ------------------------------------------------------------------ ordinary life
@@ -664,6 +1026,7 @@ func attend_funeral() -> Dictionary:
 		tmpl.append(Claims.make("seen", who[i2], "seen_at_funeral", "", -1.0, beh, 0.6))
 	lines.sort_custom(func(a, b): return absi(hash(String(a) + String(case["id"]))) < absi(hash(String(b) + String(case["id"]))))
 	var text := "The chapel is full and cold. The hymn is one you don't know, and everybody does. At the back: %s" % " ".join(lines)
+	text += "\n\n" + Empathy.eulogy(self)
 	var e := {"id": "funeral_" + String(case["id"]), "title": "The funeral", "text": text, "kind": "testimony", "source": "chapel", "day": int(sim.day)}
 	e["claims"] = Claims.emit(_truth, tmpl, "chapel", text)
 	det.learn(e)
@@ -755,6 +1118,9 @@ func dawn() -> String:
 	Cold.tick(self)
 	var id := super.dawn()
 	_ordinary_day()
+	Resources.dawn(det, int(sim.day))
+	Dread.dawn(self)
+	Dread.reply_due(self)
 	for a in _arrivals:
 		today.append("New neighbour: %s" % a)
 	_arrivals.clear()
@@ -778,6 +1144,8 @@ func dawn() -> String:
 		elif fresh and kills == 3:
 			pending_beats.append({"title": "THE THIRD", "text": "By noon the Courier knew. By dusk the whole town knew, and had given the killer a name: %s.\n\nYou have walked into %s now, and every one of them was somebody's ordinary life. There is a deadline, though nobody will say who set it. Eight days." % [String(serial["nick"]), _kill_places()]})
 	_after_op()
+	for ln in Urgency.morning(self):
+		today.append(ln)
 	det.add_stress(-12.0 + (6.0 if Serial.active(serial) and float(serial["pressure"]) >= 70.0 else 0.0))
 	return id
 
@@ -863,6 +1231,7 @@ func _night_strike() -> bool:
 ## A new body, a new case file. A serial killer's earlier work stays in your notebook; an ordinary closed case does not.
 func _open_case(opt: Dictionary) -> void:
 	det.rollover(String(_truth.get("id", "old")))
+	Resources.new_case(det, int(sim.day))
 	if opt.is_empty():
 		det.known = {}
 		det.order = []
@@ -921,6 +1290,7 @@ func load_dict(d: Dictionary) -> void:
 	past_signatures = d.get("past_signatures", []).duplicate()
 	super.load_dict(d)
 	det = Detective.from_dict(d.get("det", {}))
+	Resources.ensure(det)
 	if d.has("truth"):
 		_truth = d["truth"].duplicate(true)
 	else:

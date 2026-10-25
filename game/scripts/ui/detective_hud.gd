@@ -18,12 +18,15 @@ const Scrubber = preload("res://scripts/ui/cctv_scrubber.gd")
 const ChatView = preload("res://scripts/ui/chat_view.gd")
 const EvidenceBoard = preload("res://scripts/ui/evidence_board.gd")
 const TutorialOverlay = preload("res://scripts/ui/tutorial_overlay.gd")
+const SheetScreen = preload("res://scripts/ui/sheet_screen.gd")
+const Sheet = preload("res://scripts/detective/sheet.gd")
+const Urgency = preload("res://scripts/detective/urgency.gd")
 
 const GREEN := UiKit.GREEN
 const OXBLOOD := UiKit.OXBLOOD
 const WINDOWS := [["Evening, 6 pm to midnight", 18.0, 24.0], ["Midnight to 3 am", 24.0, 27.0], ["3 am to 6 am", 27.0, 30.0]]
 const TABS := [["Case", "case", "case"], ["Notes", "notebook", "notebook"], ["People", "people", "people"], ["News", "news", "news"],
-	["Board", "board", "board"], ["CCTV", "cctv", "cctv"], ["Court", "court", "court"], ["Accuse", "accuse", "accuse"], ["You", "you", "you"]]
+	["Board", "board", "board"], ["CCTV", "cctv", "cctv"], ["Court", "court", "court"], ["Charge", "accuse", "accuse"], ["You", "you", "you"]]
 const NB_FILTERS := [["All", "all"], ["Evidence", "evidence"], ["Testimony", "testimony"], ["Lab", "lab"], ["Lore", "lore"]]
 const MOTIVES := {"grudge": "An old grudge", "money": "Money", "family": "Inheritance", "silence": "To keep a secret", "passion": "Jealousy"}
 const METHODS := {"blunt": "A blow to the head", "knife": "A knife", "strangle": "Strangulation", "poison": "Poison"}
@@ -56,15 +59,11 @@ var cam_text_open := false
 var obj_label: Label
 var obj_box: PanelContainer
 var dist_label: Label
+var res_label: Label
 var travel_btn: Button
 var scene_btn: Button      # one tap to the crime scene, whatever the objective says
 var waypoint: Control
 var tab := "case"
-var sel_culprit := ""
-var acc_query := ""
-var acc_list: VBoxContainer
-var sel_motive := ""
-var sel_method := ""
 var result_text := ""
 var force_tutorial := false
 var tutorial: Control
@@ -77,7 +76,6 @@ var nb_new: Dictionary = {}
 var _seen_n := 0
 var _obj_timer := 0.0
 var _last_level := 1
-var _acc_armed := false
 
 
 func _extra_topbar() -> Array:
@@ -99,6 +97,9 @@ func open_full_map() -> void:
 	full_map.travel_requested.connect(func(lot: String):
 		close_full_map()
 		travel_to_objective(lot))
+	full_map.watch_requested.connect(func(lot: String):
+		close_full_map()
+		_watch_menu(lot))
 	full_map.closed.connect(close_full_map)
 	add_child(full_map)
 	full_map.refresh()
@@ -147,6 +148,12 @@ func _hud_built() -> void:
 	dist_label.add_theme_color_override("font_color", VIOLET)
 	dist_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vb.add_child(dist_label)
+	res_label = Label.new()
+	res_label.name = "ResLabel"
+	res_label.add_theme_font_size_override("font_size", UiKit.fs(16))
+	res_label.add_theme_color_override("font_color", Color("6b6558"))
+	res_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(res_label)
 	travel_btn = Button.new()
 	travel_btn.name = "TravelBtn"
 	travel_btn.text = "Travel there"
@@ -174,6 +181,7 @@ func _hud_built() -> void:
 	waypoint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	waypoint.camera = world.player.cam
 	move_child(waypoint, 1)                     # over the look pad, under every button
+	_build_dread_fx()
 	_refresh_objective()
 
 
@@ -193,6 +201,7 @@ func _refresh_objective() -> void:
 	if obj_label == null:
 		return
 	obj_label.text = game.objective()
+	res_label.text = game.resource_line()
 	var lot := _objective_lot()
 	var phase_day: bool = game.phase == "day"
 	var sl: String = game.scene_lot()
@@ -263,6 +272,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if waypoint != null and world != null:
 		waypoint.player_pos = world.player.global_position
+	_tick_dread(delta)
 	_obj_timer -= delta
 	if _obj_timer <= 0.0 and obj_label != null:
 		_obj_timer = 0.5
@@ -297,7 +307,6 @@ func _check_level() -> void:
 
 func close_panel() -> void:
 	super.close_panel()
-	_acc_armed = false
 	if game.flush_time() > 0:
 		world.time_skipped()
 
@@ -306,6 +315,7 @@ func _step_out() -> void:
 	super._step_out()
 	if game.flush_time() > 0:
 		world.time_skipped()
+	_maybe_intrusion.call_deferred()
 
 
 func _card(title: String, subtitle: String, body: String, button: String, cb: Callable, person: RefCounted = null) -> void:
@@ -379,6 +389,8 @@ func _after_wake() -> void:
 	super._after_wake()
 	if _should_tutorial() and tutorial == null:
 		start_tutorial()
+	elif not _dread_card():
+		_maybe_intrusion()
 
 
 func _wake_card() -> void:
@@ -1088,8 +1100,6 @@ func show_case(tab_name: String = "") -> void:
 	var prev := tab
 	if tab_name != "":
 		tab = tab_name
-	if tab != "accuse":
-		_acc_armed = false
 	if tab == "notebook" and prev != "notebook":
 		nb_new = {}
 		for eid in game.det.order.slice(_seen_n):
@@ -1212,6 +1222,9 @@ func _tab_case() -> void:
 	UiKit.stamp(stats, "QUESTIONED %d/%d" % [interviewed, game.persons_of_interest().size()], VIOLET, 18)
 	if not d.lab.is_empty():
 		UiKit.stamp(stats, "LAB PENDING %d" % d.lab.size(), RED, 18)
+	if game.dread_level() >= 1:
+		var fl := _lbl(box, "%s. %s" % [game.dread_name().capitalize(), ["", "Your hands are not quite still.", "The edges of the page will not stay put.", "You are not sure how long you have been awake."][game.dread_level()]], 19, Color("7a2323"))
+		fl.name = "FearLine"
 	var nx := PanelContainer.new()
 	nx.name = "NextBox"
 	nx.add_theme_stylebox_override("panel", UiKit.box(Color(0.89, 0.24, 0.24, 0.12), RED, 3, 10, 10))
@@ -1222,9 +1235,13 @@ func _tab_case() -> void:
 	nh.custom_minimum_size = Vector2(0, 0)
 	var nt := _lbl(nv, game.objective(), 24, INK)
 	nt.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+	_trails_panel()
+	_dossier_panel()
+	_resource_panel()
 	if not game.episodes.is_empty():
-		var eb := _btn(box, "Episodes (%d)" % game.episodes.size(), _archive, 26, 60)
+		var eb := _btn(box, "Episodes (%d)" % game.episodes.size(), _archive, 26, 64)
 		eb.name = "Archive"
+	_bottom_room(8.0)
 
 
 func _fact(label: String, text: String, known: bool) -> void:
@@ -1321,6 +1338,7 @@ func _tab_notebook() -> void:
 	_nb_fill()
 	if not d.statements.is_empty():
 		_lbl(box, "Statements taken: %d" % d.statements.size(), 20, VIOLET)
+	_whisper_line()
 
 
 func _nb_set_filter(f: String) -> void:
@@ -1540,6 +1558,7 @@ func _people_groups() -> Array:
 
 
 func _tab_people() -> void:
+	_street_section()
 	var total := 0
 	for g in _people_groups():
 		total += (g[1] as Array).size()
@@ -1601,7 +1620,14 @@ func _person_card(sid: String, badge: String) -> void:
 	if is_suspect:
 		_btn(grid, "Warrant  (%d min)" % COST_WARRANT, _warrant.bind(sid), 20, 54).name = "Warrant_" + sid
 		_btn(grid, "Prints" if not game.det.samples.get(sid, false) else "Prints: on file", _sample.bind(sid), 20, 54).name = "Sample_" + sid
-	_btn(grid, "Their circle", _circle.bind(sid), 20, 54).name = "Circle_" + sid
+	_btn(grid, "Their circle", _circle.bind(sid), 20, 64).name = "Circle_" + sid
+	var q_home: String = String(q.home)
+	if q_home != "":
+		_btn(grid, "Stake out", _watch_menu.bind(q_home), 20, 64).name = "Stake_" + sid
+	if game.can_tell(sid):
+		_btn(grid, "Tell them", _tell_menu.bind(sid), 20, 64).name = "TellBtn_" + sid
+	elif game.family_circle().any(func(x): return x["id"] == sid):
+		_btn(grid, "Who were they?", _remember_them.bind(sid), 20, 64).name = "Remember_" + sid
 	var mins := travel_minutes(q.home)
 	var gb := _wbtn(grid, "Go to their house  (%s)" % ("now" if mins == 0 else UiKit.minutes_text(mins).replace(" ", " ")), go.bind(q.home))
 	gb.custom_minimum_size.y = 64
@@ -1669,6 +1695,9 @@ func _tab_court() -> void:
 		for a in [["Build rapport", "rapport"], ["Lay out the evidence", "evidence"], ["Apply pressure", "pressure"]]:
 			var ib := _btn(box, "%s  (1 h)" % a[0], _interrogate.bind(a[1]), 22, 58)
 			ib.name = "Int_" + a[1]
+		var pb := _btn(box, "Offer a plea  (2 favours)", _plea.bind(t), 22, 64)
+		pb.name = "Plea"
+		pb.disabled = int(game.det.res.get("favours", 0)) < 2
 		var tb := _btn(box, "Go to trial", _trial, 26, 64)
 		tb.disabled = not game.trial_ready()
 		tb.name = "Trial"
@@ -1985,147 +2014,333 @@ func _warrant(sid: String) -> void:
 	show_case("people")
 
 
-# ------------------------------------------------------------------ the accusation
+# ------------------------------------------------------------------ the case sheet
+## The Sheet tab: where the sheet stands, and the way in. The sheet itself is a full screen of its own.
 func _tab_accuse() -> void:
 	if game.solved():
 		_empty_state("The case is closed", "Rest, and watch the town. A new case will find you.")
 		return
-	_lbl(box, "Name the killer, the reason, and the method. The judge will weigh what is in your notebook.", 22)
-	_lbl(box, "WHO?", 20, VIOLET)
-	_lbl(box, "People your notebook names, or search anyone in Little Mercy.", 18)
-	var poi: Array = game.persons_of_interest()
-	for sid in poi:
-		var b := _btn(box, CaseEngine.name_of(game.sim, sid), _pick.bind("culprit", sid), 24, 56)
-		_mark(b, sel_culprit == sid)
-		b.name = "Acc_" + sid
-	var se := LineEdit.new()
-	se.name = "AccuseSearch"
-	se.placeholder_text = "Search anyone in Little Mercy"
-	se.text = acc_query
-	se.clear_button_enabled = true
-	se.custom_minimum_size = Vector2(0, 56)
-	se.add_theme_font_size_override("font_size", UiKit.fs(22))
-	se.add_theme_color_override("font_placeholder_color", Color("6b6558"))
-	se.text_changed.connect(_acc_search)
-	box.add_child(se)
-	acc_list = VBoxContainer.new()
-	acc_list.name = "AccuseResults"
-	acc_list.add_theme_constant_override("separation", 6)
-	box.add_child(acc_list)
-	_acc_fill()
-	if sel_culprit != "" and not poi.has(sel_culprit):
-		_lbl(box, "Accusing: %s" % CaseEngine.name_of(game.sim, sel_culprit), 22, VIOLET)
-	_lbl(box, "WHY?", 20, VIOLET)
-	for k in MOTIVES:
-		var b2 := _btn(box, MOTIVES[k], _pick.bind("motive", k), 22, 54)
-		_mark(b2, sel_motive == k)
-		b2.name = "Why_" + k
-	_lbl(box, "HOW?", 20, VIOLET)
-	for k in METHODS:
-		var b3 := _btn(box, METHODS[k], _pick.bind("method", k), 22, 54)
-		_mark(b3, sel_method == k)
-		b3.name = "How_" + k
-	if sel_culprit != "":
-		var dr := PanelContainer.new()
-		dr.name = "DaRead"
-		dr.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), VIOLET, 3, 10, 10))
-		box.add_child(dr)
-		var dv := VBoxContainer.new()
-		dr.add_child(dv)
-		_lbl(dv, "THE DA'S READ", 17, VIOLET)
-		_lbl(dv, game.da_advice(sel_culprit), 20).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
-	var ready: bool = sel_culprit != "" and sel_motive != "" and sel_method != ""
-	if ready:
-		var sm := PanelContainer.new()
-		sm.name = "AccuseSummary"
-		sm.add_theme_stylebox_override("panel", UiKit.box(Color(0.89, 0.24, 0.24, 0.12), RED, 3, 10, 10))
-		box.add_child(sm)
-		var tx := "You accuse %s: %s, by %s." % [CaseEngine.name_of(game.sim, sel_culprit), String(MOTIVES.get(sel_motive, sel_motive)).to_lower(), String(METHODS.get(sel_method, sel_method)).to_lower()]
-		var sl := _lbl(sm, tx, 22)
-		sl.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
-	var go_b := _btn(box, "Are you sure? Tap again" if _acc_armed else "Make the accusation", _accuse_tap, 30, 72)
-	go_b.disabled = not ready
-	go_b.name = "Accuse"
-	if _acc_armed:
-		UiKit.set_button_style(go_b, RED, INK, PAPER)
+	var sh: Dictionary = game.sheet()
+	_lbl(box, "Fill in the case: who, when, where, how and why, and cite the notebook claims that hold each answer up. The game will not tell you which answer is wrong. It will only tell you which groups it can stamp.", 21)
+	var lines: Dictionary = game.sheet_lines()
+	for g in Sheet.GROUPS:
+		var st: String = String(lines[g["id"]]["stamp"])
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		box.add_child(row)
+		var nm := _lbl(row, String(g["label"]).capitalize(), 22)
+		nm.custom_minimum_size = Vector2(190, 0)
+		UiKit.stamp(row, "CONFIRMED" if st == "confirmed" else ("NOT YET SUPPORTED" if st == "unsupported" else "OPEN"), GREEN if st == "confirmed" else (RED if st == "unsupported" else VIOLET), 18, st != "open")
+	var ob := _btn(box, "Open the case sheet", open_sheet, 30, 72)
+	ob.name = "OpenSheet"
+	_lbl(box, "Answered: %d of 5.   Charges you can bring depend on what is stamped: murder needs all three groups, unlawful killing the night and one more, a hold on suspicion any one." % Sheet.answered(sh), 19, VIOLET)
+	_resource_panel()
+	_bottom_room(8.0)
 
 
-func _acc_search(t: String) -> void:
-	acc_query = t
-	_acc_fill()
+var sheet_screen: Control
 
 
-## Anyone living in Little Mercy who matches the search and is not already listed (the notebook's names are above).
-func _acc_fill() -> void:
-	if acc_list == null or not is_instance_valid(acc_list):
+func open_sheet() -> void:
+	if sheet_screen != null and is_instance_valid(sheet_screen):
 		return
-	for c in acc_list.get_children():
-		acc_list.remove_child(c)
-		c.queue_free()
-	var q := acc_query.strip_edges().to_lower()
-	if q == "":
+	close_panel()
+	sheet_screen = SheetScreen.new()
+	add_child(sheet_screen)
+	sheet_screen.setup(game)
+	world.paused = true
+	sheet_screen.closed.connect(close_sheet)
+	sheet_screen.file_requested.connect(_sheet_file)
+
+
+func close_sheet() -> void:
+	if sheet_screen != null and is_instance_valid(sheet_screen):
+		remove_child(sheet_screen)
+		sheet_screen.queue_free()
+	sheet_screen = null
+	world.paused = false
+	game.flush_time()
+	world.refresh_markers()
+
+
+func _sheet_file(force: bool) -> void:
+	var res: Dictionary = game.sheet_file(force)
+	var v: String = String(res.get("verdict", ""))
+	if v in ["blank", "unchecked", "unconfirmed", "no_cause"]:
+		if sheet_screen != null:
+			sheet_screen.show_result(String(res.get("text", "")))
 		return
-	var poi: Array = game.persons_of_interest()
-	var shown := 0
-	for sid in game.residents():
-		if poi.has(sid):
-			continue
-		var nm := CaseEngine.name_of(game.sim, sid)
-		var hay := (nm + " " + String(game.sim.people[sid].job)).to_lower()
-		var ok := true
-		for w in q.split(" ", false):
-			if not hay.contains(w):
-				ok = false
-		if not ok or shown >= 8:
-			continue
-		shown += 1
-		var rb := _btn(acc_list, "%s  (%s)" % [nm, game.sim.people[sid].job], _pick_found.bind(sid), 22, 54)
-		rb.name = "Acc_" + sid
-		_mark(rb, sel_culprit == sid)
-	if shown == 0:
-		_lbl(acc_list, "No one by that name.", 20, VIOLET)
-
-
-func _pick_found(sid: String) -> void:
-	game.flag_person(sid)
-	acc_query = ""
-	_pick("culprit", sid)
-
-
-## The chosen option is shown inked in.
-func _mark(b: Button, selected: bool) -> void:
-	if selected:
-		UiKit.set_button_style(b, INK, MARIGOLD, PAPER)
-
-
-func _pick(which: String, v: String) -> void:
-	match which:
-		"culprit": sel_culprit = v
-		"motive": sel_motive = v
-		"method": sel_method = v
-	_acc_armed = false
-	show_case("accuse")
-
-
-func _accuse_tap() -> void:
-	if not _acc_armed:
-		_acc_armed = true
-		UiKit.haptic(25)
-		show_case("accuse")
-		return
-	_accuse()
-
-
-func _accuse() -> void:
-	_acc_armed = false
-	var res: Dictionary = game.accuse(sel_culprit, sel_motive, sel_method)
-	var suspect: RefCounted = game.sim.people[sel_culprit]
-	var verdict_title: String = {"convicted": "CASE CLOSED", "released": "NOT ENOUGH", "insufficient": "NO CASE", "wrong": "WRONG PERSON"}.get(res.get("verdict", ""), "VERDICT")
-	var body: String = "%s\n\nThe DA's read: %s" % [res.get("text", ""), game.da_advice(sel_culprit)]
-	if res.get("verdict", "") == "convicted":
+	var suspect: RefCounted = game.sim.people[game.sheet()["who"]] if game.sim.people.has(game.sheet()["who"]) else game.me()
+	close_sheet()
+	var titles := {"convicted": "CASE CLOSED", "released": "NOT ENOUGH", "insufficient": "NO CASE", "wrong": "WRONG PERSON", "charged": "CHARGED", "barred": "BARRED"}
+	var verdict_title: String = String(titles.get(v, "VERDICT"))
+	var body: String = String(res.get("text", ""))
+	if v == "convicted":
 		body += "\n\nXP awarded. The Sheriff will remember this."
+	UiKit.haptic(120)
+	_card(verdict_title, "Your charge: %s" % suspect.display, body, "Read the episode", func(): _close_card(); _archive(), suspect)
+
+
+## What is left of the things you spend: warrants, lab slots, kit, favours, hunches.
+func _resource_panel() -> void:
+	var pc := PanelContainer.new()
+	pc.name = "ResourcePanel"
+	pc.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), VIOLET, 3, 10, 10))
+	box.add_child(pc)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 2)
+	pc.add_child(v)
+	_lbl(v, "WHAT YOU HAVE TO SPEND", 17, VIOLET)
+	for r in game.resource_rows():
+		var l := _lbl(v, "%s  %d of %d" % [r["label"], int(r["have"]), int(r["cap"])], 21, RED if int(r["have"]) == 0 else INK)
+		l.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+		var n := _lbl(v, String(r["note"]), 16, Color("6b6558"))
+		n.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+
+
+# ------------------------------------------------------------------ who they were, trails going cold, fear
+func _dossier_panel() -> void:
+	var dz: Dictionary = game.dossier()
+	var pc := PanelContainer.new()
+	pc.name = "Dossier"
+	pc.add_theme_stylebox_override("panel", UiKit.box(Color("fffaf0"), INK, 3, 10, 10))
+	box.add_child(pc)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 4)
+	pc.add_child(v)
+	_lbl(v, "WHO THEY WERE  (%d of 4)" % int(dz["count"]), 17, VIOLET)
+	if int(dz["count"]) == 0:
+		_lbl(v, String(dz["empty"]), 20).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+	for r in dz["rows"]:
+		if bool(r["known"]):
+			_lbl(v, String(r["label"]), 15, VIOLET)
+			_lbl(v, String(r["text"]), 19).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+	var carry := _lbl(v, game.carrying(), 19, Color("6b6558"))
+	carry.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+	if game.can_return_keepsake():
+		var rb := _btn(v, "Take it back to the family", _return_keepsake, 22, 64)
+		rb.name = "ReturnKeepsake"
+
+
+func _return_keepsake() -> void:
+	var r: Dictionary = game.return_keepsake()
+	result_text = String(r["text"])
+	_card("A SMALL THING", "Returned", String(r["text"]), "Go on", _close_card, null)
+	UiKit.haptic(60)
+
+
+func _trails_panel() -> void:
+	var tr: Array = game.trails()
+	var pc := PanelContainer.new()
+	pc.name = "Trails"
+	pc.add_theme_stylebox_override("panel", UiKit.box(Color(0.89, 0.24, 0.24, 0.1), RED, 3, 10, 10))
+	box.add_child(pc)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 4)
+	pc.add_child(v)
+	_lbl(v, "GOING COLD", 17, RED)
+	if tr.is_empty():
+		_lbl(v, "Nothing is about to slip away that you can see. That is not the same as nothing slipping away.", 19).custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+	for t in tr.slice(0, 6):
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		v.add_child(row)
+		var col: Color = RED if t["tier"] == "urgent" else (Color("b8741a") if t["tier"] == "warn" else VIOLET)
+		UiKit.stamp(row, Urgency.tag(String(t["tier"])), col, 15, t["tier"] != "calm")
+		var dl := int(t["days_left"])
+		_lbl(row, String(t["label"]) + ("" if dl > 60 else ("  ·  today" if dl <= 0 else "  ·  %d day%s" % [dl, "" if dl == 1 else "s"])), 19).custom_minimum_size = Vector2(PANEL_W - 190.0, 0)
+		var tx := _lbl(v, String(t["text"]), 17, Color("4a3f7a"))
+		tx.custom_minimum_size = Vector2(PANEL_W - 110.0, 0)
+
+
+# ------------------------------------------------------------------ dread: the night, the bad idea, the flicker
+var dread_fx: ColorRect
+var _dread_t := 0.0
+var _flicker_t := 6.0
+
+
+func _build_dread_fx() -> void:
+	dread_fx = ColorRect.new()
+	dread_fx.name = "DreadFx"
+	dread_fx.color = Color(0.04, 0.02, 0.06, 0.0)
+	dread_fx.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(dread_fx)
+	dread_fx.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+## Frayed nerves tint the edges of the screen and, now and then, the lights flicker. It is only ever a tint: nothing moves under your thumb.
+func _tick_dread(delta: float) -> void:
+	if dread_fx == null:
+		return
+	_dread_t -= delta
+	if _dread_t <= 0.0:
+		_dread_t = 1.0
+		var lv: int = game.dread_level()
+		dread_fx.set_meta("lv", lv)
+		dread_fx.color.a = 0.0 if lv < 2 else (0.05 if lv == 2 else 0.1)
+	var lv2: int = int(dread_fx.get_meta("lv", 0))
+	if lv2 >= 2 and not bool(UiKit.get_v("calm")):
+		_flicker_t -= delta
+		if _flicker_t <= 0.0:
+			_flicker_t = 7.0 + float(absi(hash("%d|%d" % [game.sim.day, int(Time.get_ticks_msec() / 1000.0)])) % 9)
+			flicker()
+
+
+func flicker() -> void:
+	if dread_fx == null or not dread_fx.is_inside_tree():
+		return
+	var base: float = dread_fx.color.a
+	var tw := dread_fx.create_tween()
+	tw.tween_property(dread_fx, "color:a", minf(base + 0.22, 0.4), 0.05)
+	tw.tween_property(dread_fx, "color:a", base, 0.07)
+	tw.tween_property(dread_fx, "color:a", minf(base + 0.12, 0.3), 0.04)
+	tw.tween_property(dread_fx, "color:a", base, 0.12)
+
+
+## The notebook's own page whispers when you are frayed.
+func _whisper_line() -> void:
+	var w: String = game.dread_whisper()
+	if w == "":
+		return
+	var l := _lbl(box, w, 19, Color("7a2323"))
+	l.name = "Whisper"
+	l.custom_minimum_size = Vector2(PANEL_W - 68.0, 0)
+
+
+## A night event or a letter waits on the morning card: read it, and choose what to do about it.
+func _dread_card() -> bool:
+	var p: Dictionary = game.dread_pending()
+	if p.is_empty():
+		return false
+	var ch: Array = p["choices"]
+	_card(String(p["title"]), "In the night", String(p["text"]), String(ch[0]["label"]), _dread_choose.bind(String(ch[0]["id"])), game.me())
+	var parent: Control = card_button.get_parent()
+	for i in range(1, ch.size()):
+		var b := _btn(parent, String(ch[i]["label"]), _dread_choose.bind(String(ch[i]["id"])), 24, 64)
+		b.name = "Choice_" + String(ch[i]["id"])
+		parent.move_child(b, card_button.get_index())
+	card_button.name = "Choice_" + String(ch[0]["id"])
+	UiKit.haptic(70)
+	return true
+
+
+func _dread_choose(choice: String) -> void:
+	var r: Dictionary = game.dread_respond(choice)
+	_close_card()
+	if String(r.get("text", "")) != "":
+		_card("YOUR CHOICE", "Little Mercy", String(r["text"]), "Go on", _after_dread, null)
+	else:
+		_after_dread()
+
+
+func _after_dread() -> void:
+	_close_card()
+	_maybe_intrusion()
+
+
+## At high stress an intrusive thought may offer a bad idea, and says honestly what it would cost.
+func _maybe_intrusion() -> void:
+	if card != null or game.phase != "day" or game.dread_level() < 2:
+		return
+	var t: Dictionary = game.dread_intrusion()
+	if t.is_empty():
+		return
+	_card("A THOUGHT", "Not quite your own", "%s\n\n(%s)" % [t["text"], t["risk"]], String(t["label"]), _take_idea.bind(String(t["idea"]), String(t["who"])), null)
+	var parent: Control = card_button.get_parent()
+	var lg := _btn(parent, "Let it go", _dismiss_idea, 24, 64)
+	lg.name = "LetItGo"
+	parent.move_child(lg, card_button.get_index())
+	card_button.name = "TakeIdea"
+	flicker()
+
+
+func _take_idea(idea: String, who: String) -> void:
+	var r: Dictionary = game.dread_take(idea, who)
+	_close_card()
+	if String(r.get("text", "")) != "":
+		_card("YOU DID IT", "And now you know", String(r["text"]), "Go on", _close_card, null)
+
+
+func _dismiss_idea() -> void:
+	var t: String = game.dread_dismiss()
+	_close_card()
+	_say(t)
+
+
+# ------------------------------------------------------------------ watching, tips, telling
+func _watch_menu(lot: String) -> void:
+	_clear_panel()
+	_head(box, "Stake out %s" % game.place_name(lot), 32)
+	var room: int = game.stakeout_hours()
+	_lbl(box, "Park across the way and watch. The clock runs. It wears on you (more in the dark), and a parked car can be noticed: that costs trust and may warn someone off.", 21)
+	if room <= 0:
+		_lbl(box, "It is too late in the day to start a watch.", 22, RED)
+	for h in [1, 2, 4]:
+		var b := _btn(box, "Watch for %d hour%s" % [h, "" if h == 1 else "s"], _stake.bind(lot, h), 24, 64)
+		b.name = "Watch_%d" % h
+		b.disabled = room < h
+	_btn(box, "Back", show_case.bind("people"), 26, 64)
+
+
+func _stake(lot: String, hours: int) -> void:
+	var r: Dictionary = game.stakeout(lot, hours)
+	result_text = String(r["text"])
+	_learned(r.get("learned", []))
 	close_panel()
 	world.refresh_markers()
-	UiKit.haptic(120)
-	_card(verdict_title, "Your accusation: %s" % suspect.display, body, "Read the episode", func(): _close_card(); _archive(), suspect)
-	sel_culprit = ""; sel_motive = ""; sel_method = ""
+	_card("THE WATCH", "%d hour%s" % [int(r.get("hours", hours)), "" if int(r.get("hours", hours)) == 1 else "s"], String(r["text"]), "Go on", _close_card, null)
+
+
+func _tell_menu(sid: String) -> void:
+	_clear_panel()
+	var q: RefCounted = game.sim.people[sid]
+	_head(box, "Telling %s" % CaseEngine.first(game.sim, sid), 32)
+	_lbl(box, "How you tell it matters. Sit with them first and they may give you what they would not give an inquiry.", 21)
+	for a in [["Say it plainly", "direct", "15 min"], ["Sit with them first", "gentle", "45 min"], ["Ask your questions", "ask", "10 min"]]:
+		var b := _btn(box, "%s  (%s)" % [a[0], a[2]], _tell.bind(sid, String(a[1])), 22, 64)
+		b.name = "Tell_" + String(a[1])
+	_btn(box, "Back", show_case.bind("people"), 26, 64)
+
+
+func _tell(sid: String, approach: String) -> void:
+	var r: Dictionary = game.tell_family(sid, approach)
+	result_text = String(r["text"])
+	_learned(r.get("learned", []))
+	close_panel()
+	_card("TELLING %s" % CaseEngine.first(game.sim, sid).to_upper(), "A hard visit", String(r["text"]), "Go on", _close_card, game.sim.people[sid])
+	UiKit.haptic(50)
+
+
+func _remember_them(sid: String) -> void:
+	var r: Dictionary = game.remember_them(sid)
+	result_text = String(r["text"])
+	_learned(r.get("learned", []))
+	_say(String(r["text"]).substr(0, 140))
+	show_case("people")
+
+
+func _tip(sid: String) -> void:
+	var r: Dictionary = game.informant_tip(sid)
+	result_text = String(r["text"])
+	_learned(r.get("learned", []))
+	close_panel()
+	_card("A TIP", "For a favour", String(r["text"]), "Go on", _close_card, game.sim.people[sid])
+
+
+func _street_section() -> void:
+	var cs: Array = game.street_contacts()
+	if cs.is_empty():
+		return
+	_lbl(box, "THE STREET  (a tip costs a favour; a tip can be wrong)", 18, VIOLET)
+	for sid in cs:
+		var b := _btn(box, "Ask %s for a tip  (1 favour)" % CaseEngine.first(game.sim, String(sid)), _tip.bind(String(sid)), 21, 64)
+		b.name = "Tip_" + String(sid)
+		b.disabled = int(game.det.res.get("favours", 0)) <= 0
+
+
+func _plea(sid: String) -> void:
+	var r: Dictionary = game.plea_deal(sid)
+	result_text = String(r["text"])
+	_say(String(r["text"]).substr(0, 140))
+	world.refresh_markers()
+	_card("THE DEAL", "A plea", String(r["text"]), "Go on", func(): _close_card(); show_case("court"), game.sim.people[sid])

@@ -1,0 +1,51 @@
+{
+  "intro": [
+    "Word on the street is that {n} will talk, for a price that is never money.",
+    "Somebody at the counter lets it drop that {n} knows things about the town, and sells them for favours.",
+    "A bartender's shrug points you to {n}: \"If it happened after dark, they usually heard about it.\"",
+    "You hear it three times in one day, in three voices: {n} trades in tips."
+  ],
+  "meet": [
+    "{n} meets you where nobody is looking, a thumb on the lid of a coffee.",
+    "{n} says nothing until the waitress has gone, then talks to the napkin holder.",
+    "You find {n} at the back of the hardware store, studying a drawer of washers with great attention.",
+    "{n} keeps the engine running and the window down two inches."
+  ],
+  "saw": [
+    "\"I'll tell you one thing and one thing only. I saw {s} out near {p} at about {t}. Not going anywhere you'd go to on purpose.\"",
+    "\"{s}. That's who. Out by {p} around {t}, collar up. Don't ask me how I know where I was.\"",
+    "\"You didn't hear it from me. {s} was walking by {p} at about {t}, and they weren't enjoying the air.\""
+  ],
+  "clear": [
+    "\"You've been leaning on {s}? Don't. I know where they were at {t}, and it was {p}. They'd sooner be a suspect than say so.\"",
+    "\"Let {s} alone. At about {t} they were at {p}, and I know because I was there too, which is also why I'm telling you in a parking lot.\""
+  ],
+  "false": [
+    "\"I saw {s} out by {p} at about {t}. I'd swear to it,\" and the way {n} says swear makes you wonder what they are paying for.",
+    "\"It was {s}. {p}, about {t}. Do I like {s}? No. Does that change what I saw? It does not.\""
+  ],
+  "nothing": [
+    "\"Nothing this time. If I had it, you would have it.\"",
+    "\"I've asked around. The town is keeping its mouth shut, and so am I.\""
+  ],
+  "broke": ["You have no favours left to trade. Nobody does anything for nothing in Little Mercy, least of all this.", "You're out of favours. The street has a long memory for what you owe."],
+  "deal_offer": [
+    "You lay it out: a plea, a reduced sentence, and a statement for the record. {n} listens with both hands flat on the table.",
+    "The DA's pen is already uncapped. You tell {n} what a plea would buy: fewer years, and a statement in their own words.",
+    "\"Twelve instead of twenty-five,\" you say to {n}, \"and you tell it straight, once, for the record.\""
+  ],
+  "deal_guilty": [
+    "{n} takes a long time to answer. Then the whole thing comes out in order, as if it had been rehearsed in the dark for days: the hour, the walk, the weight of it. And one detail you never let into the paper.",
+    "{n} signs. The hand is steady and the statement is complete, down to the one thing that was never printed. It is a relief, and it is not a good feeling."
+  ],
+  "deal_false": [
+    "{n} signs. The statement has the hour right, and the weapon, and it has nothing in it that only the killer would know. You notice. You tell yourself you will look at it again later.",
+    "{n} is exhausted. {n} signs because signing ends it, and because you said the word 'home'. The statement is smooth and wrong in all the places that matter."
+  ],
+  "deal_refuse": [
+    "{n} pushes the paper back across the table. \"No. I'm not signing for something I didn't do. Or for something I did, if that's what you think.\"",
+    "{n} shakes their head and keeps shaking it. The offer lies between you and goes cold."
+  ],
+  "deal_closed": ["There is no one in custody to offer a deal to.", "A deal needs someone across the table."],
+  "deal_done": "A deal has already been tried on this one."
+}

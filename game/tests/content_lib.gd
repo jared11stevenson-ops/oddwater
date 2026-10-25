@@ -49,7 +49,7 @@ static func problems(text: String) -> Array:
 		var is_an: bool = a.get_string(2) == "n"
 		if vowel != is_an:
 			out.append("article: '%s %s'" % [a.get_string(1) + a.get_string(2), a.get_string(3)])
-	var t := _re_title.search(text)
+	var t := _re_title.search(text.replace("Back Lane", "Back-lane"))   # (a street, not a Title Case slip)
 	if t != null:
 		out.append("title case mid-sentence: " + text.substr(maxi(t.get_start() - 10, 0), 50).replace("\n", " "))
 	var seen := {}

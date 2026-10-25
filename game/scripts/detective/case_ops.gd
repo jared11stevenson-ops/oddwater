@@ -31,7 +31,8 @@ static func spots_at(sim: RefCounted, c: Dictionary, lot: String) -> Array:
 	if l.is_empty():
 		return out
 	if l["kind"] in ["house", "home"]:
-		out.append({"id": "search", "label": "Search the house"})
+		out.append({"id": "search", "label": "Search the house (warrant)"})
+		out.append({"id": "search_raw", "label": "Search without a warrant"})
 	elif l["kind"] == "landmark":
 		out.append({"id": "records", "label": "Ask to see the records"})
 	if lot in ["pageant_green", "marina", "launch_quay"]:
@@ -77,7 +78,17 @@ static func examine(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String
 	var lines: Array = []
 	var warrant_ok := true
 	var owners: Array = sim.order.filter(func(id): return sim.people[id].home == lot)
-	if spot == "search":
+	var raw := false
+	if spot == "search_raw":
+		# Possible, and dirty: nobody signed for it. What you find is flagged and the defence will go after it at trial.
+		raw = true
+		spot = "search"
+		for o in owners:
+			if o != "player":
+				sim.people[o].bump("player", -10.0, -12.0)
+				sim.people[o].remember(int(sim.day), "player", "went through the house without a warrant", 2.0)
+		det.add_stress(3.0)
+	elif spot == "search":
 		warrant_ok = false
 		for o in owners:
 			if det.warrants.get(o, false) or o == "player":
@@ -102,7 +113,11 @@ static func examine(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String
 	var any_new := false
 	for cl in candidates:
 		if det.has(cl["id"]):
-			lines.append("(You have already logged: %s.)" % cl["title"])
+			if det.known[cl["id"]].get("tainted", false) and not raw and warrant_ok:
+				det.known[cl["id"]]["tainted"] = false
+				lines.append("(You go over %s again, this time under the warrant. The chain of custody is clean now.)" % String(cl["title"]).to_lower())
+			else:
+				lines.append("(You have already logged: %s.)" % cl["title"])
 			continue
 		if cl.get("gone", false):
 			lines.append("There was something here once: %s. It has been cleared away, and the case is too old now to get it back." % String(cl["title"]).to_lower())
@@ -114,6 +129,9 @@ static func examine(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String
 		var res: String = det.check(gate["skill"], int(gate["level"])) if gate.has("skill") else "pass"
 		if res == "pass":
 			var e := _entry_from_clue(c, cl, int(sim.day))
+			if raw:
+				e["tainted"] = true
+				e["text"] = String(e["text"]) + " (Found in a search with no warrant.)"
 			if det.learn(e):
 				learned.append(e)
 				lines.append("%s: %s" % [cl["title"], cl["text"]])
@@ -147,7 +165,9 @@ static func _reveal_ok(sim: RefCounted, det: RefCounted, npc: String, f: Diction
 			return {"ok": true}
 		"rapport":
 			var aff: float = sim.people[npc].affinity("player")
-			if aff >= 10.0 or det.skill("charm") >= 4 or det.skill("empathy") >= 5:
+			# someone you sat with when they were told, or who stood beside you at the funeral, will say what they would not say to an inquiry
+			var grieving: bool = det.compassion.get(npc, false) or (not c.is_empty() and det.funerals.get(String(c.get("id", "")), false) and sim.people[npc].rel.has(String(c.get("victim", ""))))
+			if aff >= 10.0 or det.skill("charm") >= 4 or det.skill("empathy") >= 5 or grieving:
 				return {"ok": true}
 			var line: String = Voice.say("rapport_refuse", sim, c, npc, {"n": CaseEngine.first(sim, npc)}) if not c.is_empty() else "%s glances away. \"I don't know you well enough for that.\"" % CaseEngine.first(sim, npc)
 			return {"ok": false, "text": line + " [Charm 4, or earn their trust first]"}
