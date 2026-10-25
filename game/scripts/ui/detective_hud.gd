@@ -12,6 +12,8 @@ const Serial = preload("res://scripts/detective/serial.gd")
 const News = preload("res://scripts/detective/news.gd")
 const Waypoint = preload("res://scripts/ui/waypoint.gd")
 const FullMap = preload("res://scripts/ui/full_map.gd")
+const SceneView = preload("res://scripts/ui/scene_view.gd")
+const DustPad = preload("res://scripts/ui/dust_pad.gd")
 const TutorialOverlay = preload("res://scripts/ui/tutorial_overlay.gd")
 
 const GREEN := UiKit.GREEN
@@ -567,11 +569,31 @@ func _inside_panel() -> void:
 	UiKit.set_button_style(out, INK, INK, PAPER)
 
 
+var _examined := {}
+
+
 func _spot(lot: String, spot: String) -> void:
+	_examined[lot + "|" + spot] = true
+	UiKit.haptic(15)
 	var r: Dictionary = game.examine(lot, spot)
 	result_text = r["text"]
 	_learned(r["learned"])
 	show_host()
+
+
+## Dusting by hand: the brush pad comes first; the game is asked what the powder found once enough has been brushed.
+func _dust_pad(lot: String, spot: String) -> void:
+	_clear_panel()
+	_head(box, "DUSTING", 38)
+	var pad := DustPad.new()
+	pad.title = String(Prints.SPOT_NAMES.get(spot, spot))
+	pad.custom_minimum_size = Vector2(PANEL_W - 60.0, 280)
+	box.add_child(pad)
+	pad.brushed.connect(func(_c: float):
+		UiKit.haptic(25)
+		_dust(lot, spot))
+	var skip := _btn(box, "Quick dust (skip the brush)", _dust.bind(lot, spot), 22, 56)
+	skip.name = "QuickDust_" + spot
 
 
 func _dust(lot: String, spot: String) -> void:
