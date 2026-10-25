@@ -34,6 +34,8 @@ var asked: Dictionary = {}          # "npc|topic|about" -> how many times (a rep
 var rank := "Detective"             # the state police can reassign you after a failure
 var funerals: Dictionary = {}       # case id -> true once you have attended
 var flagged: Dictionary = {}        # person id -> true: people you have chosen to keep an eye on
+var board: Dictionary = {"pos": {}, "links": []}   # the evidence board: card positions (0..1) and the strings YOU drew: [a, b, kind]; your theory, not the truth
+var visited: Dictionary = {}        # lot id -> true once you have stood at its door (fast travel remembers them)
 var ctx: Dictionary = {"case": {}, "jobs": {}}   # the public case file and the town's trades, set by the game (not saved: it is rebuilt)
 
 
@@ -126,6 +128,22 @@ func flag_person(id: String) -> void:
 	flagged[id] = true
 
 
+func visit(lot: String) -> void:
+	if lot != "":
+		visited[lot] = true
+
+
+## Draw (or erase, if it is already there) a string between two cards on the board. Returns true if the string now exists.
+func link(a: String, b: String, kind: String = "theory") -> bool:
+	for i in board["links"].size():
+		var l: Array = board["links"][i]
+		if (l[0] == a and l[1] == b) or (l[0] == b and l[1] == a):
+			board["links"].remove_at(i)
+			return false
+	board["links"].append([a, b, kind])
+	return true
+
+
 ## Everyone the notebook gives a reason to look at: the one who found the body, anyone named by a claim, anyone you have questioned
 ## or flagged. Nothing here knows who did it; the game filters out the dead and the gone.
 func persons_of_interest() -> Array:
@@ -166,7 +184,8 @@ func to_dict() -> Dictionary:
 	return {"name": name, "skills": skills.duplicate(), "xp": xp, "level": level, "points": points, "stress": stress, "tools": tools.duplicate(),
 		"known": known.duplicate(true), "order": order.duplicate(), "statements": statements.duplicate(true), "warrants": warrants.duplicate(),
 		"lab": lab.duplicate(true), "lab_done": lab_done.duplicate(), "told": told.duplicate(), "calibrated": calibrated.duplicate(), "samples": samples.duplicate(), "rep": reputation.duplicate(), "solved": cases_solved, "failed": cases_failed,
-		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate(), "flagged": flagged.duplicate()}
+		"rep_log": rep_log.duplicate(true), "asked": asked.duplicate(), "rank": rank, "funerals": funerals.duplicate(), "flagged": flagged.duplicate(),
+		"board": board.duplicate(true), "visited": visited.duplicate()}
 
 
 static func from_dict(d: Dictionary) -> RefCounted:
@@ -183,6 +202,8 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	for kid in x.known:
 		x.known[kid] = _migrate(x.known[kid])
 	x.flagged = d.get("flagged", {}).duplicate()
+	x.board = d.get("board", {"pos": {}, "links": []}).duplicate(true)
+	x.visited = d.get("visited", {}).duplicate()
 	x.order = d.get("order", []).duplicate()
 	x.statements = d.get("statements", []).duplicate(true)
 	x.warrants = d.get("warrants", {}).duplicate()

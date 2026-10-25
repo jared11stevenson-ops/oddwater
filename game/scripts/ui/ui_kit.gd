@@ -20,8 +20,17 @@ const TEXT_SCALES := [0.9, 1.0, 1.15, 1.3]
 
 static var cfg_path := "user://ui_settings.cfg"
 static var data := {"text_scale": 1.0, "sound": true, "haptics": true, "quality": "med", "tutorial_done": false,
-	"vol_master": 0.8, "vol_sfx": 0.9, "vol_music": 0.7}
+	"vol_master": 0.8, "vol_sfx": 0.9, "vol_music": 0.7, "classic": false}
 static var loaded := false
+## Headless runs (the older suites) keep the classic menus unless a test asks for the hands-on screens.
+static var force_interactive := false
+
+
+## "Reduce interaction (classic menus)": the old lists of buttons instead of hotspots, brushes, scrubbers, boards and chat bubbles.
+static func classic() -> bool:
+	if bool(get_v("classic")):
+		return true
+	return DisplayServer.get_name() == "headless" and not force_interactive
 
 
 # ------------------------------------------------------------------ settings

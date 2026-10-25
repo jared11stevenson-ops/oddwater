@@ -38,6 +38,7 @@ var obj_label: Label
 var obj_box: PanelContainer
 var dist_label: Label
 var travel_btn: Button
+var scene_btn: Button      # one tap to the crime scene, whatever the objective says
 var waypoint: Control
 var tab := "case"
 var sel_culprit := ""
@@ -110,8 +111,19 @@ func _hud_built() -> void:
 	travel_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	UiKit.set_button_style(travel_btn, INK, INK, PAPER)
 	UiKit.press_fx(travel_btn)
-	travel_btn.pressed.connect(travel_to_objective)
+	travel_btn.pressed.connect(func(): travel_to_objective())
 	hb.add_child(travel_btn)
+	scene_btn = Button.new()
+	scene_btn.name = "SceneBtn"
+	scene_btn.text = "To scene"
+	scene_btn.clip_text = false
+	scene_btn.add_theme_font_size_override("font_size", UiKit.fs(22))
+	scene_btn.custom_minimum_size = Vector2(130, 56)
+	scene_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	UiKit.set_button_style(scene_btn, Color("7a2323"), Color("7a2323"), PAPER)
+	UiKit.press_fx(scene_btn)
+	scene_btn.pressed.connect(travel_to_scene)
+	hb.add_child(scene_btn)
 	waypoint = Waypoint.new()
 	add_child(waypoint)
 	waypoint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -138,6 +150,8 @@ func _refresh_objective() -> void:
 	obj_label.text = game.objective()
 	var lot := _objective_lot()
 	var phase_day: bool = game.phase == "day"
+	var sl: String = game.scene_lot()
+	scene_btn.visible = phase_day and sl != "" and world.builder.doors.has(sl) and not game.solved() and world.inside == "" and sl != lot and game.me().location != sl
 	if lot == "" or not world.builder.doors.has(lot):
 		dist_label.text = ""
 		travel_btn.visible = false
@@ -181,8 +195,12 @@ func travel_minutes(lot: String) -> int:
 
 
 ## Fast travel: the sim's own walk, so the minutes come off the day.
-func travel_to_objective() -> void:
-	var lot := _objective_lot()
+func travel_to_scene() -> void:
+	travel_to_objective(game.scene_lot())
+
+
+func travel_to_objective(target: String = "") -> void:
+	var lot := target if target != "" else _objective_lot()
 	if lot == "" or game.phase != "day":
 		return
 	var r: Dictionary = go(lot)

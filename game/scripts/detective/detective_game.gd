@@ -244,6 +244,28 @@ func camera(cam_id: String) -> Dictionary:
 	return Cctv.camera(_truth, cam_id)
 
 
+## Fast travel: walk to a place's door. The walk is paid in minutes (450 m per half hour, like every other trip) on the same clock as
+## examining or questioning, so the town moves on by however many half hours it adds up to. `from_xy` is where you really stand (town
+## metres); without it the trip starts from the building the sim has you at. Works at any hour of the day phase.
+func travel_to(lot: String, from_xy: Vector2 = Vector2.INF) -> Dictionary:
+	if phase != "day" or sim.day_over():
+		return {"ok": false, "minutes": 0, "ticks": 0, "text": "It's too late to go anywhere. Sleep first."}
+	var l: Dictionary = layout.by_id.get(lot, {})
+	if l.is_empty():
+		return {"ok": false, "minutes": 0, "ticks": 0, "text": "You don't know the way."}
+	var d: float = distance(me().location, lot) if from_xy == Vector2.INF else from_xy.distance_to(Vector2(float(l["x"]), float(l["y"])))
+	var mins: int = 0 if d < 12.0 else clampi(int(ceil(d / 15.0)), 2, 240)
+	me().location = lot
+	det.visit(lot)
+	var ticks := 0
+	if mins > 0:
+		sim.player_activity = "errand"
+		me().activity = "errand"
+		spend(mins)
+		ticks = flush_time()
+	return {"ok": true, "minutes": mins, "ticks": ticks, "lot": lot, "text": "You walk to %s (%s)." % [place_name(lot), ("%d min" % mins) if mins > 0 else "right there"]}
+
+
 ## The surfaces at the scene worth dusting.
 func dust_spots() -> Array:
 	return ["door", "phone", "desk", "floor", "garden"]
@@ -263,8 +285,8 @@ func calibrate_camera(cam_id: String) -> Dictionary:
 	return r
 
 
-func dust(lot: String, spot: String) -> Dictionary:
-	var r: Dictionary = Prints.dust(sim, _truth, det, lot, spot)
+func dust(lot: String, spot: String, effort: float = -1.0) -> Dictionary:
+	var r: Dictionary = Prints.dust(sim, _truth, det, lot, spot, effort)
 	r["ticks"] = spend(int(r["minutes"]))
 	_after_op()
 	return r

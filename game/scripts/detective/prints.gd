@@ -10,7 +10,8 @@ const SPOT_NAMES := {"door": "the door handle", "phone": "the telephone", "desk"
 
 
 ## Lift the latents from one surface. Needs the fingerprint kit; Forensics improves the lift.
-static func dust(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String, spot: String) -> Dictionary:
+## `effort` (0..1) is how well the surface was worked with the brush (the dusting minigame); -1 means a plain, average lift.
+static func dust(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String, spot: String, effort: float = -1.0) -> Dictionary:
 	if lot != c["scene"]:
 		return {"text": "Nothing here to dust for this case.", "learned": [], "minutes": 5}
 	if not det.tools.has("fingerprint kit"):
@@ -23,7 +24,8 @@ static func dust(sim: RefCounted, c: Dictionary, det: RefCounted, lot: String, s
 		var id: String = "print_" + str(l["id"])
 		if det.has(id):
 			continue
-		var q: int = clampi(int(l["quality"]) + (det.skill("forensics") - 3) * 5, 5, 98)
+		var swipe: int = 0 if effort < 0.0 else int(round((clampf(effort, 0.0, 1.0) - 0.7) * 30.0))
+		var q: int = clampi(int(l["quality"]) + (det.skill("forensics") - 3) * 5 + swipe, 5, 98)
 		var grade := "a clear print" if q >= 60 else ("a partial print" if q >= 35 else "a smudge")
 		var e := {"id": id, "title": "Latent print: %s" % SPOT_NAMES.get(spot, spot), "text": "%s on %s (quality %d). Whose is it?" % [grade.capitalize(), SPOT_NAMES.get(spot, spot), q],
 			"kind": "print", "source": lot, "day": int(sim.day), "latent": l["id"], "quality": q}

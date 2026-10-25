@@ -87,6 +87,11 @@ func _build() -> void:
 		qb.custom_minimum_size.x = 116
 		if String(UiKit.get_v("quality")) == q:
 			UiKit.set_button_style(qb, UiKit.INK, UiKit.MARIGOLD, UiKit.PAPER)
+	var r5 := _row("Reduce interaction")
+	var cm := _mk(r5, "Classic menus" if bool(UiKit.get_v("classic")) else "Hands-on", _toggle_classic, 24)
+	cm.name = "ClassicToggle"
+	cm.custom_minimum_size.x = 230
+	cm.size_flags_horizontal = Control.SIZE_SHRINK_END
 	if show_replay:
 		var rb := _mk(_box, "Replay the tutorial", func(): replay_tutorial.emit(); close(), 26)
 		rb.name = "ReplayTutorial"
@@ -94,6 +99,12 @@ func _build() -> void:
 	cb.name = "SettingsDone"
 	UiKit.set_button_style(cb, UiKit.INK, UiKit.INK, UiKit.PAPER)
 	cb.custom_minimum_size.y = 68
+
+
+func _toggle_classic() -> void:
+	UiKit.set_v("classic", not bool(UiKit.get_v("classic")))
+	changed.emit()
+	_build()
 
 
 func _row(label: String) -> HBoxContainer:

@@ -116,7 +116,7 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 			var before: String = sim.where_was(id, d, t - 1)
 			if now == cam["lot"] and before != cam["lot"]:
 				if hd or recognised.has(id):
-					evs.append({"t": h, "who": id, "text": "%s %s" % [(CaseEngine.name_of(sim, id) if hd else "Someone you can place as %s" % CaseEngine.name_of(sim, id)), "arrives"], "ident": true, "arrival": true})
+					evs.append({"t": h, "who": id, "text": "%s %s" % [(CaseEngine.name_of(sim, id) if hd else "Someone you can place as %s" % CaseEngine.name_of(sim, id)), "arrives"], "ident": true, "arrival": true, "pos": cp, "dir": Vector2.ZERO})
 				else:
 					crowd += 1
 	# 2. the night's walks
@@ -143,7 +143,7 @@ static func footage(sim: RefCounted, c: Dictionary, cam_id: String, from_h: floa
 				else:
 					tx = "A figure with %s passes heading %s. The face is not visible." % [_trait_of(c, who), dirw]
 				best_d = float(cl["d"])
-				best_ev = {"t": when, "who": who, "text": tx, "ident": face}
+				best_ev = {"t": when, "who": who, "text": tx, "ident": face, "pos": cp, "dir": (b - a).normalized()}
 			t += (seg / WALK_MPS) / 3600.0
 		if not best_ev.is_empty():
 			evs.append(best_ev)
@@ -190,7 +190,15 @@ static func view(sim: RefCounted, c: Dictionary, det: RefCounted, cam_id: String
 	if not f["events"].is_empty() and det.learn(entry):
 		learned.append(entry)
 		det.gain_xp(15)
-	return {"text": entry["text"], "learned": learned, "minutes": 30}
+	# what the player can scrub through: the times as the camera's own clock shows them, a dot's place and heading, and a name only where the
+	# picture was good enough to give one (the same facts the text above already states)
+	var shown := 0.0 if cal else float(cam["offset"]) / 60.0
+	var tape: Array = []
+	for ev in f["events"]:
+		var ident: bool = bool(ev["ident"])
+		tape.append({"t": float(ev["t"]) + shown, "ident": ident, "who": String(ev["who"]) if ident else "", "text": String(ev["text"]),
+			"x": (ev["pos"] as Vector2).x, "y": (ev["pos"] as Vector2).y, "dx": (ev["dir"] as Vector2).x, "dy": (ev["dir"] as Vector2).y})
+	return {"text": entry["text"], "learned": learned, "minutes": 30, "tape": tape, "cam": {"x": door_point(cam["lot"]).x, "y": door_point(cam["lot"]).y, "radius": float(cam["radius"]), "calibrated": cal}}
 
 
 ## Check a camera's clock against a real one. After this its footage times are true.

@@ -249,3 +249,45 @@ static func da_read(notebook: Variant, case_file: Dictionary, person: String, jo
 	if int(pr["opportunity"]) == 0 and int(pr["link"]) == 0:
 		verdict += " Get something that puts them there."
 	return ". ".join(lines) + ".\n\n" + verdict
+
+
+## Pairs of notebook entries whose claims cannot both stand, found by the rules of evidence alone (never by the truth): someone placed
+## at the scene in the death window and also cleared as elsewhere or gone before it; a confession and its disproof; an item recognised
+## as theirs and also marked as planted. Returns [{a, b, who, why}] (entry ids). The board suggests these as red threads.
+static func contradictions(notebook: Variant, case_file: Dictionary = {}) -> Array:
+	var out: Array = []
+	var entries: Array = entries_of(notebook)
+	var win: Array = death_window(entries)
+	var by_person := {}          # person -> predicate -> [entry id]
+	for e in entries:
+		for cl in e.get("claims", []):
+			var s: String = String(cl.get("subject", ""))
+			if s == "":
+				continue
+			var pr: String = String(cl.get("predicate", ""))
+			if pr in TIME_CHECKED and not _overlaps(cl, win):
+				continue
+			if pr == "elsewhere" and not _overlaps(cl, win):
+				continue
+			if not by_person.has(s):
+				by_person[s] = {}
+			if not by_person[s].has(pr):
+				by_person[s][pr] = []
+			if not (by_person[s][pr] as Array).has(e.get("id", "")):
+				by_person[s][pr].append(e.get("id", ""))
+	var pairs := [
+		[["seen_at_scene", "seen_out_at_night", "seen_going_out"], ["elsewhere", "left_before_death"], "is placed out at the time, and also cleared of it"],
+		[["confessed", "confessed_story"], ["confession_disproved"], "confessed, and the confession is disproved"],
+		[["item_recognised", "weapon_in_home"], ["item_planted"], "is tied to the item, and the item looks planted"],
+		[["seen_at_scene"], ["witness_discredited"], "was seen there, by a witness who has been discredited"]]
+	for who in by_person:
+		var preds: Dictionary = by_person[who]
+		for pr in pairs:
+			for x in pr[0]:
+				for y in pr[1]:
+					if preds.has(x) and preds.has(y):
+						for ea in preds[x]:
+							for eb in preds[y]:
+								if ea != eb and not out.any(func(o): return o["a"] == ea and o["b"] == eb):
+									out.append({"a": ea, "b": eb, "who": who, "why": String(pr[2])})
+	return out

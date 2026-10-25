@@ -95,6 +95,16 @@ func _draw() -> void:
 			draw_circle(o + Vector2(14, 11) * u, 7.0 * u, color)
 			draw_colored_polygon(_p(PackedVector2Array([Vector2(8, 15), Vector2(20, 15), Vector2(14, 26)]), o, u), color)
 			draw_circle(o + Vector2(14, 11) * u, 2.6 * u, Color("f3e9d2"))
+		"map":                     # a folded map with a route
+			var fold := _p(PackedVector2Array([Vector2(3, 6), Vector2(10, 9), Vector2(18, 6), Vector2(25, 9), Vector2(25, 23), Vector2(18, 20), Vector2(10, 23), Vector2(3, 20), Vector2(3, 6)]), o, u)
+			draw_polyline(fold, color, w, true)
+			draw_line(o + Vector2(10, 9) * u, o + Vector2(10, 23) * u, color, w * 0.6)
+			draw_line(o + Vector2(18, 6) * u, o + Vector2(18, 20) * u, color, w * 0.6)
+		"board":                   # a pinboard: two cards, a pin and a string
+			draw_rect(Rect2(o + Vector2(3, 4) * u, Vector2(22, 20) * u), color, false, w)
+			draw_rect(Rect2(o + Vector2(6, 8) * u, Vector2(7, 6) * u), color)
+			draw_rect(Rect2(o + Vector2(16, 14) * u, Vector2(6, 7) * u), color)
+			draw_line(o + Vector2(10, 11) * u, o + Vector2(19, 17) * u, color, w * 0.6)
 		"walk":
 			draw_circle(o + Vector2(15, 5) * u, 3.0 * u, color)
 			draw_line(o + Vector2(15, 8) * u, o + Vector2(13, 17) * u, color, w * 1.2)
