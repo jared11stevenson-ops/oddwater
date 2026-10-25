@@ -174,6 +174,11 @@ func _initialize() -> void:
 	ok(hud.top.position.x + hud.top.size.x <= (tb.get_node("SpeedBtn") as Control).position.x, "the clock text does not run under the buttons")
 	# objective chip: beside the minimap, below the top bar
 	ok(hud.obj_box.position.x >= hud.mini.position.x + hud.mini.size.x, "the objective chip does not overlap the minimap")
+	hud.open_full_map()
+	await process_frame
+	ok(hud.full_map != null and is_instance_valid(hud.full_map) and hud.full_map.markers.size() > 0, "the full map opens with markers")
+	hud.open_full_map()
+	ok(hud.full_map == null, "the Map button toggles it closed again")
 	ok(hud.obj_box.position.y >= tb.size.y, "the objective chip sits below the top bar")
 	ok(hud.obj_label.text.contains("Examine the crime scene"), "the objective is shown")
 	# waypoint and distance readout

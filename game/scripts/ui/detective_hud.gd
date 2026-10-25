@@ -11,6 +11,7 @@ const Justice = preload("res://scripts/detective/justice.gd")
 const Serial = preload("res://scripts/detective/serial.gd")
 const News = preload("res://scripts/detective/news.gd")
 const Waypoint = preload("res://scripts/ui/waypoint.gd")
+const FullMap = preload("res://scripts/ui/full_map.gd")
 const TutorialOverlay = preload("res://scripts/ui/tutorial_overlay.gd")
 
 const GREEN := UiKit.GREEN
@@ -62,7 +63,33 @@ var _acc_armed := false
 
 
 func _extra_topbar() -> Array:
-	return [["Case", "CaseBtn", show_case, "case"]]
+	return [["Case", "CaseBtn", show_case, "case"], ["Map", "MapBtn", open_full_map, "map"]]
+
+
+var full_map: Control
+
+
+## The big map: pan, pinch, tap a place for its card, fast travel from there.
+func open_full_map() -> void:
+	if full_map != null and is_instance_valid(full_map):
+		close_full_map()
+		return
+	full_map = FullMap.new()
+	full_map.setup(game, _objective_lot())
+	full_map.player_world = Vector2(world.player.global_position.x, world.player.global_position.z)
+	full_map.player_yaw = world.player.yaw
+	full_map.travel_requested.connect(func(lot: String):
+		close_full_map()
+		travel_to_objective(lot))
+	full_map.closed.connect(close_full_map)
+	add_child(full_map)
+	full_map.refresh()
+
+
+func close_full_map() -> void:
+	if full_map != null and is_instance_valid(full_map):
+		full_map.queue_free()
+	full_map = null
 
 
 # ------------------------------------------------------------------ furniture: objective chip, waypoint
