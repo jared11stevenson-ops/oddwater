@@ -170,6 +170,42 @@ func _initialize() -> void:
 	b.update_window_lights(sm)
 	ok(not b.lot_lit_texel(np.home), "and goes dark if they die")
 	ok(b.window_mat.get_shader_parameter("home_map") != null and (b.window_mat.get_shader_parameter("home_rect") as Vector4).z > 0.0, "the window shader has its home map")
+	# audio: built, silent-safe headless, follows the sound toggle and the volume settings
+	var UiKit = load("res://scripts/ui/ui_kit.gd")
+	ok(w.audio != null and not w.audio.active, "the audio kit exists and is inert headless")
+	w.audio.active = true
+	w.audio._queue = [["one", "chime", load("res://scripts/world3d/audio_mix.gd").chime, ""], ["steps", "grass", Callable(), ""], ["loop", "drone", load("res://scripts/world3d/audio_mix.gd").drone_loop, "Music"]]
+	w.audio.build_all()
+	ok(w.audio._streams.has("chime") and w.audio._steps["grass"].size() == 3 and w.audio._loops.has("drone"), "samples build")
+	ok(w.audio.surface_at(Vector3(0, 0, -130)) == "wood", "boards sound like wood")
+	UiKit.set_v("sound", false)
+	w.audio.play("chime")
+	ok(w.audio._shot_i == 0, "nothing plays while sound is off")
+	UiKit.set_v("sound", true)
+	UiKit.set_v("vol_sfx", 0.5)
+	UiKit.apply_sound()
+	ok(absf(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Sfx")) - linear_to_db(0.5)) < 0.1, "the sfx slider sets the bus")
+	w.audio.active = false
+	w.audio.set_process(false)
+	# interiors: one room per entry, freed on exit, the town hides, camera sits inside the room
+	var base := count_nodes(w)
+	for lot_id in [w.game.scene_lot(), "library", "pub"]:
+		if not b.doors.has(lot_id):
+			continue
+		w.enter(lot_id)
+		w._process(0.1)
+		ok(w.interior != null and w.room_cam.current and not b.visible and not w.npcs.visible, "inside %s: room shown, town hidden" % lot_id)
+		var cp: Vector3 = w.room_cam.global_position - w.interior.global_position
+		ok(absf(cp.x) < 3.7 and absf(cp.z) < 3.1 and cp.y > 0.5 and cp.y < 2.8, "camera is inside the room: %s" % str(cp))
+		w.leave()
+		ok(w.interior == null and b.visible and w.npcs.visible and w.player.cam.current, "stepping out restores the town")
+	for i in 5:
+		w.enter(w.game.scene_lot())
+		w.leave()
+	await process_frame
+	await process_frame
+	ok(count_nodes(w) <= base, "entering and leaving leaks no nodes: %d vs %d" % [count_nodes(w), base])
+	UiKit.set_v("vol_sfx", 0.9)
 	TownGame.delete_save()
 	print("world_polish_tests: %d checks, %d failed" % [checks, fails])
 	quit(fails)

@@ -73,6 +73,19 @@ func _build() -> void:
 	sb.name = "SoundToggle"
 	sb.custom_minimum_size.x = 200
 	sb.size_flags_horizontal = Control.SIZE_SHRINK_END
+	for v in [["Master volume", "vol_master"], ["Effects", "vol_sfx"], ["Music and tension", "vol_music"]]:
+		var rv := _row(v[0])
+		var sl := HSlider.new()
+		sl.name = "Slider_" + String(v[1])
+		sl.min_value = 0.0
+		sl.max_value = 1.0
+		sl.step = 0.05
+		sl.value = float(UiKit.get_v(v[1]))
+		sl.custom_minimum_size = Vector2(300, 48)
+		sl.size_flags_horizontal = Control.SIZE_SHRINK_END
+		sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		sl.value_changed.connect(_set_vol.bind(String(v[1])))
+		rv.add_child(sl)
 	var r3 := _row("Vibration")
 	var hb := _mk(r3, "On" if bool(UiKit.get_v("haptics")) else "Off", _toggle_haptics, 26)
 	hb.name = "HapticsToggle"
@@ -147,6 +160,12 @@ func _toggle_sound() -> void:
 	UiKit.set_v("sound", not bool(UiKit.get_v("sound")))
 	UiKit.apply_sound()
 	_build()
+	changed.emit()
+
+
+func _set_vol(v: float, key: String) -> void:
+	UiKit.set_v(key, v)
+	UiKit.apply_sound()
 	changed.emit()
 
 

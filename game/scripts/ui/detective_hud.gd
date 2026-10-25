@@ -619,8 +619,14 @@ func _dust(lot: String, spot: String) -> void:
 	show_host()
 
 
+func _sting(nm: String) -> void:
+	if world != null and world.audio != null:
+		world.audio.play(nm)
+
+
 func _learned(entries: Array) -> void:
 	if not entries.is_empty():
+		_sting("chime")
 		var counts := {}
 		var order: Array = []
 		for e in entries:
@@ -1089,6 +1095,8 @@ func show_case(tab_name: String = "") -> void:
 		for eid in game.det.order.slice(_seen_n):
 			nb_new[eid] = true
 		nb_limit = 25
+	if tab == "news" and prev != "news":
+		_sting("chime_down")
 	_tab_bar(tab)
 	if Serial.active(game.serial):
 		var row2 := HBoxContainer.new()
@@ -1498,6 +1506,7 @@ func _compare(eid: String, sid: String) -> void:
 
 func _lab(eid: String) -> void:
 	var r: Dictionary = game.submit_lab(eid)
+	_sting("stamp")
 	_say(r["text"])
 	UiKit.haptic(40)
 	show_case("notebook")

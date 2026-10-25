@@ -23,6 +23,9 @@ const DRIFT = preload("res://shaders/drift3d.gdshader")
 const VIGNETTE = preload("res://shaders/vignette.gdshader")
 const TAPE = preload("res://shaders/tape3d.gdshader")
 const SIREN = preload("res://shaders/siren3d.gdshader")
+const AudioKit = preload("res://scripts/world3d/audio_kit.gd")
+const Interior = preload("res://scripts/world3d/interior.gd")
+const ROOM_AT := Vector3(0, 500, 0)
 
 ## Quality presets: 3D render scale, shadow reach (m), rain particles, whether glow and MSAA are on, how far the grass shows.
 const QUALITY := [
@@ -39,6 +42,10 @@ var tick_seconds := 18.0          # real seconds per half hour of town time
 var time_scale := 1.0
 var acc := 0.0
 var inside := ""
+var audio: Node
+var interior: Node3D
+var room_cam: Camera3D
+var _room_t := 0.0
 var paused := false               # a menu is open: the town holds its breath
 var prompt: Dictionary = {}
 var rain: GPUParticles3D
@@ -88,6 +95,9 @@ func start_game(the_game: RefCounted) -> void:
 	npcs.setup(game.sim, builder, game.layout.spec)
 	player = PlayerRig.new()
 	add_child(player)
+	audio = AudioKit.new()
+	add_child(audio)
+	audio.setup(self)
 	_build_rain()
 	_build_ambient()
 	_build_lamp_lights()
@@ -111,6 +121,7 @@ func hour() -> float:
 ## Put you in the host's body at the host's front door. Called at the start and every dawn.
 func place_host(first: bool = false) -> void:
 	inside = ""
+	_hide_room()
 	player.visible = true
 	player.frozen = false
 	player.set_person(game.me())
@@ -160,6 +171,8 @@ func _update_light() -> void:
 		_bird_mat.set_shader_parameter("amount", sky.daylight * (1.0 if _weather in ["clear", "cloudy"] else 0.0))
 		_leaf_mat.set_shader_parameter("amount", sky.daylight * (0.0 if _weather in ["rain", "fog"] else 1.0))
 		_vig_mat.set_shader_parameter("strength", sky.vignette)
+	if interior != null:
+		interior.set_night(sky.night)
 
 
 # ------------------------------------------------------------------ weather effects that follow you
@@ -377,6 +390,13 @@ func _process(delta: float) -> void:
 		return
 	var p: Vector3 = player.global_position
 	npcs.focus = p
+	if audio != null:
+		var dt = game.get("det")
+		audio.stress = float(dt.stress) if dt != null else 0.0
+		audio.pressure = float(game.pressure()) if game.has_method("pressure") else 0.0
+	if interior != null:
+		_room_t += delta
+		room_cam.global_transform = interior.pose(_room_t)
 	if rain != null:
 		rain.global_position = p + Vector3(0, 14, 0)
 		splash.global_position = Vector3(p.x, 0.06, p.z)
@@ -506,6 +526,7 @@ func interact() -> void:
 
 func enter(lot: String) -> void:
 	inside = lot
+	_show_room(lot)
 	game.me().location = lot
 	player.frozen = true
 	player.visible = false
@@ -517,6 +538,7 @@ func enter(lot: String) -> void:
 func leave() -> void:
 	var lot := inside
 	inside = ""
+	_hide_room()
 	player.visible = true
 	player.frozen = false
 	var d: Dictionary = builder.doors.get(lot, {})
@@ -528,6 +550,7 @@ func leave() -> void:
 ## The map's "go here": a trip that costs time (the sim's own travel cost) and puts you at the door.
 func arrive_at(lot: String) -> void:
 	inside = ""
+	_hide_room()
 	player.visible = true
 	player.frozen = false
 	var d: Dictionary = builder.doors.get(lot, {})
@@ -733,3 +756,52 @@ func _chalk_mesh() -> ArrayMesh:
 	var am := ArrayMesh.new()
 	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
 	return am
+
+
+# ------------------------------------------------------------------ inside a building
+## Build the furnished room for this lot far above the town, look at it through its own camera, and hide the town. One room at a time.
+func _show_room(lot: String) -> void:
+	_hide_room()
+	var kind := ""
+	for l in game.layout.lots:
+		if l["id"] == lot:
+			kind = String(l["kind"])
+	var is_scene: bool = game.has_method("scene_lot") and game.scene_lot() == lot
+	interior = Interior.new()
+	interior.position = ROOM_AT
+	add_child(interior)
+	interior.build(lot, kind, builder.solid_mat, is_scene)
+	interior.set_night(sky.night)
+	room_cam = Camera3D.new()
+	room_cam.fov = 66.0
+	room_cam.near = 0.1
+	room_cam.far = 60.0
+	add_child(room_cam)
+	room_cam.global_transform = interior.pose(0.0)
+	room_cam.current = true
+	_town_visible(false)
+	if audio != null:
+		audio.play("door")
+
+
+func _hide_room() -> void:
+	if interior == null:
+		return
+	interior.queue_free()
+	room_cam.queue_free()
+	interior = null
+	room_cam = null
+	if player != null and player.cam != null:
+		player.cam.current = true
+	_town_visible(true)
+
+
+func _town_visible(v: bool) -> void:
+	for n in [builder, npcs, rain, splash, leaves, fireflies, birds, get_node_or_null("CrimeScene")]:
+		if n != null:
+			(n as Node3D).visible = v
+	for l in lamp_lights:
+		if not v:
+			(l as Node3D).visible = false
+	if sky != null and sky.sun != null:
+		sky.sun.visible = v

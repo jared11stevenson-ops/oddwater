@@ -84,14 +84,14 @@ func build(lot_id: String, kind: String, solid_mat: Material, scene: bool) -> vo
 	gi.name = "Lit"
 	add_child(gi)
 	light = OmniLight3D.new()
-	light.omni_range = 11.0
+	light.omni_range = 14.0
 	light.omni_attenuation = 1.2
 	light.light_color = Color(1.0, 0.88, 0.66)
 	light.position = Vector3(0.4, H - 0.5, 0.2)
 	light.shadow_enabled = false
 	add_child(light)
 	lamp_light = OmniLight3D.new()
-	lamp_light.omni_range = 5.0
+	lamp_light.omni_range = 7.0
 	lamp_light.light_color = Color(1.0, 0.78, 0.45)
 	lamp_light.position = Vector3(-2.6, 1.3, -2.2)
 	lamp_light.shadow_enabled = false
@@ -103,8 +103,8 @@ func build(lot_id: String, kind: String, solid_mat: Material, scene: bool) -> vo
 func set_night(n: float) -> void:
 	_night = n
 	if light != null:
-		light.light_energy = lerpf(0.95, 0.55, n)
-		lamp_light.light_energy = lerpf(0.35, 1.7, n)
+		light.light_energy = lerpf(2.4, 1.5, n)
+		lamp_light.light_energy = lerpf(1.0, 2.6, n)
 	if _glass_mat != null:
 		_glass_mat.albedo_color = Color(1, 1, 1).lerp(Color(0.25, 0.28, 0.4), n)
 
